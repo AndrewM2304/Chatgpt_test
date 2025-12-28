@@ -13,9 +13,24 @@ const ghPagesCommand = repo
 
 run(ghPagesCommand);
 
+const extractRepoSlug = (repo) => {
+  if (!repo) {
+    return null;
+  }
+
+  if (/^[^/]+\/[^/]+$/.test(repo)) {
+    return repo;
+  }
+
+  const normalizedRepo = repo.replace(/\/+$/, "");
+  const match = normalizedRepo.match(
+    /github\.com[:/](?<slug>[^/]+\/[^/]+)(?:\.git)?$/
+  );
+  return match?.groups?.slug ?? null;
+};
+
 const repoSlug =
-  process.env.GITHUB_REPOSITORY ??
-  process.env.GH_PAGES_REPO?.match(/github\.com\/([^/]+\/[^/]+)\.git$/)?.[1];
+  process.env.GITHUB_REPOSITORY ?? extractRepoSlug(process.env.GH_PAGES_REPO);
 
 if (repoSlug) {
   const [owner, repoName] = repoSlug.split("/");
