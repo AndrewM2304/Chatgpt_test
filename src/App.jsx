@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 
 const EXERCISES = [
@@ -31,6 +31,46 @@ const EXERCISES = [
     name: "Mountain climbers",
     unit: "reps",
     ranges: { easy: [12, 20], medium: [20, 32], hard: [32, 45] },
+  },
+  {
+    name: "Wall sit",
+    unit: "seconds",
+    ranges: { easy: [20, 30], medium: [30, 45], hard: [45, 70] },
+  },
+  {
+    name: "High knees",
+    unit: "reps",
+    ranges: { easy: [20, 30], medium: [30, 45], hard: [45, 60] },
+  },
+  {
+    name: "Glute bridges",
+    unit: "reps",
+    ranges: { easy: [10, 18], medium: [18, 28], hard: [28, 40] },
+  },
+  {
+    name: "Chair tricep dips",
+    unit: "reps",
+    ranges: { easy: [6, 12], medium: [12, 18], hard: [18, 28] },
+  },
+  {
+    name: "Bicycle crunches",
+    unit: "reps",
+    ranges: { easy: [12, 20], medium: [20, 30], hard: [30, 45] },
+  },
+  {
+    name: "Side plank",
+    unit: "seconds",
+    ranges: { easy: [15, 25], medium: [25, 40], hard: [40, 60] },
+  },
+  {
+    name: "Calf raises",
+    unit: "reps",
+    ranges: { easy: [12, 20], medium: [20, 30], hard: [30, 45] },
+  },
+  {
+    name: "Shadow boxing",
+    unit: "seconds",
+    ranges: { easy: [20, 35], medium: [35, 50], hard: [50, 70] },
   },
 ];
 
@@ -69,22 +109,8 @@ export default function App() {
   const [history, setHistory] = useLocalStorage("workout-history", []);
   const [playerName, setPlayerName] = useState("");
   const [playerDifficulty, setPlayerDifficulty] = useState("easy");
-  const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [spinResult, setSpinResult] = useState(null);
   const [wheelRotation, setWheelRotation] = useState(0);
-
-  useEffect(() => {
-    if (!selectedPlayerId && players.length) {
-      setSelectedPlayerId(players[0].id);
-    }
-  }, [players, selectedPlayerId]);
-
-  const playersById = useMemo(() => {
-    return players.reduce((accumulator, player) => {
-      accumulator[player.id] = player;
-      return accumulator;
-    }, {});
-  }, [players]);
 
   const stats = useMemo(() => {
     return players.map((player) => {
@@ -117,21 +143,21 @@ export default function App() {
     setPlayers((prev) => [...prev, newPlayer]);
     setPlayerName("");
     setPlayerDifficulty("easy");
-    setSelectedPlayerId(newPlayer.id);
     setActiveTab("wheel");
   };
 
   const handleSpin = () => {
-    if (!selectedPlayerId) {
-      return;
-    }
-    const player = playersById[selectedPlayerId];
-    if (!player) {
+    if (!players.length) {
       return;
     }
     const index = Math.floor(Math.random() * EXERCISES.length);
     const exercise = EXERCISES[index];
-    const value = getExerciseValue(exercise, player.difficulty);
+    const assignments = players.map((player) => ({
+      playerId: player.id,
+      playerName: player.name,
+      difficulty: player.difficulty,
+      value: getExerciseValue(exercise, player.difficulty),
+    }));
 
     const segmentAngle = 360 / EXERCISES.length;
     const targetAngle = 360 - (index * segmentAngle + segmentAngle / 2);
@@ -140,23 +166,40 @@ export default function App() {
 
     const entry = {
       id: crypto.randomUUID(),
-      playerId: player.id,
-      playerName: player.name,
-      difficulty: player.difficulty,
       exercise,
-      value,
+      assignments,
       timestamp: new Date().toISOString(),
     };
 
     setWheelRotation(nextRotation);
     setSpinResult(entry);
-    setHistory((prev) => [entry, ...prev]);
+  };
+
+  const handleCompleteSpin = () => {
+    if (!spinResult) {
+      return;
+    }
+    const entries = spinResult.assignments.map((assignment) => ({
+      id: crypto.randomUUID(),
+      playerId: assignment.playerId,
+      playerName: assignment.playerName,
+      difficulty: assignment.difficulty,
+      exercise: spinResult.exercise,
+      value: assignment.value,
+      timestamp: spinResult.timestamp,
+    }));
+    setHistory((prev) => [...entries, ...prev]);
+    setSpinResult(null);
+  };
+
+  const handleRespin = () => {
+    setSpinResult(null);
+    handleSpin();
   };
 
   const handleClearStorage = () => {
     setPlayers([]);
     setHistory([]);
-    setSelectedPlayerId("");
     setSpinResult(null);
   };
 
@@ -181,31 +224,38 @@ export default function App() {
         </p>
       </header>
 
-      <nav className="tabs" aria-label="Workout navigation">
-        {[
-          { id: "wheel", label: "Wheel" },
-          { id: "stats", label: "Stats" },
-          { id: "settings", label: "Settings" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            className={`tab${activeTab === tab.id ? " is-active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-
       <main className="panel">
         {activeTab === "wheel" && (
           <section className="wheel-layout">
             <div className="wheel-card">
-              <div className="wheel-frame">
+              <button
+                type="button"
+                className="wheel-frame"
+                onClick={handleSpin}
+                disabled={!players.length}
+                aria-label="Spin the exercise wheel"
+              >
                 <div className="wheel" style={wheelStyle} aria-hidden="true" />
                 <div className="wheel-pointer" aria-hidden="true" />
-              </div>
+                <div className="wheel-labels" aria-hidden="true">
+                  {EXERCISES.map((exercise, index) => {
+                    const segmentAngle = 360 / EXERCISES.length;
+                    const rotation = index * segmentAngle + segmentAngle / 2;
+                    return (
+                      <span
+                        key={exercise.name}
+                        className="wheel-label"
+                        style={{
+                          transform: `rotate(${rotation}deg) translateY(var(--label-offset)) rotate(-${rotation}deg)`,
+                        }}
+                      >
+                        {exercise.name}
+                      </span>
+                    );
+                  })}
+                </div>
+                <span className="wheel-hint">Tap to spin</span>
+              </button>
               <div className="wheel-legend">
                 {EXERCISES.map((exercise) => (
                   <span key={exercise.name}>{exercise.name}</span>
@@ -214,39 +264,37 @@ export default function App() {
             </div>
 
             <div className="wheel-controls">
-              <div className="control">
-                <label htmlFor="player">Player</label>
-                <select
-                  id="player"
-                  value={selectedPlayerId}
-                  onChange={(event) => setSelectedPlayerId(event.target.value)}
-                >
-                  <option value="">Select player</option>
-                  {players.map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.name} · {player.difficulty}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                className="primary"
-                type="button"
-                onClick={handleSpin}
-                disabled={!selectedPlayerId}
-              >
-                Spin the wheel
-              </button>
+              <p className="spin-instruction">
+                Tap the wheel to spin. Everyone does the same move, just with
+                their own intensity.
+              </p>
 
               {spinResult && (
                 <div className="result">
                   <p className="result-title">Latest spin</p>
-                  <p className="result-player">{spinResult.playerName}</p>
-                  <strong>{formatExercise(spinResult.exercise, spinResult.value)}</strong>
+                  <p className="result-player">{spinResult.exercise.name}</p>
+                  <div className="result-assignments">
+                    {spinResult.assignments.map((assignment) => (
+                      <div key={assignment.playerId}>
+                        <strong>{assignment.playerName}</strong>
+                        <span>
+                          {assignment.value} {spinResult.exercise.unit} ·{" "}
+                          {assignment.difficulty}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                   <span className="result-meta">
-                    Difficulty: {spinResult.difficulty}
+                    When you&apos;re done, mark it complete to log it.
                   </span>
+                  <div className="result-actions">
+                    <button className="primary" type="button" onClick={handleCompleteSpin}>
+                      Mark exercise complete
+                    </button>
+                    <button className="ghost" type="button" onClick={handleRespin}>
+                      Spin again
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -354,6 +402,23 @@ export default function App() {
           </section>
         )}
       </main>
+
+      <nav className="tabs" aria-label="Workout navigation">
+        {[
+          { id: "wheel", label: "Wheel" },
+          { id: "stats", label: "Stats" },
+          { id: "settings", label: "Settings" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`tab${activeTab === tab.id ? " is-active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
