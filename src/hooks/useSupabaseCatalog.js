@@ -39,10 +39,15 @@ export const useSupabaseCatalog = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const inviteUrl = useMemo(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || !groupCode) {
       return "";
     }
-    return `${window.location.origin}?invite=${groupCode}`;
+    const baseUrl = new URL(
+      import.meta.env.BASE_URL || "/",
+      window.location.origin
+    );
+    baseUrl.searchParams.set("invite", groupCode);
+    return baseUrl.toString();
   }, [groupCode]);
 
   const updateCatalog = useCallback((key, updater) => {

@@ -7,7 +7,6 @@ import { GroupGate } from "./components/GroupGate";
 import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
 import { RecipeModal } from "./components/RecipeModal";
-import { StatusBanner } from "./components/StatusBanner";
 import { TabNav } from "./components/TabNav";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
@@ -21,7 +20,6 @@ export default function App() {
     setCuisines,
     setLogs,
     status,
-    isSaving,
     inviteUrl,
     groupCode,
     createNewGroup,
@@ -427,16 +425,6 @@ export default function App() {
     setIsModalOpen(false);
   };
 
-  const syncStatus = status.state === "ready"
-    ? isSaving
-      ? "Syncing changes to Supabase..."
-      : "All changes are synced."
-    : status.state === "error"
-      ? "Sync paused. Complete the Supabase setup below."
-      : status.state === "waiting"
-        ? "Select a group to start syncing."
-        : "Connecting to Supabase...";
-
   const showGate = !groupCode;
 
   return (
@@ -450,7 +438,6 @@ export default function App() {
         />
       ) : (
         <main className="panel">
-          <StatusBanner status={status} />
           <div className="panel-content">
             {activeTab === "catalog" && (
               <CatalogView
@@ -510,7 +497,6 @@ export default function App() {
                 onGenerateInvite={handleGenerateInvite}
                 onCreateGroup={handleCreateGroup}
                 onClearData={handleClearData}
-                syncStatus={syncStatus}
                 inviteUrl={showInvite ? inviteUrl : ""}
               />
             )}
