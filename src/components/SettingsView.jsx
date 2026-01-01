@@ -4,7 +4,6 @@ export const SettingsView = ({
   onGenerateInvite,
   onCreateGroup,
   onClearData,
-  syncStatus,
   inviteUrl,
 }) => (
   <section className="settings">
@@ -28,7 +27,6 @@ export const SettingsView = ({
           <input type="text" readOnly value={inviteUrl} />
         </div>
       )}
-      <p className="sync-status">{syncStatus}</p>
     </div>
 
     <div className="settings-card">
