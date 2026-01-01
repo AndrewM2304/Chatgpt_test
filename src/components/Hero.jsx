@@ -1,5 +1,5 @@
 export const Hero = () => (
   <header className="hero">
-    <h1>Cookbook Keeper</h1>
+    <h1>Cookbook</h1>
   </header>
 );
