@@ -98,6 +98,7 @@ export const RecipeModal = ({
                 id="duration"
                 type="number"
                 min="1"
+                inputMode="numeric"
                 value={formData.duration}
                 onChange={onFormChange("duration")}
                 placeholder="45"

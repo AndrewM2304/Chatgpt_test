@@ -10,9 +10,16 @@
   padding: 0;
 }
 
+html,
+body {
+  min-height: 100%;
+  background: radial-gradient(circle at top, #e0f2fe 0%, #f8fafc 55%);
+}
+
 body {
   min-height: 100vh;
-  padding: 32px 16px 48px;
+  padding: calc(32px + env(safe-area-inset-top)) 16px
+    calc(48px + env(safe-area-inset-bottom));
 }
 
 #root {
@@ -27,8 +34,16 @@ body {
   min-height: calc(100vh - 80px);
 }
 
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .hero {
-  text-align: center;
+  text-align: left;
   display: grid;
   gap: 12px;
 }
@@ -57,11 +72,7 @@ h1 {
   padding: 12px 16px;
   background: #ffffff;
   border-radius: 18px;
-  box-shadow: 0 -12px 24px rgba(15, 23, 42, 0.08);
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  margin-top: auto;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
 }
 
 .tab {
@@ -105,7 +116,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  order: 2;
+  align-items: flex-end;
 }
 
 .tabs-toggle {
@@ -120,6 +131,14 @@ h1 {
   font-weight: 600;
   color: #1e293b;
   cursor: pointer;
+}
+
+.tabs-backdrop {
+  border: none;
+  background: rgba(15, 23, 42, 0.4);
+  position: fixed;
+  inset: 0;
+  z-index: 15;
 }
 
 .tabs-toggle-icon {
@@ -345,6 +364,10 @@ button.ghost.danger {
 .random-controls {
   display: grid;
   gap: 16px;
+}
+
+.random-controls .primary {
+  justify-self: start;
 }
 
 .chip-grid {
@@ -677,7 +700,13 @@ button.ghost.danger {
 
 @media (max-width: 720px) {
   body {
-    padding: 24px 12px 40px;
+    padding: calc(24px + env(safe-area-inset-top)) 12px
+      calc(40px + env(safe-area-inset-bottom));
+  }
+
+  .app-header {
+    align-items: center;
+    flex-wrap: nowrap;
   }
 
   .hero {
@@ -690,19 +719,25 @@ button.ghost.danger {
   }
 
   .tabs {
-    display: none;
     flex-direction: column;
     align-items: stretch;
-    position: static;
-    margin-top: 0;
-  }
-
-  .tabs-shell {
-    order: 0;
+    position: fixed;
+    inset: 0;
+    padding: calc(96px + env(safe-area-inset-top)) 24px
+      calc(32px + env(safe-area-inset-bottom));
+    border-radius: 0;
+    background: #f8fafc;
+    gap: 16px;
+    box-shadow: none;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 20;
+    pointer-events: none;
   }
 
   .tabs-shell.is-open .tabs {
-    display: flex;
+    transform: translateX(0);
+    pointer-events: auto;
   }
 
   .tabs-toggle {
@@ -721,20 +756,18 @@ button.ghost.danger {
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
-  .tabs-shell {
-    order: 0;
-  }
-
   .tabs-toggle {
     display: none;
   }
 
   .tabs {
     display: flex;
-    position: sticky;
-    top: 0;
-    bottom: auto;
-    margin-top: 0;
+    position: static;
+    transform: none;
+    pointer-events: auto;
+    padding: 12px 16px;
+    border-radius: 18px;
+    background: #ffffff;
   }
 }
 

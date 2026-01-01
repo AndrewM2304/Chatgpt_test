@@ -429,7 +429,12 @@ export default function App() {
 
   return (
     <div className="app">
-      <Hero />
+      <header className="app-header">
+        <Hero />
+        {!showGate && (
+          <TabNav activeTab={activeTab} onSelect={setActiveTab} />
+        )}
+      </header>
       {showGate ? (
         <GroupGate
           onJoinGroup={handleJoinGroup}
@@ -501,7 +506,6 @@ export default function App() {
               />
             )}
           </div>
-          <TabNav activeTab={activeTab} onSelect={setActiveTab} />
           <button
             type="button"
             className="fab"
