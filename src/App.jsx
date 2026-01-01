@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CatalogView } from "./components/CatalogView";
 import { Hero } from "./components/Hero";
 import { LogView } from "./components/LogView";
@@ -24,7 +24,7 @@ export default function App() {
     createNewGroup,
     joinGroup,
   } = useSupabaseCatalog();
-  const { recipes, cookbooks, cuisines, logs } = catalog;
+  const { recipes, logs } = catalog;
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
   const [excludedCuisines, setExcludedCuisines] = useState([]);
@@ -48,20 +48,24 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const cookbookOptions = useMemo(() => {
-    const fromRecipes = recipes
-      .map((recipe) => recipe.cookbookTitle)
-      .filter(Boolean);
-    return Array.from(new Set([...cookbooks, ...fromRecipes])).sort((a, b) =>
-      a.localeCompare(b)
-    );
-  }, [cookbooks, recipes]);
+    return Array.from(
+      new Set(recipes.map((recipe) => recipe.cookbookTitle).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [recipes]);
 
   const cuisineOptions = useMemo(() => {
-    const fromRecipes = recipes.map((recipe) => recipe.cuisine).filter(Boolean);
-    return Array.from(new Set([...cuisines, ...fromRecipes])).sort((a, b) =>
-      a.localeCompare(b)
-    );
-  }, [cuisines, recipes]);
+    return Array.from(
+      new Set(recipes.map((recipe) => recipe.cuisine).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [recipes]);
+
+  useEffect(() => {
+    setCookbooks(cookbookOptions);
+  }, [cookbookOptions, setCookbooks]);
+
+  useEffect(() => {
+    setCuisines(cuisineOptions);
+  }, [cuisineOptions, setCuisines]);
 
   const recipeById = useMemo(() => {
     return recipes.reduce((accumulator, recipe) => {
@@ -223,13 +227,6 @@ export default function App() {
         lastCooked: null,
       };
       setRecipes((prev) => [newRecipe, ...prev]);
-    }
-
-    if (trimmedCookbook && !cookbookOptions.includes(trimmedCookbook)) {
-      setCookbooks((prev) => [...prev, trimmedCookbook]);
-    }
-    if (trimmedCuisine && !cuisineOptions.includes(trimmedCuisine)) {
-      setCuisines((prev) => [...prev, trimmedCuisine]);
     }
 
     resetForm();

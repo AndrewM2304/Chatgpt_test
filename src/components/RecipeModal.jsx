@@ -79,22 +79,24 @@ export const RecipeModal = ({
           />
 
           <div className="modal-grid">
-            <div className="control">
-              <label id="rating-label">Rating</label>
-              <div id="rating" aria-labelledby="rating-label">
-                <div className="rating-row">
-                  <div className="rating-label">
-                    {formData.rating ? `${formData.rating} / 5` : "Unrated"}
+            {editingId && (
+              <div className="control">
+                <label id="rating-label">Rating</label>
+                <div id="rating" aria-labelledby="rating-label">
+                  <div className="rating-row">
+                    <div className="rating-label">
+                      {formData.rating ? `${formData.rating} / 5` : "Unrated"}
+                    </div>
                   </div>
+                  <StarRating
+                    value={formData.rating}
+                    onChange={onRatingChange}
+                    label="Recipe rating"
+                    isEditable
+                  />
                 </div>
-                <StarRating
-                  value={formData.rating}
-                  onChange={onRatingChange}
-                  label="Recipe rating"
-                  isEditable
-                />
               </div>
-            </div>
+            )}
             <div className="control">
               <label htmlFor="duration">Duration (minutes)</label>
               <input

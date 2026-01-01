@@ -756,6 +756,11 @@ button.ghost.danger {
   gap: 12px;
 }
 
+.modal-form > label:not(:first-child),
+.modal-form > .control:not(:first-child) {
+  margin-top: 6px;
+}
+
 .modal-grid {
   display: grid;
   gap: 16px;
@@ -909,6 +914,15 @@ button.ghost.danger {
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tabs-shell {
+    order: -1;
+  }
+
   .tabs-shell {
     flex-direction: row;
     align-items: center;
