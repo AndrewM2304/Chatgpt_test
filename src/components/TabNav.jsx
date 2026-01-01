@@ -13,8 +13,8 @@ const tabs = [
   },
   {
     id: "log",
-    label: "Log cook",
-    description: "Track what you cooked recently.",
+    label: "Schedule",
+    description: "Plan breakfasts, lunches, and dinners for the week.",
   },
   {
     id: "settings",

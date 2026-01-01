@@ -10,6 +10,30 @@ import { TabNav } from "./components/TabNav";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
 
+const MEAL_OPTIONS = [
+  { value: "breakfast", label: "Breakfast" },
+  { value: "lunch", label: "Lunch" },
+  { value: "dinner", label: "Dinner" },
+  { value: "leftovers", label: "Leftovers" },
+];
+
+const toDateInputValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getWeekdayIndex = (date) => (date.getDay() + 6) % 7;
+
+const getWeekStart = (dateString) => {
+  const date = new Date(`${dateString}T00:00:00`);
+  const offset = getWeekdayIndex(date);
+  const start = new Date(date);
+  start.setDate(date.getDate() - offset);
+  return start;
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("catalog");
   const {
@@ -31,9 +55,13 @@ export default function App() {
   const [randomPick, setRandomPick] = useState(null);
   const [activeRecipeId, setActiveRecipeId] = useState(null);
   const [logRecipeId, setLogRecipeId] = useState("");
-  const [logDate, setLogDate] = useState(() =>
-    new Date().toISOString().slice(0, 10)
+  const [logWeekDate, setLogWeekDate] = useState(() =>
+    toDateInputValue(new Date())
   );
+  const [logDays, setLogDays] = useState(() => [
+    getWeekdayIndex(new Date()),
+  ]);
+  const [logMeal, setLogMeal] = useState("dinner");
   const [logNote, setLogNote] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -155,7 +183,54 @@ export default function App() {
     });
   }, [excludedCuisines, recipes]);
 
-  const recentLogs = useMemo(() => logs.slice(0, 8), [logs]);
+  const weekDays = useMemo(() => {
+    const start = getWeekStart(logWeekDate);
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(start);
+      day.setDate(start.getDate() + index);
+      return {
+        date: day,
+        value: toDateInputValue(day),
+        label: day.toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        }),
+      };
+    });
+  }, [logWeekDate]);
+
+  const weeklySchedule = useMemo(() => {
+    const schedule = weekDays.map(() => ({
+      breakfast: [],
+      lunch: [],
+      dinner: [],
+      leftovers: [],
+    }));
+    const dateIndex = new Map(
+      weekDays.map((day, index) => [day.value, index])
+    );
+    logs.forEach((entry) => {
+      const entryDate =
+        entry.date || (entry.timestamp ? entry.timestamp.slice(0, 10) : null);
+      if (!entryDate || !dateIndex.has(entryDate)) {
+        return;
+      }
+      const meal = MEAL_OPTIONS.some((option) => option.value === entry.meal)
+        ? entry.meal
+        : "dinner";
+      schedule[dateIndex.get(entryDate)][meal].push(entry);
+    });
+    return schedule;
+  }, [logs, weekDays]);
+
+  useEffect(() => {
+    if (!logWeekDate) {
+      return;
+    }
+    const selectedDate = new Date(`${logWeekDate}T00:00:00`);
+    setLogDays([getWeekdayIndex(selectedDate)]);
+  }, [logWeekDate]);
 
   const handleFormChange = (field) => (event) => {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
@@ -255,7 +330,10 @@ export default function App() {
 
   const handleStartLog = (recipeId) => {
     setLogRecipeId(recipeId);
-    setLogDate(new Date().toISOString().slice(0, 10));
+    const today = new Date();
+    setLogWeekDate(toDateInputValue(today));
+    setLogDays([getWeekdayIndex(today)]);
+    setLogMeal("dinner");
     setLogNote("");
     setActiveTab("log");
   };
@@ -309,35 +387,56 @@ export default function App() {
     if (!logRecipeId) {
       return;
     }
+    if (!logWeekDate) {
+      return;
+    }
     const selectedRecipe = recipeById[logRecipeId];
     if (!selectedRecipe) {
       return;
     }
-    const timestamp = new Date(logDate).toISOString();
-    const newLog = {
-      id: crypto.randomUUID(),
-      recipeId: selectedRecipe.id,
-      name: selectedRecipe.name,
-      cuisine: selectedRecipe.cuisine,
-      cookbookTitle: selectedRecipe.cookbookTitle,
-      timestamp,
-      note: logNote.trim(),
-    };
+    if (!logDays.length) {
+      return;
+    }
+    const weekStart = getWeekStart(logWeekDate);
+    const nowStamp = new Date().toISOString();
+    const newEntries = logDays.map((dayIndex) => {
+      const scheduledDate = new Date(weekStart);
+      scheduledDate.setDate(weekStart.getDate() + dayIndex);
+      return {
+        id: crypto.randomUUID(),
+        recipeId: selectedRecipe.id,
+        name: selectedRecipe.name,
+        cuisine: selectedRecipe.cuisine,
+        cookbookTitle: selectedRecipe.cookbookTitle,
+        date: toDateInputValue(scheduledDate),
+        meal: logMeal,
+        timestamp: nowStamp,
+        note: logNote.trim(),
+      };
+    });
 
-    setLogs((prev) => [newLog, ...prev]);
+    setLogs((prev) => [...newEntries, ...prev]);
     setRecipes((prev) =>
       prev.map((recipe) =>
         recipe.id === selectedRecipe.id
           ? {
               ...recipe,
-              timesCooked: recipe.timesCooked + 1,
-              lastCooked: timestamp,
+              timesCooked: recipe.timesCooked + newEntries.length,
+              lastCooked: nowStamp,
             }
           : recipe
       )
     );
     setLogRecipeId("");
     setLogNote("");
+  };
+
+  const handleToggleLogDay = (dayIndex) => {
+    setLogDays((prev) =>
+      prev.includes(dayIndex)
+        ? prev.filter((item) => item !== dayIndex)
+        : [...prev, dayIndex].sort((a, b) => a - b)
+    );
   };
 
   const handleExport = () => {
@@ -494,12 +593,18 @@ export default function App() {
               recipes={recipes}
               logRecipeId={logRecipeId}
               onLogRecipeId={setLogRecipeId}
-              logDate={logDate}
-              onLogDate={setLogDate}
+              logWeekDate={logWeekDate}
+              onLogWeekDate={setLogWeekDate}
+              logDays={logDays}
+              onToggleLogDay={handleToggleLogDay}
+              logMeal={logMeal}
+              onLogMeal={setLogMeal}
               logNote={logNote}
               onLogNote={setLogNote}
               onSubmit={handleLogCook}
-              recentLogs={recentLogs}
+              weekDays={weekDays}
+              weeklySchedule={weeklySchedule}
+              mealOptions={MEAL_OPTIONS}
             />
           )}
 
