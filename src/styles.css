@@ -81,6 +81,7 @@ h1 {
   font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
+  text-transform: uppercase;
 }
 
 .tab {
@@ -152,7 +153,7 @@ h1 {
   color: #1e293b;
   cursor: pointer;
   position: relative;
-  z-index: 30;
+  z-index: 8;
 }
 
 .tabs-backdrop {
@@ -959,9 +960,7 @@ button.ghost.danger {
   }
 
   .tabs-title {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
+    display: none;
   }
 
   .tab {
@@ -975,13 +974,7 @@ button.ghost.danger {
   }
 
   .tab-action-item {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: #0ea5e9;
-    color: #ffffff;
-    box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
+    display: none;
   }
 
   .tab.is-active {
