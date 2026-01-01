@@ -49,6 +49,7 @@ export default function App() {
   const [groupBy, setGroupBy] = useState("none");
   const [excludedCuisines, setExcludedCuisines] = useState([]);
   const [randomPick, setRandomPick] = useState(null);
+  const [activeRecipeId, setActiveRecipeId] = useState(null);
   const [logRecipeId, setLogRecipeId] = useState("");
   const [logDate, setLogDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
@@ -84,6 +85,13 @@ export default function App() {
       return accumulator;
     }, {});
   }, [recipes]);
+
+  const activeRecipe = useMemo(() => {
+    if (!activeRecipeId) {
+      return null;
+    }
+    return recipeById[activeRecipeId] || null;
+  }, [activeRecipeId, recipeById]);
 
   const filteredRecipes = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -226,9 +234,22 @@ export default function App() {
     setActiveTab("manage");
   };
 
+  const handleOpenRecipe = (recipe) => {
+    setActiveRecipeId(recipe.id);
+    setActiveTab("recipe");
+  };
+
+  const handleStartLog = (recipeId) => {
+    setLogRecipeId(recipeId);
+    setLogDate(new Date().toISOString().slice(0, 10));
+    setLogNote("");
+    setActiveTab("log");
+  };
+
   const handleDeleteRecipe = (recipeId) => {
     setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
     setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
+    setActiveRecipeId((prev) => (prev === recipeId ? null : prev));
     if (editingId === recipeId) {
       resetForm();
     }
@@ -390,7 +411,19 @@ export default function App() {
                 <h2>{group.label}</h2>
                 <div className="recipe-grid">
                   {group.items.map((recipe) => (
-                    <article key={recipe.id} className="recipe-card">
+                    <article
+                      key={recipe.id}
+                      className="recipe-card"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleOpenRecipe(recipe)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleOpenRecipe(recipe);
+                        }
+                      }}
+                    >
                       <div
                         className="recipe-cover"
                         style={{
@@ -404,13 +437,28 @@ export default function App() {
                       <div className="recipe-details">
                         <header>
                           <h3>{recipe.name}</h3>
-                          <button
-                            type="button"
-                            className="ghost"
-                            onClick={() => handleEditRecipe(recipe)}
-                          >
-                            Edit
-                          </button>
+                          <div className="row-actions">
+                            <button
+                              type="button"
+                              className="ghost"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleEditRecipe(recipe);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="ghost"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleStartLog(recipe.id);
+                              }}
+                            >
+                              Log
+                            </button>
+                          </div>
                         </header>
                         <p className="recipe-meta">
                           {recipe.cookbookTitle || "No cookbook"}
@@ -491,14 +539,97 @@ export default function App() {
                 <p className="recipe-meta">
                   Cuisine: {randomPick.cuisine || "Uncategorized"}
                 </p>
-                <div className="recipe-footer">
-                  <span>{randomPick.timesCooked} cooks logged</span>
-                  <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
+              <div className="recipe-footer">
+                <span>{randomPick.timesCooked} cooks logged</span>
+                <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
+              </div>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => handleStartLog(randomPick.id)}
+              >
+                Log this cook
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === "recipe" && (
+        <section className="recipe-view">
+          {activeRecipe ? (
+            <>
+              <div className="recipe-view-header">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => setActiveTab("catalog")}
+                >
+                  Back to catalog
+                </button>
+              </div>
+              <div className="recipe-view-card">
+                <div
+                  className="recipe-cover"
+                  style={{
+                    background: getCoverColor(
+                      activeRecipe.cookbookTitle || "Cookbook"
+                    ),
+                  }}
+                >
+                  <span>
+                    {getInitials(activeRecipe.cookbookTitle || "Cookbook")}
+                  </span>
+                </div>
+                <div className="recipe-view-details">
+                  <p className="eyebrow">Recipe card</p>
+                  <h2>{activeRecipe.name}</h2>
+                  <p className="recipe-meta">
+                    {activeRecipe.cookbookTitle || "No cookbook"}
+                    {activeRecipe.page ? ` · Page ${activeRecipe.page}` : ""}
+                  </p>
+                  <p className="recipe-meta">
+                    Cuisine: {activeRecipe.cuisine || "Uncategorized"}
+                  </p>
+                  <div className="recipe-footer">
+                    <span>{activeRecipe.timesCooked} cooks logged</span>
+                    <span>
+                      Last cooked: {formatDate(activeRecipe.lastCooked)}
+                    </span>
+                  </div>
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => handleStartLog(activeRecipe.id)}
+                    >
+                      Log a cook
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => handleEditRecipe(activeRecipe)}
+                    >
+                      Edit recipe
+                    </button>
+                  </div>
                 </div>
               </div>
-            )}
-          </section>
-        )}
+            </>
+          ) : (
+            <div className="recipe-view-empty">
+              <p className="empty">That recipe is no longer available.</p>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setActiveTab("catalog")}
+              >
+                Back to catalog
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
         {activeTab === "log" && (
           <section className="log">
@@ -655,9 +786,23 @@ export default function App() {
                           <button
                             type="button"
                             className="ghost"
+                            onClick={() => handleOpenRecipe(recipe)}
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            className="ghost"
                             onClick={() => handleEditRecipe(recipe)}
                           >
                             Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="ghost"
+                            onClick={() => handleStartLog(recipe.id)}
+                          >
+                            Log
                           </button>
                           <button
                             type="button"

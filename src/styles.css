@@ -15,7 +15,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px 48px;
+  padding: 32px 16px 96px;
 }
 
 #root {
@@ -209,6 +209,18 @@ button.ghost.danger {
   background: #f8fafc;
   border-radius: 18px;
   align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(148, 163, 184, 0.4);
+}
+
+.recipe-card:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 3px;
 }
 
 .recipe-cover {
@@ -388,6 +400,40 @@ button.ghost.danger {
   cursor: pointer;
 }
 
+.recipe-view {
+  display: grid;
+  gap: 16px;
+}
+
+.recipe-view-header {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.recipe-view-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 18px;
+  align-items: start;
+}
+
+.recipe-view-details {
+  display: grid;
+  gap: 10px;
+}
+
+.recipe-view-details h2 {
+  font-size: 1.6rem;
+}
+
+.recipe-view-empty {
+  display: grid;
+  gap: 12px;
+}
+
 @media (max-width: 720px) {
   body {
     padding: 24px 12px 36px;
@@ -399,5 +445,26 @@ button.ghost.danger {
 
   .tabs {
     flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 900px) {
+  body {
+    padding-bottom: 48px;
+  }
+
+  .app {
+    padding-top: 72px;
+  }
+
+  .tabs {
+    position: fixed;
+    top: 0;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1100px, 100%);
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
   }
 }
