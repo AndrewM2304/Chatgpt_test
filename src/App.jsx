@@ -157,6 +157,10 @@ export default function App() {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
   };
 
+  const handleFormValueChange = (field) => (value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleRatingChange = (value) => {
     setFormData((prev) => ({ ...prev, rating: value }));
   };
@@ -262,7 +266,13 @@ export default function App() {
   const handleDeleteRecipe = (recipeId) => {
     setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
     setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
-    setActiveRecipeId((prev) => (prev === recipeId ? null : prev));
+    setActiveRecipeId((prev) => {
+      if (prev === recipeId) {
+        setActiveTab("catalog");
+        return null;
+      }
+      return prev;
+    });
     if (editingId === recipeId) {
       resetForm();
     }
@@ -503,6 +513,7 @@ export default function App() {
         editingId={editingId}
         formData={formData}
         onFormChange={handleFormChange}
+        onValueChange={handleFormValueChange}
         onRatingChange={handleRatingChange}
         onSaveRecipe={handleSaveRecipe}
         onClose={handleCloseModal}

@@ -65,19 +65,8 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
             <span />
           </span>
         )}
-        <span className="tabs-toggle-label">{isOpen ? "Close" : "Menu"}</span>
       </button>
       <nav className="tabs" id="tabs-menu" aria-label="Recipe navigation">
-        <button
-          type="button"
-          className="tab tab-close"
-          onClick={() => setIsOpen(false)}
-        >
-          <span className="tab-icon" aria-hidden="true">
-            ×
-          </span>
-          <span className="tab-label">Close</span>
-        </button>
         {tabs.map((tab) => (
           <button
             key={tab.id}

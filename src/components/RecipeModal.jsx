@@ -1,10 +1,12 @@
 import { StarRating } from "./StarRating";
+import { TypeaheadInput } from "./TypeaheadInput";
 
 export const RecipeModal = ({
   isOpen,
   editingId,
   formData,
   onFormChange,
+  onValueChange,
   onRatingChange,
   onSaveRecipe,
   onClose,
@@ -26,9 +28,13 @@ export const RecipeModal = ({
               {editingId ? "Edit recipe" : "Add a recipe"}
             </h2>
           </div>
-          <button type="button" className="ghost icon-button" onClick={onClose}>
+          <button
+            type="button"
+            className="ghost icon-button"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <span aria-hidden="true">×</span>
-            <span>Close</span>
           </button>
         </header>
         <form onSubmit={onSaveRecipe} className="modal-form">
@@ -41,22 +47,15 @@ export const RecipeModal = ({
             placeholder="Creamy lemon pasta"
           />
 
-          <label htmlFor="cookbook">Cookbook title</label>
-          <input
+          <TypeaheadInput
             id="cookbook"
-            type="text"
-            list="cookbook-options"
             name="cookbook"
-            autoComplete="on"
+            label="Cookbook title"
             value={formData.cookbookTitle}
-            onChange={onFormChange("cookbookTitle")}
+            onChange={onValueChange("cookbookTitle")}
+            options={cookbookOptions}
             placeholder="Sunday Suppers"
           />
-          <datalist id="cookbook-options">
-            {cookbookOptions.map((title) => (
-              <option key={title} value={title} />
-            ))}
-          </datalist>
 
           <label htmlFor="page">Page</label>
           <input
@@ -69,42 +68,33 @@ export const RecipeModal = ({
             placeholder="112"
           />
 
-          <label htmlFor="cuisine">Cuisine</label>
-          <input
+          <TypeaheadInput
             id="cuisine"
-            type="text"
-            list="cuisine-options"
             name="cuisine"
-            autoComplete="on"
+            label="Cuisine"
             value={formData.cuisine}
-            onChange={onFormChange("cuisine")}
+            onChange={onValueChange("cuisine")}
+            options={cuisineOptions}
             placeholder="Italian"
           />
-          <datalist id="cuisine-options">
-            {cuisineOptions.map((title) => (
-              <option key={title} value={title} />
-            ))}
-          </datalist>
 
           <div className="modal-grid">
-            {editingId && (
-              <div className="control">
-                <label id="rating-label">Rating</label>
-                <div id="rating" aria-labelledby="rating-label">
-                  <div className="rating-row">
-                    <div className="rating-label">
-                      {formData.rating ? `${formData.rating} / 5` : "Unrated"}
-                    </div>
+            <div className="control">
+              <label id="rating-label">Rating</label>
+              <div id="rating" aria-labelledby="rating-label">
+                <div className="rating-row">
+                  <div className="rating-label">
+                    {formData.rating ? `${formData.rating} / 5` : "Unrated"}
                   </div>
-                  <StarRating
-                    value={formData.rating}
-                    onChange={onRatingChange}
-                    label="Recipe rating"
-                    isEditable
-                  />
                 </div>
+                <StarRating
+                  value={formData.rating}
+                  onChange={onRatingChange}
+                  label="Recipe rating"
+                  isEditable
+                />
               </div>
-            )}
+            </div>
             <div className="control">
               <label htmlFor="duration">Duration (minutes)</label>
               <input
