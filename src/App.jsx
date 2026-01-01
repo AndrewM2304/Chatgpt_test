@@ -157,6 +157,10 @@ export default function App() {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
   };
 
+  const handleRatingChange = (value) => {
+    setFormData((prev) => ({ ...prev, rating: value }));
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -409,11 +413,11 @@ export default function App() {
     resetForm();
   };
 
-  const handleDeleteFromModal = () => {
-    if (!editingId) {
+  const handleDeleteFromModal = (recipeId = editingId) => {
+    if (!recipeId) {
       return;
     }
-    handleDeleteRecipe(editingId);
+    handleDeleteRecipe(recipeId);
     setIsModalOpen(false);
   };
 
@@ -499,6 +503,7 @@ export default function App() {
         editingId={editingId}
         formData={formData}
         onFormChange={handleFormChange}
+        onRatingChange={handleRatingChange}
         onSaveRecipe={handleSaveRecipe}
         onClose={handleCloseModal}
         onDeleteRecipe={handleDeleteFromModal}

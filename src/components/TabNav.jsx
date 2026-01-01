@@ -54,11 +54,18 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
         aria-label={isOpen ? "Close menu" : "Open menu"}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        <span aria-hidden="true" className="tabs-toggle-icon">
-          <span />
-          <span />
-          <span />
-        </span>
+        {isOpen ? (
+          <span aria-hidden="true" className="tabs-toggle-close">
+            ×
+          </span>
+        ) : (
+          <span aria-hidden="true" className="tabs-toggle-icon">
+            <span />
+            <span />
+            <span />
+          </span>
+        )}
+        <span className="tabs-toggle-label">{isOpen ? "Close" : "Menu"}</span>
       </button>
       <nav className="tabs" id="tabs-menu" aria-label="Recipe navigation">
         <button
@@ -66,7 +73,10 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
           className="tab tab-close"
           onClick={() => setIsOpen(false)}
         >
-          <span className="tab-label">Close menu</span>
+          <span className="tab-icon" aria-hidden="true">
+            ×
+          </span>
+          <span className="tab-label">Close</span>
         </button>
         {tabs.map((tab) => (
           <button

@@ -4,6 +4,7 @@ import {
   getCoverColor,
   getInitials,
 } from "../utils/recipeUtils";
+import { StarRating } from "./StarRating";
 
 export const RecipeView = ({
   activeRecipe,
@@ -41,9 +42,17 @@ export const RecipeView = ({
               Cuisine: {activeRecipe.cuisine || "Uncategorized"}
             </p>
             <p className="recipe-meta">
-              Rating:{" "}
-              {activeRecipe.rating ? `${activeRecipe.rating} / 5` : "Unrated"}
+              Rating:
             </p>
+            <div className="recipe-rating">
+              <StarRating
+                value={activeRecipe.rating || 0}
+                label="Recipe rating"
+              />
+              {!activeRecipe.rating && (
+                <span className="recipe-rating-text">Unrated</span>
+              )}
+            </div>
             <p className="recipe-meta">
               Duration: {formatDuration(activeRecipe.durationMinutes)}
             </p>
