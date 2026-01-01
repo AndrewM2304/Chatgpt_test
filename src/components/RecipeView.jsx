@@ -11,6 +11,7 @@ export const RecipeView = ({
   onBack,
   onStartLog,
   onEditRecipe,
+  onDeleteRecipe,
 }) => (
   <section className="recipe-view">
     {activeRecipe ? (
@@ -41,20 +42,19 @@ export const RecipeView = ({
             <p className="recipe-meta">
               Cuisine: {activeRecipe.cuisine || "Uncategorized"}
             </p>
-            <p className="recipe-meta">
-              Rating:
-            </p>
             <div className="recipe-rating">
               <StarRating
                 value={activeRecipe.rating || 0}
                 label="Recipe rating"
               />
-              {!activeRecipe.rating && (
-                <span className="recipe-rating-text">Unrated</span>
-              )}
+              <span className="recipe-rating-text">
+                {activeRecipe.rating
+                  ? `${activeRecipe.rating} / 5`
+                  : "Unrated"}
+              </span>
             </div>
             <p className="recipe-meta">
-              Duration: {formatDuration(activeRecipe.durationMinutes)}
+              {formatDuration(activeRecipe.durationMinutes)}
             </p>
             <div className="recipe-footer">
               <span>{activeRecipe.timesCooked} cooks logged</span>
@@ -74,6 +74,13 @@ export const RecipeView = ({
                 onClick={() => onEditRecipe(activeRecipe)}
               >
                 Edit recipe
+              </button>
+              <button
+                type="button"
+                className="ghost danger"
+                onClick={() => onDeleteRecipe?.(activeRecipe.id)}
+              >
+                Delete recipe
               </button>
             </div>
           </div>

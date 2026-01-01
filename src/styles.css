@@ -144,6 +144,8 @@ h1 {
   font-weight: 600;
   color: #1e293b;
   cursor: pointer;
+  position: relative;
+  z-index: 30;
 }
 
 .tabs-backdrop {
@@ -846,6 +848,12 @@ button.ghost.danger {
 
   .tabs-toggle {
     display: inline-flex;
+  }
+
+  .tabs-shell.is-open .tabs-toggle {
+    position: fixed;
+    top: calc(20px + env(safe-area-inset-top));
+    right: 24px;
   }
 
   .tab {

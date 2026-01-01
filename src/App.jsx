@@ -278,6 +278,18 @@ export default function App() {
     }
   };
 
+  const handleDeleteFromView = (recipeId) => {
+    if (!recipeId) {
+      return;
+    }
+    const recipeName = recipeById[recipeId]?.name || "this recipe";
+    const confirmed = window.confirm(`Delete ${recipeName}?`);
+    if (!confirmed) {
+      return;
+    }
+    handleDeleteRecipe(recipeId);
+  };
+
   const handleToggleCuisine = (cuisine) => {
     setExcludedCuisines((prev) =>
       prev.includes(cuisine)
@@ -476,6 +488,7 @@ export default function App() {
               onBack={() => setActiveTab("catalog")}
               onStartLog={handleStartLog}
               onEditRecipe={handleEditRecipe}
+              onDeleteRecipe={handleDeleteFromView}
             />
           )}
 
