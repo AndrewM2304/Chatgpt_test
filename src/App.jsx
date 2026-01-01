@@ -1,50 +1,34 @@
 import { useMemo, useState } from "react";
-import { useLocalStorage } from "./hooks/useLocalStorage";
-
-const groupOptions = [
-  { value: "none", label: "All recipes" },
-  { value: "cookbook", label: "Cookbook" },
-  { value: "cuisine", label: "Cuisine" },
-  { value: "times", label: "Times cooked" },
-];
-
-const timesBuckets = [
-  { label: "Never cooked", test: (count) => count === 0 },
-  { label: "1-2 times", test: (count) => count >= 1 && count <= 2 },
-  { label: "3-5 times", test: (count) => count >= 3 && count <= 5 },
-  { label: "6+ times", test: (count) => count >= 6 },
-];
-
-const getInitials = (title) =>
-  title
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0].toUpperCase())
-    .join("");
-
-const getCoverColor = (title) => {
-  let hash = 0;
-  for (let i = 0; i < title.length; i += 1) {
-    hash = title.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue} 70% 88%)`;
-};
-
-const formatDate = (value) => {
-  if (!value) {
-    return "Not cooked yet";
-  }
-  return new Date(value).toLocaleDateString();
-};
+import { CatalogView } from "./components/CatalogView";
+import { Hero } from "./components/Hero";
+import { LogView } from "./components/LogView";
+import { ManageView } from "./components/ManageView";
+import { PasswordGate } from "./components/PasswordGate";
+import { RandomView } from "./components/RandomView";
+import { RecipeView } from "./components/RecipeView";
+import { StatusBanner } from "./components/StatusBanner";
+import { TabNav } from "./components/TabNav";
+import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
+import { timesBuckets } from "./utils/recipeUtils";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("catalog");
-  const [recipes, setRecipes] = useLocalStorage("recipe-catalog", []);
-  const [cookbooks, setCookbooks] = useLocalStorage("recipe-cookbooks", []);
-  const [cuisines, setCuisines] = useLocalStorage("recipe-cuisines", []);
-  const [logs, setLogs] = useLocalStorage("recipe-logs", []);
+  const {
+    catalog,
+    setRecipes,
+    setCookbooks,
+    setCuisines,
+    setLogs,
+    status,
+    isSaving,
+    accessGranted,
+    passwordHash,
+    setAccessPassword,
+    verifyAccessPassword,
+    inviteUrl,
+    createNewGroup,
+  } = useSupabaseCatalog();
+  const { recipes, cookbooks, cuisines, logs } = catalog;
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
   const [excludedCuisines, setExcludedCuisines] = useState([]);
@@ -62,6 +46,7 @@ export default function App() {
     cuisine: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [showInvite, setShowInvite] = useState(false);
 
   const cookbookOptions = useMemo(() => {
     const fromRecipes = recipes
@@ -354,514 +339,125 @@ export default function App() {
     reader.readAsText(file);
   };
 
+  const handleCreateInvite = () => {
+    setShowInvite(true);
+  };
+
+  const handleCopyInvite = async () => {
+    setShowInvite(true);
+    if (inviteUrl && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(inviteUrl);
+    }
+  };
+
+  const handleCreateGroup = async () => {
+    await createNewGroup({ name: "Shared kitchen", duplicate: true });
+    setShowInvite(true);
+  };
+
+  const syncStatus = status.state === "ready"
+    ? isSaving
+      ? "Syncing changes to Supabase..."
+      : "All changes are synced."
+    : status.state === "error"
+      ? "Sync paused. Complete the Supabase setup below."
+      : "Connecting to Supabase...";
+
+  const showGate = !accessGranted && status.state !== "error";
+
   return (
     <div className="app">
-      <header className="hero">
-        <p className="eyebrow">Recipe catalog</p>
-        <h1>Cookbook Keeper</h1>
-        <p className="subtitle">
-          Track your favorite recipes, log every cook, and pick a random dinner
-          without repeating the same cuisine.
-        </p>
-      </header>
-
-      <main className="panel">
-        {activeTab === "catalog" && (
-          <section className="catalog">
-            <div className="catalog-toolbar">
-              <div className="control">
-                <label htmlFor="search">Search recipes</label>
-                <input
-                  id="search"
-                  type="search"
-                  placeholder="Search by name, cookbook, cuisine..."
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                />
-              </div>
-              <div className="control">
-                <label htmlFor="group">Group by</label>
-                <select
-                  id="group"
-                  value={groupBy}
-                  onChange={(event) => setGroupBy(event.target.value)}
-                >
-                  {groupOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="catalog-stats">
-              <div>
-                <strong>{stats.totalRecipes}</strong>
-                <span>Total recipes</span>
-              </div>
-              <div>
-                <strong>{stats.totalCooked}</strong>
-                <span>Meals cooked</span>
-              </div>
-            </div>
-
-            {groupedRecipes.map((group) => (
-              <div key={group.label} className="catalog-group">
-                <h2>{group.label}</h2>
-                <div className="recipe-grid">
-                  {group.items.map((recipe) => (
-                    <article
-                      key={recipe.id}
-                      className="recipe-card"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleOpenRecipe(recipe)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          handleOpenRecipe(recipe);
-                        }
-                      }}
-                    >
-                      <div
-                        className="recipe-cover"
-                        style={{
-                          background: getCoverColor(
-                            recipe.cookbookTitle || "Cookbook"
-                          ),
-                        }}
-                      >
-                        <span>{getInitials(recipe.cookbookTitle || "Cookbook")}</span>
-                      </div>
-                      <div className="recipe-details">
-                        <header>
-                          <h3>{recipe.name}</h3>
-                          <div className="row-actions">
-                            <button
-                              type="button"
-                              className="ghost"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleEditRecipe(recipe);
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="ghost"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleStartLog(recipe.id);
-                              }}
-                            >
-                              Log
-                            </button>
-                          </div>
-                        </header>
-                        <p className="recipe-meta">
-                          {recipe.cookbookTitle || "No cookbook"}
-                          {recipe.page ? ` · Page ${recipe.page}` : ""}
-                        </p>
-                        <p className="recipe-meta">
-                          Cuisine: {recipe.cuisine || "Uncategorized"}
-                        </p>
-                        <div className="recipe-footer">
-                          <span>{recipe.timesCooked} cooks logged</span>
-                          <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {!recipes.length && (
-              <p className="empty">No recipes yet. Add your first cookbook hit.</p>
-            )}
-          </section>
-        )}
-
-        {activeTab === "random" && (
-          <section className="random">
-            <div className="random-controls">
-              <h2>Random dinner picker</h2>
-              <p>
-                Toggle cuisines you want a break from, then pick a recipe at
-                random.
-              </p>
-              <div className="chip-grid">
-                {cuisineOptions.length ? (
-                  cuisineOptions.map((cuisine) => (
-                    <button
-                      key={cuisine}
-                      type="button"
-                      className={`chip${
-                        excludedCuisines.includes(cuisine) ? " is-off" : ""
-                      }`}
-                      onClick={() => handleToggleCuisine(cuisine)}
-                    >
-                      {cuisine}
-                    </button>
-                  ))
-                ) : (
-                  <span className="empty">Add cuisines to start filtering.</span>
-                )}
-              </div>
-              <button
-                type="button"
-                className="primary"
-                onClick={handlePickRandom}
-                disabled={!randomCandidates.length}
-              >
-                Pick a random recipe
-              </button>
-              {!randomCandidates.length && recipes.length > 0 && (
-                <p className="empty">
-                  All recipes are filtered out. Turn a cuisine back on.
-                </p>
-              )}
-              {!recipes.length && (
-                <p className="empty">Add recipes to unlock the picker.</p>
-              )}
-            </div>
-
-            {randomPick && (
-              <div className="random-result">
-                <p className="eyebrow">Tonight&apos;s pick</p>
-                <h3>{randomPick.name}</h3>
-                <p>
-                  {randomPick.cookbookTitle || "No cookbook"}
-                  {randomPick.page ? ` · Page ${randomPick.page}` : ""}
-                </p>
-                <p className="recipe-meta">
-                  Cuisine: {randomPick.cuisine || "Uncategorized"}
-                </p>
-              <div className="recipe-footer">
-                <span>{randomPick.timesCooked} cooks logged</span>
-                <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
-              </div>
-              <button
-                type="button"
-                className="primary"
-                onClick={() => handleStartLog(randomPick.id)}
-              >
-                Log this cook
-              </button>
-            </div>
+      <Hero />
+      {showGate ? (
+        <PasswordGate
+          passwordHash={passwordHash}
+          onSetPassword={setAccessPassword}
+          onVerifyPassword={verifyAccessPassword}
+          statusMessage={status.state === "error" ? status.message : ""}
+        />
+      ) : (
+        <main className="panel">
+          <StatusBanner status={status} />
+          {activeTab === "catalog" && (
+            <CatalogView
+              groupedRecipes={groupedRecipes}
+              stats={stats}
+              searchTerm={searchTerm}
+              onSearchTerm={setSearchTerm}
+              groupBy={groupBy}
+              onGroupBy={setGroupBy}
+              onOpenRecipe={handleOpenRecipe}
+              onEditRecipe={handleEditRecipe}
+              onStartLog={handleStartLog}
+              hasRecipes={recipes.length > 0}
+            />
           )}
-        </section>
+
+          {activeTab === "random" && (
+            <RandomView
+              cuisineOptions={cuisineOptions}
+              excludedCuisines={excludedCuisines}
+              onToggleCuisine={handleToggleCuisine}
+              onPickRandom={handlePickRandom}
+              randomCandidates={randomCandidates}
+              randomPick={randomPick}
+              onStartLog={handleStartLog}
+              hasRecipes={recipes.length > 0}
+            />
+          )}
+
+          {activeTab === "recipe" && (
+            <RecipeView
+              activeRecipe={activeRecipe}
+              onBack={() => setActiveTab("catalog")}
+              onStartLog={handleStartLog}
+              onEditRecipe={handleEditRecipe}
+            />
+          )}
+
+          {activeTab === "log" && (
+            <LogView
+              recipes={recipes}
+              logRecipeId={logRecipeId}
+              onLogRecipeId={setLogRecipeId}
+              logDate={logDate}
+              onLogDate={setLogDate}
+              logNote={logNote}
+              onLogNote={setLogNote}
+              onSubmit={handleLogCook}
+              recentLogs={recentLogs}
+            />
+          )}
+
+          {activeTab === "manage" && (
+            <ManageView
+              editingId={editingId}
+              formData={formData}
+              onFormChange={handleFormChange}
+              onSaveRecipe={handleSaveRecipe}
+              onResetForm={resetForm}
+              cookbookOptions={cookbookOptions}
+              cuisineOptions={cuisineOptions}
+              recipes={recipes}
+              onOpenRecipe={handleOpenRecipe}
+              onEditRecipe={handleEditRecipe}
+              onStartLog={handleStartLog}
+              onDeleteRecipe={handleDeleteRecipe}
+              onExport={handleExport}
+              onImport={handleImport}
+              syncStatus={syncStatus}
+              inviteUrl={showInvite ? inviteUrl : ""}
+              onCreateInvite={handleCreateInvite}
+              onCopyInvite={handleCopyInvite}
+              onCreateGroup={handleCreateGroup}
+            />
+          )}
+        </main>
       )}
 
-      {activeTab === "recipe" && (
-        <section className="recipe-view">
-          {activeRecipe ? (
-            <>
-              <div className="recipe-view-header">
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => setActiveTab("catalog")}
-                >
-                  Back to catalog
-                </button>
-              </div>
-              <div className="recipe-view-card">
-                <div
-                  className="recipe-cover"
-                  style={{
-                    background: getCoverColor(
-                      activeRecipe.cookbookTitle || "Cookbook"
-                    ),
-                  }}
-                >
-                  <span>
-                    {getInitials(activeRecipe.cookbookTitle || "Cookbook")}
-                  </span>
-                </div>
-                <div className="recipe-view-details">
-                  <p className="eyebrow">Recipe card</p>
-                  <h2>{activeRecipe.name}</h2>
-                  <p className="recipe-meta">
-                    {activeRecipe.cookbookTitle || "No cookbook"}
-                    {activeRecipe.page ? ` · Page ${activeRecipe.page}` : ""}
-                  </p>
-                  <p className="recipe-meta">
-                    Cuisine: {activeRecipe.cuisine || "Uncategorized"}
-                  </p>
-                  <div className="recipe-footer">
-                    <span>{activeRecipe.timesCooked} cooks logged</span>
-                    <span>
-                      Last cooked: {formatDate(activeRecipe.lastCooked)}
-                    </span>
-                  </div>
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="primary"
-                      onClick={() => handleStartLog(activeRecipe.id)}
-                    >
-                      Log a cook
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost"
-                      onClick={() => handleEditRecipe(activeRecipe)}
-                    >
-                      Edit recipe
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="recipe-view-empty">
-              <p className="empty">That recipe is no longer available.</p>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => setActiveTab("catalog")}
-              >
-                Back to catalog
-              </button>
-            </div>
-          )}
-        </section>
+      {!showGate && (
+        <TabNav activeTab={activeTab} onSelect={setActiveTab} />
       )}
-
-        {activeTab === "log" && (
-          <section className="log">
-            <div className="log-form">
-              <h2>Log a cook</h2>
-              <form onSubmit={handleLogCook}>
-                <label htmlFor="recipe">Recipe</label>
-                <select
-                  id="recipe"
-                  value={logRecipeId}
-                  onChange={(event) => setLogRecipeId(event.target.value)}
-                >
-                  <option value="">Select a recipe</option>
-                  {recipes
-                    .slice()
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((recipe) => (
-                      <option key={recipe.id} value={recipe.id}>
-                        {recipe.name}
-                      </option>
-                    ))}
-                </select>
-
-                <label htmlFor="cook-date">Date cooked</label>
-                <input
-                  id="cook-date"
-                  type="date"
-                  value={logDate}
-                  onChange={(event) => setLogDate(event.target.value)}
-                />
-
-                <label htmlFor="cook-note">Notes (optional)</label>
-                <input
-                  id="cook-note"
-                  type="text"
-                  placeholder="Added extra basil"
-                  value={logNote}
-                  onChange={(event) => setLogNote(event.target.value)}
-                />
-
-                <button className="primary" type="submit" disabled={!recipes.length}>
-                  Save log
-                </button>
-              </form>
-            </div>
-
-            <div className="log-history">
-              <h2>Recent cooking</h2>
-              {recentLogs.length ? (
-                <ul>
-                  {recentLogs.map((entry) => (
-                    <li key={entry.id}>
-                      <div>
-                        <strong>{entry.name}</strong>
-                        <span>
-                          {entry.cuisine || "Uncategorized"} · {entry.cookbookTitle || "No cookbook"}
-                        </span>
-                        {entry.note && <em>“{entry.note}”</em>}
-                      </div>
-                      <span>{new Date(entry.timestamp).toLocaleDateString()}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="empty">No cooking logs yet.</p>
-              )}
-            </div>
-          </section>
-        )}
-
-        {activeTab === "manage" && (
-          <section className="manage">
-            <div className="manage-form">
-              <h2>{editingId ? "Edit recipe" : "Add a recipe"}</h2>
-              <form onSubmit={handleSaveRecipe}>
-                <label htmlFor="recipe-name">Recipe name</label>
-                <input
-                  id="recipe-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleFormChange("name")}
-                  placeholder="Creamy lemon pasta"
-                />
-
-                <label htmlFor="cookbook">Cookbook title</label>
-                <input
-                  id="cookbook"
-                  type="text"
-                  list="cookbook-options"
-                  value={formData.cookbookTitle}
-                  onChange={handleFormChange("cookbookTitle")}
-                  placeholder="Sunday Suppers"
-                />
-                <datalist id="cookbook-options">
-                  {cookbookOptions.map((title) => (
-                    <option key={title} value={title} />
-                  ))}
-                </datalist>
-
-                <label htmlFor="page">Page</label>
-                <input
-                  id="page"
-                  type="text"
-                  value={formData.page}
-                  onChange={handleFormChange("page")}
-                  placeholder="112"
-                />
-
-                <label htmlFor="cuisine">Cuisine</label>
-                <input
-                  id="cuisine"
-                  type="text"
-                  list="cuisine-options"
-                  value={formData.cuisine}
-                  onChange={handleFormChange("cuisine")}
-                  placeholder="Italian"
-                />
-                <datalist id="cuisine-options">
-                  {cuisineOptions.map((title) => (
-                    <option key={title} value={title} />
-                  ))}
-                </datalist>
-
-                <div className="form-actions">
-                  <button className="primary" type="submit">
-                    {editingId ? "Save changes" : "Add recipe"}
-                  </button>
-                  {editingId && (
-                    <button type="button" className="ghost" onClick={resetForm}>
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </form>
-            </div>
-
-            <div className="manage-list">
-              <h2>Saved recipes</h2>
-              {recipes.length ? (
-                <ul>
-                  {recipes
-                    .slice()
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((recipe) => (
-                      <li key={recipe.id}>
-                        <div>
-                          <strong>{recipe.name}</strong>
-                          <span>
-                            {recipe.cookbookTitle || "No cookbook"}
-                            {recipe.page ? ` · Page ${recipe.page}` : ""}
-                          </span>
-                        </div>
-                        <div className="row-actions">
-                          <button
-                            type="button"
-                            className="ghost"
-                            onClick={() => handleOpenRecipe(recipe)}
-                          >
-                            View
-                          </button>
-                          <button
-                            type="button"
-                            className="ghost"
-                            onClick={() => handleEditRecipe(recipe)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="ghost"
-                            onClick={() => handleStartLog(recipe.id)}
-                          >
-                            Log
-                          </button>
-                          <button
-                            type="button"
-                            className="ghost danger"
-                            onClick={() => handleDeleteRecipe(recipe.id)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              ) : (
-                <p className="empty">No recipes saved yet.</p>
-              )}
-
-              <div className="share-card">
-                <h3>Share & sync</h3>
-                <p>
-                  Export your catalog and share the file with your wife (via
-                  email or cloud drive). Import it on another device to keep
-                  everything in sync.
-                </p>
-                <div className="share-actions">
-                  <button type="button" className="primary" onClick={handleExport}>
-                    Export catalog
-                  </button>
-                  <label className="ghost file-input">
-                    Import catalog
-                    <input
-                      type="file"
-                      accept="application/json"
-                      onChange={handleImport}
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-      </main>
-
-      <nav className="tabs" aria-label="Recipe navigation">
-        {[
-          { id: "catalog", label: "Catalog" },
-          { id: "random", label: "Random" },
-          { id: "log", label: "Log cook" },
-          { id: "manage", label: "Add/Edit" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            className={`tab${activeTab === tab.id ? " is-active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
     </div>
   );
 }

@@ -90,6 +90,8 @@ h1 {
   border-radius: 28px;
   padding: 28px;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+  display: grid;
+  gap: 20px;
 }
 
 .control {
@@ -145,6 +147,28 @@ button.ghost {
 
 button.ghost.danger {
   border-color: #fecaca;
+  color: #dc2626;
+}
+
+.status-banner {
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.status-banner.is-ready {
+  background: #f0f9ff;
+  color: #0ea5e9;
+}
+
+.status-banner.is-connecting {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.status-banner.is-error {
+  background: #fef2f2;
   color: #dc2626;
 }
 
@@ -381,6 +405,26 @@ button.ghost.danger {
   gap: 12px;
 }
 
+.invite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.invite-link {
+  display: grid;
+  gap: 6px;
+}
+
+.invite-link input {
+  background: #ffffff;
+}
+
+.sync-status {
+  color: #0f172a;
+  font-weight: 600;
+}
+
 .share-actions {
   display: flex;
   gap: 12px;
@@ -432,6 +476,52 @@ button.ghost.danger {
 .recipe-view-empty {
   display: grid;
   gap: 12px;
+}
+
+.gate {
+  display: grid;
+  place-items: center;
+}
+
+.gate-card {
+  max-width: 520px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+  display: grid;
+  gap: 16px;
+  text-align: left;
+}
+
+.gate-card form {
+  display: grid;
+  gap: 12px;
+}
+
+.error-text {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.setup-card {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #f8fafc;
+  display: grid;
+  gap: 12px;
+}
+
+.setup-card pre {
+  white-space: pre-wrap;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  overflow-x: auto;
 }
 
 @media (max-width: 720px) {
