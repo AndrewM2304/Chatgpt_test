@@ -1,8 +1,11 @@
+import { StarRating } from "./StarRating";
+
 export const RecipeModal = ({
   isOpen,
   editingId,
   formData,
   onFormChange,
+  onRatingChange,
   onSaveRecipe,
   onClose,
   onDeleteRecipe,
@@ -23,8 +26,9 @@ export const RecipeModal = ({
               {editingId ? "Edit recipe" : "Add a recipe"}
             </h2>
           </div>
-          <button type="button" className="ghost" onClick={onClose}>
-            Close
+          <button type="button" className="ghost icon-button" onClick={onClose}>
+            <span aria-hidden="true">×</span>
+            <span>Close</span>
           </button>
         </header>
         <form onSubmit={onSaveRecipe} className="modal-form">
@@ -42,6 +46,8 @@ export const RecipeModal = ({
             id="cookbook"
             type="text"
             list="cookbook-options"
+            name="cookbook"
+            autoComplete="on"
             value={formData.cookbookTitle}
             onChange={onFormChange("cookbookTitle")}
             placeholder="Sunday Suppers"
@@ -55,7 +61,9 @@ export const RecipeModal = ({
           <label htmlFor="page">Page</label>
           <input
             id="page"
-            type="text"
+            type="number"
+            inputMode="numeric"
+            min="1"
             value={formData.page}
             onChange={onFormChange("page")}
             placeholder="112"
@@ -66,6 +74,8 @@ export const RecipeModal = ({
             id="cuisine"
             type="text"
             list="cuisine-options"
+            name="cuisine"
+            autoComplete="on"
             value={formData.cuisine}
             onChange={onFormChange("cuisine")}
             placeholder="Italian"
@@ -77,21 +87,24 @@ export const RecipeModal = ({
           </datalist>
 
           <div className="modal-grid">
-            <div className="control">
-              <label htmlFor="rating">Rating</label>
-              <select
-                id="rating"
-                value={formData.rating}
-                onChange={onFormChange("rating")}
-              >
-                <option value="">No rating</option>
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <option key={rating} value={rating}>
-                    {rating} / 5
-                  </option>
-                ))}
-              </select>
-            </div>
+            {editingId && (
+              <div className="control">
+                <label id="rating-label">Rating</label>
+                <div id="rating" aria-labelledby="rating-label">
+                  <div className="rating-row">
+                    <div className="rating-label">
+                      {formData.rating ? `${formData.rating} / 5` : "Unrated"}
+                    </div>
+                  </div>
+                  <StarRating
+                    value={formData.rating}
+                    onChange={onRatingChange}
+                    label="Recipe rating"
+                    isEditable
+                  />
+                </div>
+              </div>
+            )}
             <div className="control">
               <label htmlFor="duration">Duration (minutes)</label>
               <input
@@ -117,7 +130,7 @@ export const RecipeModal = ({
               <button
                 type="button"
                 className="ghost danger"
-                onClick={onDeleteRecipe}
+                onClick={() => onDeleteRecipe(editingId)}
               >
                 Delete recipe
               </button>
