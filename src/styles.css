@@ -76,6 +76,13 @@ h1 {
   position: relative;
 }
 
+.tabs-title {
+  display: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
 .tab {
   border: none;
   background: transparent;
@@ -942,10 +949,39 @@ button.ghost.danger {
     padding: 12px 16px;
     border-radius: 18px;
     background: #ffffff;
+    gap: 24px;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   .tabs-shell .tabs {
     flex: 1;
+  }
+
+  .tabs-title {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tab-description {
+    display: none;
+  }
+
+  .tab-action-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #0ea5e9;
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
   }
 
   .tab.is-active {
@@ -960,7 +996,7 @@ button.ghost.danger {
     left: 14px;
     right: 14px;
     bottom: 4px;
-    height: 3px;
+    height: 2px;
     border-radius: 999px;
     background: #0ea5e9;
   }

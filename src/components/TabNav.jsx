@@ -67,6 +67,7 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
         )}
       </button>
       <nav className="tabs" id="tabs-menu" aria-label="Recipe navigation">
+        <span className="tabs-title">Cookbook</span>
         {tabs.map((tab) => (
           <button
             key={tab.id}
