@@ -85,7 +85,6 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
           onClick={handleAddRecipe}
         >
           <span className="tab-label">Add recipe</span>
-          <span className="tab-description">Create a new recipe entry.</span>
         </button>
       </nav>
     </div>
