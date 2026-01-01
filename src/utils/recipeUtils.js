@@ -3,6 +3,7 @@ export const groupOptions = [
   { value: "cookbook", label: "Cookbook" },
   { value: "cuisine", label: "Cuisine" },
   { value: "times", label: "Times cooked" },
+  { value: "duration", label: "Duration" },
 ];
 
 export const timesBuckets = [
@@ -10,6 +11,15 @@ export const timesBuckets = [
   { label: "1-2 times", test: (count) => count >= 1 && count <= 2 },
   { label: "3-5 times", test: (count) => count >= 3 && count <= 5 },
   { label: "6+ times", test: (count) => count >= 6 },
+];
+
+export const durationBuckets = [
+  { label: "Under 30 mins", test: (value) => value !== null && value < 30 },
+  {
+    label: "30-60 mins",
+    test: (value) => value !== null && value >= 30 && value <= 60,
+  },
+  { label: "Over 60 mins", test: (value) => value !== null && value > 60 },
 ];
 
 export const getInitials = (title) =>
@@ -34,4 +44,11 @@ export const formatDate = (value) => {
     return "Not cooked yet";
   }
   return new Date(value).toLocaleDateString();
+};
+
+export const formatDuration = (value) => {
+  if (!value) {
+    return "No duration";
+  }
+  return `${value} min`;
 };

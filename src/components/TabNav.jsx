@@ -2,7 +2,7 @@ const tabs = [
   { id: "catalog", label: "Catalog" },
   { id: "random", label: "Random" },
   { id: "log", label: "Log cook" },
-  { id: "manage", label: "Add/Edit" },
+  { id: "settings", label: "Settings" },
 ];
 
 export const TabNav = ({ activeTab, onSelect }) => (
