@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SUPABASE_SETUP_SQL } from "../data/supabaseSetup";
 
 export const ManageView = ({
@@ -20,8 +21,71 @@ export const ManageView = ({
   onCreateInvite,
   onCopyInvite,
   onCreateGroup,
-}) => (
-  <section className="manage">
+  adminPasswordHash,
+  onSetAdminPassword,
+  onRunAdminSql,
+}) => {
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminConfirm, setAdminConfirm] = useState("");
+  const [adminRunPassword, setAdminRunPassword] = useState("");
+  const [adminSql, setAdminSql] = useState(SUPABASE_SETUP_SQL);
+  const [adminMessage, setAdminMessage] = useState("");
+  const [adminError, setAdminError] = useState("");
+  const [isAdminWorking, setIsAdminWorking] = useState(false);
+
+  const handleAdminPasswordSubmit = async (event) => {
+    event.preventDefault();
+    setAdminMessage("");
+    setAdminError("");
+
+    if (!adminPassword.trim()) {
+      setAdminError("Enter an admin password to continue.");
+      return;
+    }
+    if (adminPassword !== adminConfirm) {
+      setAdminError("Passwords do not match.");
+      return;
+    }
+
+    setIsAdminWorking(true);
+    const ok = await onSetAdminPassword(adminPassword);
+    setIsAdminWorking(false);
+
+    if (ok) {
+      setAdminPassword("");
+      setAdminConfirm("");
+      setAdminMessage("Admin password saved.");
+    } else {
+      setAdminError("Unable to save admin password.");
+    }
+  };
+
+  const handleAdminSqlSubmit = async (event) => {
+    event.preventDefault();
+    setAdminMessage("");
+    setAdminError("");
+
+    if (!adminRunPassword.trim()) {
+      setAdminError("Enter the admin password to run SQL.");
+      return;
+    }
+
+    setIsAdminWorking(true);
+    const result = await onRunAdminSql({
+      sql: adminSql,
+      password: adminRunPassword,
+    });
+    setIsAdminWorking(false);
+
+    if (result.ok) {
+      setAdminMessage("SQL executed successfully.");
+    } else {
+      setAdminError(result.error || "Failed to execute SQL.");
+    }
+  };
+
+  return (
+    <section className="manage">
     <div className="manage-form">
       <h2>{editingId ? "Edit recipe" : "Add a recipe"}</h2>
       <form onSubmit={onSaveRecipe}>
@@ -178,12 +242,69 @@ export const ManageView = ({
         <h3>Supabase setup</h3>
         <p>
           Run this SQL once in the Supabase SQL editor to create the tables used
-          by the app.
+          by the app and enable the admin SQL console below.
         </p>
         <pre>
           <code>{SUPABASE_SETUP_SQL}</code>
         </pre>
       </div>
+
+      <div className="admin-card">
+        <h3>Admin SQL console</h3>
+        <p>
+          Protect schema updates with an admin password, then apply SQL changes
+          directly from the app.
+        </p>
+        <form className="admin-form" onSubmit={handleAdminPasswordSubmit}>
+          <label htmlFor="admin-password">
+            {adminPasswordHash
+              ? "Update admin password"
+              : "Set admin password"}
+          </label>
+          <input
+            id="admin-password"
+            type="password"
+            value={adminPassword}
+            onChange={(event) => setAdminPassword(event.target.value)}
+            placeholder="Enter a strong password"
+          />
+          <input
+            type="password"
+            value={adminConfirm}
+            onChange={(event) => setAdminConfirm(event.target.value)}
+            placeholder="Confirm password"
+          />
+          <button className="primary" type="submit" disabled={isAdminWorking}>
+            {adminPasswordHash ? "Update password" : "Save password"}
+          </button>
+        </form>
+        <form className="admin-form" onSubmit={handleAdminSqlSubmit}>
+          <label htmlFor="admin-sql">SQL to run</label>
+          <textarea
+            id="admin-sql"
+            rows={8}
+            value={adminSql}
+            onChange={(event) => setAdminSql(event.target.value)}
+          />
+          <div className="admin-row">
+            <input
+              type="password"
+              value={adminRunPassword}
+              onChange={(event) => setAdminRunPassword(event.target.value)}
+              placeholder="Admin password"
+            />
+            <button className="primary" type="submit" disabled={isAdminWorking}>
+              Run SQL
+            </button>
+          </div>
+          {(adminMessage || adminError) && (
+            <p className={adminError ? "error-text" : "success-text"}>
+              {adminError || adminMessage}
+            </p>
+          )}
+        </form>
+      </div>
     </div>
-  </section>
-);
+    </section>
+  );
+};

@@ -23,8 +23,11 @@ export default function App() {
     isSaving,
     accessGranted,
     passwordHash,
+    adminPasswordHash,
     setAccessPassword,
+    setAdminPassword,
     verifyAccessPassword,
+    runAdminSql,
     inviteUrl,
     createNewGroup,
   } = useSupabaseCatalog();
@@ -450,6 +453,9 @@ export default function App() {
               onCreateInvite={handleCreateInvite}
               onCopyInvite={handleCopyInvite}
               onCreateGroup={handleCreateGroup}
+              adminPasswordHash={adminPasswordHash}
+              onSetAdminPassword={setAdminPassword}
+              onRunAdminSql={runAdminSql}
             />
           )}
         </main>

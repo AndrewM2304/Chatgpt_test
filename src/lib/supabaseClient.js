@@ -132,4 +132,21 @@ export const supabase = {
   from(table) {
     return new QueryBuilder(table);
   },
+  async rpc(functionName, payload, options = {}) {
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/${functionName}`,
+      {
+        method: "POST",
+        headers: buildHeaders(options.headers),
+        body: JSON.stringify(payload ?? {}),
+      }
+    );
+
+    if (!response.ok) {
+      return { data: null, error: await response.json() };
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  },
 };
