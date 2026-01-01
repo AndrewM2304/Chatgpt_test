@@ -493,6 +493,90 @@ button.ghost.danger {
   gap: 12px;
 }
 
+.log-days {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  background: #f8fafc;
+}
+
+.log-days legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.log-days-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.log-day-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.log-schedule {
+  display: grid;
+  gap: 12px;
+}
+
+.log-schedule-grid {
+  display: grid;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.log-schedule-corner {
+  height: 100%;
+}
+
+.log-schedule-day,
+.log-schedule-meal {
+  font-weight: 600;
+  color: #0f172a;
+  padding: 8px 10px;
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.log-schedule-cell {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 72px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.log-schedule-cell ul {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.log-schedule-cell li {
+  display: grid;
+  gap: 4px;
+}
+
+.log-schedule-cell em {
+  font-style: italic;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.log-schedule-cell .empty {
+  color: #cbd5f5;
+  font-size: 0.85rem;
+}
+
 .log-history ul,
 .manage-list ul {
   list-style: none;
