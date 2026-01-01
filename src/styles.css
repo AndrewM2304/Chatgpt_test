@@ -729,7 +729,7 @@ button.ghost.danger {
   display: grid;
   place-items: center;
   padding: 24px;
-  z-index: 10;
+  z-index: 40;
 }
 
 .modal-card {
@@ -939,13 +939,33 @@ button.ghost.danger {
     position: static;
     transform: none;
     pointer-events: auto;
-    padding: 12px 16px;
+    padding: 8px 12px;
     border-radius: 18px;
     background: #ffffff;
+    flex-wrap: nowrap;
+    gap: 6px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .tabs-shell .tabs {
     flex: 1;
+  }
+
+  .tab {
+    padding: 6px 10px;
+    gap: 0;
+    flex: 0 0 auto;
+  }
+
+  .tab-label {
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .tab-description {
+    display: none;
   }
 
   .tab.is-active {
