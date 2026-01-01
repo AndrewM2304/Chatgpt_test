@@ -432,7 +432,11 @@ export default function App() {
       <header className="app-header">
         <Hero />
         {!showGate && (
-          <TabNav activeTab={activeTab} onSelect={setActiveTab} />
+          <TabNav
+            activeTab={activeTab}
+            onSelect={setActiveTab}
+            onAddRecipe={handleOpenAddModal}
+          />
         )}
       </header>
       {showGate ? (
@@ -506,14 +510,6 @@ export default function App() {
               />
             )}
           </div>
-          <button
-            type="button"
-            className="fab"
-            onClick={handleOpenAddModal}
-            aria-label="Add a recipe"
-          >
-            +
-          </button>
         </main>
       )}
       <RecipeModal

@@ -1,13 +1,29 @@
 import { useState } from "react";
 
 const tabs = [
-  { id: "catalog", label: "Catalog" },
-  { id: "random", label: "Random" },
-  { id: "log", label: "Log cook" },
-  { id: "settings", label: "Settings" },
+  {
+    id: "catalog",
+    label: "Catalog",
+    description: "Browse and search your recipes.",
+  },
+  {
+    id: "random",
+    label: "Random",
+    description: "Pick a surprise dinner idea.",
+  },
+  {
+    id: "log",
+    label: "Log cook",
+    description: "Track what you cooked recently.",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    description: "Sync, backup, and share your catalog.",
+  },
 ];
 
-export const TabNav = ({ activeTab, onSelect }) => {
+export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (tabId) => {
@@ -30,9 +46,9 @@ export const TabNav = ({ activeTab, onSelect }) => {
         className="tabs-toggle"
         aria-expanded={isOpen}
         aria-controls="tabs-menu"
+        aria-label={isOpen ? "Close menu" : "Open menu"}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        <span className="tabs-toggle-label">Menu</span>
         <span aria-hidden="true" className="tabs-toggle-icon">
           <span />
           <span />
@@ -47,10 +63,19 @@ export const TabNav = ({ activeTab, onSelect }) => {
             className={`tab${activeTab === tab.id ? " is-active" : ""}`}
             onClick={() => handleSelect(tab.id)}
           >
-            {tab.label}
+            <span className="tab-label">{tab.label}</span>
+            <span className="tab-description">{tab.description}</span>
           </button>
         ))}
       </nav>
+      <button
+        type="button"
+        className="tab-action"
+        onClick={onAddRecipe}
+        aria-label="Add recipe"
+      >
+        <span className="tab-action-label">Add recipe</span>
+      </button>
     </div>
   );
 };
