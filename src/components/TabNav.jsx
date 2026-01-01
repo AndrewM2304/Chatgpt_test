@@ -56,6 +56,14 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
         </span>
       </button>
       <nav className="tabs" id="tabs-menu" aria-label="Recipe navigation">
+        <button
+          type="button"
+          className="tab tab-action-item"
+          onClick={onAddRecipe}
+        >
+          <span className="tab-label">Add recipe</span>
+          <span className="tab-description">Create a new recipe entry.</span>
+        </button>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -68,14 +76,6 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
           </button>
         ))}
       </nav>
-      <button
-        type="button"
-        className="tab-action"
-        onClick={onAddRecipe}
-        aria-label="Add recipe"
-      >
-        <span className="tab-action-label">Add recipe</span>
-      </button>
     </div>
   );
 };

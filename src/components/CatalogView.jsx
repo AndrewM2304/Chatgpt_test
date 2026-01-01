@@ -15,12 +15,20 @@ export const CatalogView = ({
   onGroupBy,
   onOpenRecipe,
   hasRecipes,
+  onAddRecipe,
 }) => {
   const recipeCountLabel = totalRecipes === 1 ? "recipe" : "recipes";
 
   return (
     <section className="catalog">
       <div className="catalog-toolbar">
+        <button
+          type="button"
+          className="primary catalog-add"
+          onClick={onAddRecipe}
+        >
+          Add recipe
+        </button>
         <div className="control">
           <label htmlFor="search">
             Search from {totalRecipes} {recipeCountLabel}

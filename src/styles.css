@@ -148,7 +148,7 @@ h1 {
 
 .tabs-backdrop {
   border: none;
-  background: rgba(15, 23, 42, 0.4);
+  background: transparent;
   position: fixed;
   inset: 0;
   z-index: 15;
@@ -167,22 +167,8 @@ h1 {
   border-radius: 999px;
 }
 
-.tab-action {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-  cursor: pointer;
-  box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
-}
-
-.tab-action-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.tab-action-item {
+  display: none;
 }
 
 .control {
@@ -284,6 +270,12 @@ button.ghost.danger {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.catalog-add {
+  justify-self: start;
+  width: fit-content;
+  grid-column: 1 / -1;
 }
 
 .catalog-group {
@@ -714,7 +706,7 @@ button.ghost.danger {
     padding: calc(96px + env(safe-area-inset-top)) 24px
       calc(32px + env(safe-area-inset-bottom));
     border-radius: 0;
-    background: #f8fafc;
+    background: radial-gradient(circle at top, #e0f2fe 0%, #f8fafc 55%);
     gap: 0;
     box-shadow: none;
     transform: translateX(100%);
@@ -736,7 +728,7 @@ button.ghost.danger {
     width: 100%;
     text-align: left;
     border-radius: 0;
-    padding: 16px 0 16px 20px;
+    padding: 18px 20px;
     border-bottom: 1px solid #e2e8f0;
   }
 
@@ -765,28 +757,10 @@ button.ghost.danger {
     font-size: 0.85rem;
   }
 
-  .tab-action {
-    position: absolute;
-    right: 16px;
-    bottom: calc(24px + env(safe-area-inset-bottom));
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    padding: 0;
-    font-size: 1.6rem;
-    line-height: 1;
+  .tab-action-item {
     display: grid;
-    place-items: center;
-    box-shadow: 0 16px 30px rgba(14, 165, 233, 0.35);
-    z-index: 22;
-  }
-
-  .tab-action-label {
-    display: none;
-  }
-
-  .tab-action::after {
-    content: "+";
+    font-weight: 700;
+    color: #0ea5e9;
   }
 }
 
@@ -814,18 +788,6 @@ button.ghost.danger {
 
   .tabs-shell .tabs {
     flex: 1;
-  }
-
-  .tab-action {
-    position: static;
-    border-radius: 14px;
-    padding: 10px 16px;
-    font-size: 0.95rem;
-    box-shadow: none;
-  }
-
-  .tab-action::after {
-    content: none;
   }
 
   .tab.is-active {

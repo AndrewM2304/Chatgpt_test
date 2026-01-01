@@ -451,6 +451,7 @@ export default function App() {
                 onGroupBy={setGroupBy}
                 onOpenRecipe={handleOpenRecipe}
                 hasRecipes={recipes.length > 0}
+                onAddRecipe={handleOpenAddModal}
               />
             )}
 
