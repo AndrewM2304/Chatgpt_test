@@ -625,6 +625,11 @@ button.ghost.danger {
   gap: 16px;
 }
 
+.join-group-form {
+  display: grid;
+  gap: 12px;
+}
+
 .settings {
   display: grid;
   gap: 20px;

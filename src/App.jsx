@@ -3,7 +3,6 @@ import { CatalogView } from "./components/CatalogView";
 import { Hero } from "./components/Hero";
 import { LogView } from "./components/LogView";
 import { SettingsView } from "./components/SettingsView";
-import { GroupGate } from "./components/GroupGate";
 import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
 import { RecipeModal } from "./components/RecipeModal";
@@ -418,92 +417,83 @@ export default function App() {
     setIsModalOpen(false);
   };
 
-  const showGate = !groupCode;
-
   return (
     <div className="app">
       <header className="app-header">
         <Hero />
-        {!showGate && (
-          <TabNav
-            activeTab={activeTab}
-            onSelect={setActiveTab}
-            onAddRecipe={handleOpenAddModal}
-          />
-        )}
-      </header>
-      {showGate ? (
-        <GroupGate
-          onJoinGroup={handleJoinGroup}
-          onCreateGroup={createNewGroup}
-          statusMessage={status.state === "error" ? status.message : ""}
+        <TabNav
+          activeTab={activeTab}
+          onSelect={setActiveTab}
+          onAddRecipe={handleOpenAddModal}
         />
-      ) : (
-        <main className="panel">
-          <div className="panel-content">
-            {activeTab === "catalog" && (
-              <CatalogView
-                groupedRecipes={groupedRecipes}
-                totalRecipes={recipes.length}
-                searchTerm={searchTerm}
-                onSearchTerm={setSearchTerm}
-                groupBy={groupBy}
-                onGroupBy={setGroupBy}
-                onOpenRecipe={handleOpenRecipe}
-                hasRecipes={recipes.length > 0}
-                onAddRecipe={handleOpenAddModal}
-              />
-            )}
+      </header>
+      <main className="panel">
+        <div className="panel-content">
+          {activeTab === "catalog" && (
+            <CatalogView
+              groupedRecipes={groupedRecipes}
+              totalRecipes={recipes.length}
+              searchTerm={searchTerm}
+              onSearchTerm={setSearchTerm}
+              groupBy={groupBy}
+              onGroupBy={setGroupBy}
+              onOpenRecipe={handleOpenRecipe}
+              hasRecipes={recipes.length > 0}
+              onAddRecipe={handleOpenAddModal}
+            />
+          )}
 
-            {activeTab === "random" && (
-              <RandomView
-                cuisineOptions={cuisineOptions}
-                excludedCuisines={excludedCuisines}
-                onToggleCuisine={handleToggleCuisine}
-                onPickRandom={handlePickRandom}
-                randomCandidates={randomCandidates}
-                randomPick={randomPick}
-                onStartLog={handleStartLog}
-                hasRecipes={recipes.length > 0}
-              />
-            )}
+          {activeTab === "random" && (
+            <RandomView
+              cuisineOptions={cuisineOptions}
+              excludedCuisines={excludedCuisines}
+              onToggleCuisine={handleToggleCuisine}
+              onPickRandom={handlePickRandom}
+              randomCandidates={randomCandidates}
+              randomPick={randomPick}
+              onStartLog={handleStartLog}
+              hasRecipes={recipes.length > 0}
+            />
+          )}
 
-            {activeTab === "recipe" && (
-              <RecipeView
-                activeRecipe={activeRecipe}
-                onBack={() => setActiveTab("catalog")}
-                onStartLog={handleStartLog}
-                onEditRecipe={handleEditRecipe}
-              />
-            )}
+          {activeTab === "recipe" && (
+            <RecipeView
+              activeRecipe={activeRecipe}
+              onBack={() => setActiveTab("catalog")}
+              onStartLog={handleStartLog}
+              onEditRecipe={handleEditRecipe}
+            />
+          )}
 
-            {activeTab === "log" && (
-              <LogView
-                recipes={recipes}
-                logRecipeId={logRecipeId}
-                onLogRecipeId={setLogRecipeId}
-                logDate={logDate}
-                onLogDate={setLogDate}
-                logNote={logNote}
-                onLogNote={setLogNote}
-                onSubmit={handleLogCook}
-                recentLogs={recentLogs}
-              />
-            )}
+          {activeTab === "log" && (
+            <LogView
+              recipes={recipes}
+              logRecipeId={logRecipeId}
+              onLogRecipeId={setLogRecipeId}
+              logDate={logDate}
+              onLogDate={setLogDate}
+              logNote={logNote}
+              onLogNote={setLogNote}
+              onSubmit={handleLogCook}
+              recentLogs={recentLogs}
+            />
+          )}
 
-            {activeTab === "settings" && (
-              <SettingsView
-                onExport={handleExport}
-                onImport={handleImport}
-                onGenerateInvite={handleGenerateInvite}
-                onCreateGroup={handleCreateGroup}
-                onClearData={handleClearData}
-                inviteUrl={showInvite ? inviteUrl : ""}
-              />
-            )}
-          </div>
-        </main>
-      )}
+          {activeTab === "settings" && (
+            <SettingsView
+              onExport={handleExport}
+              onImport={handleImport}
+              onGenerateInvite={handleGenerateInvite}
+              onCreateGroup={handleCreateGroup}
+              onClearData={handleClearData}
+              onJoinGroup={handleJoinGroup}
+              inviteUrl={showInvite ? inviteUrl : ""}
+              statusMessage={status.state === "error" ? status.message : ""}
+              hasGroup={Boolean(groupCode)}
+            />
+          )}
+        </div>
+      </main>
       <RecipeModal
         isOpen={isModalOpen}
         editingId={editingId}
