@@ -168,16 +168,25 @@ export const useSupabaseCatalog = () => {
   }, [ensureCatalog, groupCode, loadSettings]);
 
   useEffect(() => {
-    if (!catalogId) {
+    if (!groupCode) {
       return undefined;
     }
 
     const timeout = window.setTimeout(async () => {
       setIsSaving(true);
-      const { error } = await supabase
+      const payload = {
+        group_code: groupCode,
+        data: catalog,
+        updated_at: new Date().toISOString(),
+      };
+      if (catalogId) {
+        payload.id = catalogId;
+      }
+      const { data, error } = await supabase
         .from("catalogs")
-        .update({ data: catalog, updated_at: new Date().toISOString() })
-        .eq("id", catalogId);
+        .upsert(payload, { onConflict: "group_code" })
+        .select("id")
+        .single();
 
       if (error) {
         setStatus((prev) => ({
@@ -185,20 +194,25 @@ export const useSupabaseCatalog = () => {
           state: "error",
           message: STATUS_MESSAGES.error,
         }));
+      } else if (!catalogId && data?.id) {
+        setCatalogId(data.id);
       }
       setIsSaving(false);
     }, 600);
 
     return () => window.clearTimeout(timeout);
-  }, [catalog, catalogId]);
+  }, [catalog, catalogId, groupCode]);
 
   const setAccessPassword = useCallback(async (value) => {
     const hash = await hashPassword(value);
-    const { error } = await supabase.from("site_settings").upsert({
-      key: "access_password_hash",
-      value: hash,
-      updated_at: new Date().toISOString(),
-    });
+    const { error } = await supabase.from("site_settings").upsert(
+      {
+        key: "access_password_hash",
+        value: hash,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" }
+    );
 
     if (error) {
       setStatus({ state: "error", message: STATUS_MESSAGES.error });
