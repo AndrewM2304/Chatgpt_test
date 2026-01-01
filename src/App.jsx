@@ -3,7 +3,7 @@ import { CatalogView } from "./components/CatalogView";
 import { Hero } from "./components/Hero";
 import { LogView } from "./components/LogView";
 import { ManageView } from "./components/ManageView";
-import { PasswordGate } from "./components/PasswordGate";
+import { GroupGate } from "./components/GroupGate";
 import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
 import { StatusBanner } from "./components/StatusBanner";
@@ -21,15 +21,12 @@ export default function App() {
     setLogs,
     status,
     isSaving,
-    accessGranted,
     passwordHash,
-    adminPasswordHash,
     setAccessPassword,
-    setAdminPassword,
-    verifyAccessPassword,
-    runAdminSql,
     inviteUrl,
+    groupCode,
     createNewGroup,
+    joinGroup,
   } = useSupabaseCatalog();
   const { recipes, cookbooks, cuisines, logs } = catalog;
   const [searchTerm, setSearchTerm] = useState("");
@@ -358,24 +355,35 @@ export default function App() {
     setShowInvite(true);
   };
 
+  const handleJoinGroup = (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return false;
+    }
+    const codeMatch = trimmed.match(/invite=([^&]+)/i);
+    const code = codeMatch ? decodeURIComponent(codeMatch[1]) : trimmed;
+    return joinGroup(code);
+  };
+
   const syncStatus = status.state === "ready"
     ? isSaving
       ? "Syncing changes to Supabase..."
       : "All changes are synced."
     : status.state === "error"
       ? "Sync paused. Complete the Supabase setup below."
-      : "Connecting to Supabase...";
+      : status.state === "waiting"
+        ? "Select a group to start syncing."
+        : "Connecting to Supabase...";
 
-  const showGate = !accessGranted && status.state !== "error";
+  const showGate = !groupCode;
 
   return (
     <div className="app">
       <Hero />
       {showGate ? (
-        <PasswordGate
-          passwordHash={passwordHash}
-          onSetPassword={setAccessPassword}
-          onVerifyPassword={verifyAccessPassword}
+        <GroupGate
+          onJoinGroup={handleJoinGroup}
+          onCreateGroup={createNewGroup}
           statusMessage={status.state === "error" ? status.message : ""}
         />
       ) : (
@@ -453,9 +461,8 @@ export default function App() {
               onCreateInvite={handleCreateInvite}
               onCopyInvite={handleCopyInvite}
               onCreateGroup={handleCreateGroup}
-              adminPasswordHash={adminPasswordHash}
-              onSetAdminPassword={setAdminPassword}
-              onRunAdminSql={runAdminSql}
+              passwordHash={passwordHash}
+              onSetAccessPassword={setAccessPassword}
             />
           )}
         </main>
