@@ -1,4 +1,9 @@
-import { formatDate, getCoverColor, getInitials } from "../utils/recipeUtils";
+import {
+  formatDate,
+  formatDuration,
+  getCoverColor,
+  getInitials,
+} from "../utils/recipeUtils";
 
 export const RecipeView = ({
   activeRecipe,
@@ -34,6 +39,13 @@ export const RecipeView = ({
             </p>
             <p className="recipe-meta">
               Cuisine: {activeRecipe.cuisine || "Uncategorized"}
+            </p>
+            <p className="recipe-meta">
+              Rating:{" "}
+              {activeRecipe.rating ? `${activeRecipe.rating} / 5` : "Unrated"}
+            </p>
+            <p className="recipe-meta">
+              Duration: {formatDuration(activeRecipe.durationMinutes)}
             </p>
             <div className="recipe-footer">
               <span>{activeRecipe.timesCooked} cooks logged</span>

@@ -2,14 +2,15 @@ import { useMemo, useState } from "react";
 import { CatalogView } from "./components/CatalogView";
 import { Hero } from "./components/Hero";
 import { LogView } from "./components/LogView";
-import { ManageView } from "./components/ManageView";
+import { SettingsView } from "./components/SettingsView";
 import { GroupGate } from "./components/GroupGate";
 import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
+import { RecipeModal } from "./components/RecipeModal";
 import { StatusBanner } from "./components/StatusBanner";
 import { TabNav } from "./components/TabNav";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
-import { timesBuckets } from "./utils/recipeUtils";
+import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("catalog");
@@ -21,8 +22,6 @@ export default function App() {
     setLogs,
     status,
     isSaving,
-    passwordHash,
-    setAccessPassword,
     inviteUrl,
     groupCode,
     createNewGroup,
@@ -44,9 +43,12 @@ export default function App() {
     cookbookTitle: "",
     page: "",
     cuisine: "",
+    rating: "",
+    duration: "",
   });
   const [editingId, setEditingId] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const cookbookOptions = useMemo(() => {
     const fromRecipes = recipes
@@ -121,6 +123,14 @@ export default function App() {
         addToGroup(bucket, recipe);
         return;
       }
+      if (groupBy === "duration") {
+        const bucket =
+          durationBuckets.find((item) =>
+            item.test(recipe.durationMinutes)
+          )?.label || "No duration set";
+        addToGroup(bucket, recipe);
+        return;
+      }
       addToGroup("All recipes", recipe);
     });
 
@@ -158,7 +168,14 @@ export default function App() {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", cookbookTitle: "", page: "", cuisine: "" });
+    setFormData({
+      name: "",
+      cookbookTitle: "",
+      page: "",
+      cuisine: "",
+      rating: "",
+      duration: "",
+    });
     setEditingId(null);
   };
 
@@ -170,6 +187,12 @@ export default function App() {
     }
     const trimmedCookbook = formData.cookbookTitle.trim();
     const trimmedCuisine = formData.cuisine.trim();
+    const ratingValue = formData.rating
+      ? Number.parseInt(formData.rating, 10)
+      : null;
+    const durationValue = formData.duration
+      ? Number.parseInt(formData.duration, 10)
+      : null;
 
     if (editingId) {
       setRecipes((prev) =>
@@ -181,6 +204,10 @@ export default function App() {
                 cookbookTitle: trimmedCookbook,
                 page: formData.page.trim(),
                 cuisine: trimmedCuisine,
+                rating: Number.isNaN(ratingValue) ? null : ratingValue,
+                durationMinutes: Number.isNaN(durationValue)
+                  ? null
+                  : durationValue,
               }
             : recipe
         )
@@ -192,6 +219,8 @@ export default function App() {
         cookbookTitle: trimmedCookbook,
         page: formData.page.trim(),
         cuisine: trimmedCuisine,
+        rating: Number.isNaN(ratingValue) ? null : ratingValue,
+        durationMinutes: Number.isNaN(durationValue) ? null : durationValue,
         timesCooked: 0,
         lastCooked: null,
       };
@@ -206,6 +235,7 @@ export default function App() {
     }
 
     resetForm();
+    setIsModalOpen(false);
   };
 
   const handleEditRecipe = (recipe) => {
@@ -214,9 +244,13 @@ export default function App() {
       cookbookTitle: recipe.cookbookTitle,
       page: recipe.page,
       cuisine: recipe.cuisine,
+      rating: recipe.rating ? String(recipe.rating) : "",
+      duration: recipe.durationMinutes
+        ? String(recipe.durationMinutes)
+        : "",
     });
     setEditingId(recipe.id);
-    setActiveTab("manage");
+    setIsModalOpen(true);
   };
 
   const handleOpenRecipe = (recipe) => {
@@ -339,11 +373,7 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  const handleCreateInvite = () => {
-    setShowInvite(true);
-  };
-
-  const handleCopyInvite = async () => {
+  const handleGenerateInvite = async () => {
     setShowInvite(true);
     if (inviteUrl && navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(inviteUrl);
@@ -363,6 +393,38 @@ export default function App() {
     const codeMatch = trimmed.match(/invite=([^&]+)/i);
     const code = codeMatch ? decodeURIComponent(codeMatch[1]) : trimmed;
     return joinGroup(code);
+  };
+
+  const handleOpenAddModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    resetForm();
+    setIsModalOpen(false);
+  };
+
+  const handleClearData = () => {
+    const confirmed = window.confirm(
+      "Delete all recipes, logs, and saved settings? This cannot be undone."
+    );
+    if (!confirmed) {
+      return;
+    }
+    setRecipes([]);
+    setCookbooks([]);
+    setCuisines([]);
+    setLogs([]);
+    resetForm();
+  };
+
+  const handleDeleteFromModal = () => {
+    if (!editingId) {
+      return;
+    }
+    handleDeleteRecipe(editingId);
+    setIsModalOpen(false);
   };
 
   const syncStatus = status.state === "ready"
@@ -389,88 +451,92 @@ export default function App() {
       ) : (
         <main className="panel">
           <StatusBanner status={status} />
-          {activeTab === "catalog" && (
-            <CatalogView
-              groupedRecipes={groupedRecipes}
-              stats={stats}
-              searchTerm={searchTerm}
-              onSearchTerm={setSearchTerm}
-              groupBy={groupBy}
-              onGroupBy={setGroupBy}
-              onOpenRecipe={handleOpenRecipe}
-              onEditRecipe={handleEditRecipe}
-              onStartLog={handleStartLog}
-              hasRecipes={recipes.length > 0}
-            />
-          )}
+          <div className="panel-content">
+            {activeTab === "catalog" && (
+              <CatalogView
+                groupedRecipes={groupedRecipes}
+                stats={stats}
+                searchTerm={searchTerm}
+                onSearchTerm={setSearchTerm}
+                groupBy={groupBy}
+                onGroupBy={setGroupBy}
+                onOpenRecipe={handleOpenRecipe}
+                onEditRecipe={handleEditRecipe}
+                onStartLog={handleStartLog}
+                hasRecipes={recipes.length > 0}
+              />
+            )}
 
-          {activeTab === "random" && (
-            <RandomView
-              cuisineOptions={cuisineOptions}
-              excludedCuisines={excludedCuisines}
-              onToggleCuisine={handleToggleCuisine}
-              onPickRandom={handlePickRandom}
-              randomCandidates={randomCandidates}
-              randomPick={randomPick}
-              onStartLog={handleStartLog}
-              hasRecipes={recipes.length > 0}
-            />
-          )}
+            {activeTab === "random" && (
+              <RandomView
+                cuisineOptions={cuisineOptions}
+                excludedCuisines={excludedCuisines}
+                onToggleCuisine={handleToggleCuisine}
+                onPickRandom={handlePickRandom}
+                randomCandidates={randomCandidates}
+                randomPick={randomPick}
+                onStartLog={handleStartLog}
+                hasRecipes={recipes.length > 0}
+              />
+            )}
 
-          {activeTab === "recipe" && (
-            <RecipeView
-              activeRecipe={activeRecipe}
-              onBack={() => setActiveTab("catalog")}
-              onStartLog={handleStartLog}
-              onEditRecipe={handleEditRecipe}
-            />
-          )}
+            {activeTab === "recipe" && (
+              <RecipeView
+                activeRecipe={activeRecipe}
+                onBack={() => setActiveTab("catalog")}
+                onStartLog={handleStartLog}
+                onEditRecipe={handleEditRecipe}
+              />
+            )}
 
-          {activeTab === "log" && (
-            <LogView
-              recipes={recipes}
-              logRecipeId={logRecipeId}
-              onLogRecipeId={setLogRecipeId}
-              logDate={logDate}
-              onLogDate={setLogDate}
-              logNote={logNote}
-              onLogNote={setLogNote}
-              onSubmit={handleLogCook}
-              recentLogs={recentLogs}
-            />
-          )}
+            {activeTab === "log" && (
+              <LogView
+                recipes={recipes}
+                logRecipeId={logRecipeId}
+                onLogRecipeId={setLogRecipeId}
+                logDate={logDate}
+                onLogDate={setLogDate}
+                logNote={logNote}
+                onLogNote={setLogNote}
+                onSubmit={handleLogCook}
+                recentLogs={recentLogs}
+              />
+            )}
 
-          {activeTab === "manage" && (
-            <ManageView
-              editingId={editingId}
-              formData={formData}
-              onFormChange={handleFormChange}
-              onSaveRecipe={handleSaveRecipe}
-              onResetForm={resetForm}
-              cookbookOptions={cookbookOptions}
-              cuisineOptions={cuisineOptions}
-              recipes={recipes}
-              onOpenRecipe={handleOpenRecipe}
-              onEditRecipe={handleEditRecipe}
-              onStartLog={handleStartLog}
-              onDeleteRecipe={handleDeleteRecipe}
-              onExport={handleExport}
-              onImport={handleImport}
-              syncStatus={syncStatus}
-              inviteUrl={showInvite ? inviteUrl : ""}
-              onCreateInvite={handleCreateInvite}
-              onCopyInvite={handleCopyInvite}
-              onCreateGroup={handleCreateGroup}
-              passwordHash={passwordHash}
-              onSetAccessPassword={setAccessPassword}
-            />
-          )}
+            {activeTab === "settings" && (
+              <SettingsView
+                onExport={handleExport}
+                onImport={handleImport}
+                onGenerateInvite={handleGenerateInvite}
+                onCreateGroup={handleCreateGroup}
+                onClearData={handleClearData}
+                syncStatus={syncStatus}
+                inviteUrl={showInvite ? inviteUrl : ""}
+              />
+            )}
+          </div>
+          <TabNav activeTab={activeTab} onSelect={setActiveTab} />
+          <button
+            type="button"
+            className="fab"
+            onClick={handleOpenAddModal}
+            aria-label="Add a recipe"
+          >
+            +
+          </button>
         </main>
       )}
-
-      {!showGate && (
-        <TabNav activeTab={activeTab} onSelect={setActiveTab} />
-      )}
+      <RecipeModal
+        isOpen={isModalOpen}
+        editingId={editingId}
+        formData={formData}
+        onFormChange={handleFormChange}
+        onSaveRecipe={handleSaveRecipe}
+        onClose={handleCloseModal}
+        onDeleteRecipe={handleDeleteFromModal}
+        cookbookOptions={cookbookOptions}
+        cuisineOptions={cuisineOptions}
+      />
     </div>
   );
 }

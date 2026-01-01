@@ -1,5 +1,6 @@
 import {
   formatDate,
+  formatDuration,
   getCoverColor,
   getInitials,
   groupOptions,
@@ -116,6 +117,10 @@ export const CatalogView = ({
                 </p>
                 <p className="recipe-meta">
                   Cuisine: {recipe.cuisine || "Uncategorized"}
+                </p>
+                <p className="recipe-meta">
+                  Rating: {recipe.rating ? `${recipe.rating} / 5` : "Unrated"} ·
+                  Duration: {formatDuration(recipe.durationMinutes)}
                 </p>
                 <div className="recipe-footer">
                   <span>{recipe.timesCooked} cooks logged</span>
