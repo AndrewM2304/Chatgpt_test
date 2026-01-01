@@ -171,6 +171,10 @@ h1 {
   display: none;
 }
 
+.tab-close {
+  display: none;
+}
+
 .control {
   display: grid;
   gap: 6px;
@@ -711,7 +715,7 @@ button.ghost.danger {
     padding: calc(96px + env(safe-area-inset-top)) 24px
       calc(32px + env(safe-area-inset-bottom));
     border-radius: 0;
-    background: radial-gradient(circle at top, #e0f2fe 0%, #f8fafc 55%);
+    background: #ffffff;
     gap: 0;
     box-shadow: none;
     transform: translateX(100%);
@@ -764,8 +768,25 @@ button.ghost.danger {
 
   .tab-action-item {
     display: grid;
+    margin-top: auto;
+    border-radius: 16px;
+    border-bottom: none;
+    background: #0ea5e9;
+    color: #ffffff;
     font-weight: 700;
-    color: #0ea5e9;
+    text-align: center;
+    padding: 16px 20px;
+    box-shadow: 0 16px 30px rgba(14, 165, 233, 0.25);
+  }
+
+  .tab-action-item .tab-description {
+    color: #e0f2fe;
+  }
+
+  .tab-close {
+    display: grid;
+    font-weight: 600;
+    color: #64748b;
   }
 }
 

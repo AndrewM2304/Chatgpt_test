@@ -31,6 +31,11 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
     setIsOpen(false);
   };
 
+  const handleAddRecipe = () => {
+    onAddRecipe();
+    setIsOpen(false);
+  };
+
   return (
     <div className={`tabs-shell${isOpen ? " is-open" : ""}`}>
       {isOpen && (
@@ -58,11 +63,10 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
       <nav className="tabs" id="tabs-menu" aria-label="Recipe navigation">
         <button
           type="button"
-          className="tab tab-action-item"
-          onClick={onAddRecipe}
+          className="tab tab-close"
+          onClick={() => setIsOpen(false)}
         >
-          <span className="tab-label">Add recipe</span>
-          <span className="tab-description">Create a new recipe entry.</span>
+          <span className="tab-label">Close menu</span>
         </button>
         {tabs.map((tab) => (
           <button
@@ -75,6 +79,14 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
             <span className="tab-description">{tab.description}</span>
           </button>
         ))}
+        <button
+          type="button"
+          className="tab tab-action-item"
+          onClick={handleAddRecipe}
+        >
+          <span className="tab-label">Add recipe</span>
+          <span className="tab-description">Create a new recipe entry.</span>
+        </button>
       </nav>
     </div>
   );
