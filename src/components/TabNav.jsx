@@ -17,6 +17,14 @@ export const TabNav = ({ activeTab, onSelect }) => {
 
   return (
     <div className={`tabs-shell${isOpen ? " is-open" : ""}`}>
+      {isOpen && (
+        <button
+          type="button"
+          className="tabs-backdrop"
+          aria-label="Close menu"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
       <button
         type="button"
         className="tabs-toggle"
