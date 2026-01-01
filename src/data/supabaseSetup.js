@@ -15,7 +15,7 @@ create table if not exists public.catalogs (
 );
 
 -- Allow admin SQL changes from the app (protected by admin_password_hash).
-create or replace function public.run_admin_sql(sql text, password_hash text)
+create or replace function public.run_admin_sql(password_hash text, sql text)
 returns void
 language plpgsql
 security definer
