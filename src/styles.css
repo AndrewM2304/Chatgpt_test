@@ -31,6 +31,7 @@ body {
   flex-direction: column;
   gap: 20px;
   min-height: 100%;
+  position: relative;
 }
 
 .app-header {
@@ -86,6 +87,7 @@ h1 {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: grid;
   gap: 4px;
+  position: relative;
 }
 
 .tab.is-active {
@@ -282,28 +284,6 @@ button.ghost.danger {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.catalog-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  background: #f8fafc;
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.catalog-stats div {
-  display: grid;
-  gap: 6px;
-}
-
-.catalog-stats strong {
-  font-size: 1.6rem;
-}
-
-.catalog-stats span {
-  color: #64748b;
 }
 
 .catalog-group {
@@ -756,12 +736,29 @@ button.ghost.danger {
     width: 100%;
     text-align: left;
     border-radius: 0;
-    padding: 16px 0;
+    padding: 16px 0 16px 20px;
     border-bottom: 1px solid #e2e8f0;
   }
 
   .tab:last-of-type {
     border-bottom: none;
+  }
+
+  .tab.is-active {
+    background: transparent;
+    color: #0ea5e9;
+    box-shadow: none;
+  }
+
+  .tab.is-active::before {
+    content: "";
+    position: absolute;
+    top: 16px;
+    bottom: 16px;
+    left: 0;
+    width: 3px;
+    border-radius: 999px;
+    background: #0ea5e9;
   }
 
   .tab-description {
@@ -781,6 +778,7 @@ button.ghost.danger {
     display: grid;
     place-items: center;
     box-shadow: 0 16px 30px rgba(14, 165, 233, 0.35);
+    z-index: 22;
   }
 
   .tab-action-label {
@@ -828,6 +826,23 @@ button.ghost.danger {
 
   .tab-action::after {
     content: none;
+  }
+
+  .tab.is-active {
+    background: transparent;
+    color: #0ea5e9;
+    box-shadow: none;
+  }
+
+  .tab.is-active::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 4px;
+    height: 3px;
+    border-radius: 999px;
+    background: #0ea5e9;
   }
 }
 
