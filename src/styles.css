@@ -98,6 +98,41 @@ h1 {
   gap: 20px;
   flex: 1;
   min-height: 0;
+  order: 1;
+}
+
+.tabs-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  order: 2;
+}
+
+.tabs-toggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 10px 16px;
+  border-radius: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.tabs-toggle-icon {
+  display: grid;
+  gap: 4px;
+}
+
+.tabs-toggle-icon span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #0f172a;
+  border-radius: 999px;
 }
 
 .control {
@@ -655,14 +690,51 @@ button.ghost.danger {
   }
 
   .tabs {
-    flex-wrap: wrap;
-    position: sticky;
-    bottom: 0;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    position: static;
+    margin-top: 0;
+  }
+
+  .tabs-shell {
+    order: 0;
+  }
+
+  .tabs-shell.is-open .tabs {
+    display: flex;
+  }
+
+  .tabs-toggle {
+    display: inline-flex;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: left;
   }
 
   .fab {
     right: 16px;
     bottom: 88px;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .tabs-shell {
+    order: 0;
+  }
+
+  .tabs-toggle {
+    display: none;
+  }
+
+  .tabs {
+    display: flex;
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    margin-top: 0;
   }
 }
 

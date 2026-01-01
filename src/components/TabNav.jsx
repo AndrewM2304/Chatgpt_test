@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const tabs = [
   { id: "catalog", label: "Catalog" },
   { id: "random", label: "Random" },
@@ -5,17 +7,42 @@ const tabs = [
   { id: "settings", label: "Settings" },
 ];
 
-export const TabNav = ({ activeTab, onSelect }) => (
-  <nav className="tabs" aria-label="Recipe navigation">
-    {tabs.map((tab) => (
+export const TabNav = ({ activeTab, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelect = (tabId) => {
+    onSelect(tabId);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className={`tabs-shell${isOpen ? " is-open" : ""}`}>
       <button
-        key={tab.id}
         type="button"
-        className={`tab${activeTab === tab.id ? " is-active" : ""}`}
-        onClick={() => onSelect(tab.id)}
+        className="tabs-toggle"
+        aria-expanded={isOpen}
+        aria-controls="tabs-menu"
+        onClick={() => setIsOpen((prev) => !prev)}
       >
-        {tab.label}
+        <span className="tabs-toggle-label">Menu</span>
+        <span aria-hidden="true" className="tabs-toggle-icon">
+          <span />
+          <span />
+          <span />
+        </span>
       </button>
-    ))}
-  </nav>
-);
+      <nav className="tabs" id="tabs-menu" aria-label="Recipe navigation">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`tab${activeTab === tab.id ? " is-active" : ""}`}
+            onClick={() => handleSelect(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+};
