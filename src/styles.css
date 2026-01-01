@@ -59,8 +59,11 @@ h1 {
   background: #ffffff;
   border-radius: 18px;
   box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
-  position: sticky;
-  bottom: 0;
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1100px, calc(100% - 32px));
   z-index: 2;
 }
 
