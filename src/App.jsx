@@ -154,13 +154,6 @@ export default function App() {
 
   const recentLogs = useMemo(() => logs.slice(0, 8), [logs]);
 
-  const stats = useMemo(() => {
-    return {
-      totalRecipes: recipes.length,
-      totalCooked: recipes.reduce((sum, recipe) => sum + recipe.timesCooked, 0),
-    };
-  }, [recipes]);
-
   const handleFormChange = (field) => (event) => {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
   };
@@ -451,14 +444,12 @@ export default function App() {
             {activeTab === "catalog" && (
               <CatalogView
                 groupedRecipes={groupedRecipes}
-                stats={stats}
+                totalRecipes={recipes.length}
                 searchTerm={searchTerm}
                 onSearchTerm={setSearchTerm}
                 groupBy={groupBy}
                 onGroupBy={setGroupBy}
                 onOpenRecipe={handleOpenRecipe}
-                onEditRecipe={handleEditRecipe}
-                onStartLog={handleStartLog}
                 hasRecipes={recipes.length > 0}
               />
             )}
