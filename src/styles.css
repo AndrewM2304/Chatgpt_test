@@ -511,6 +511,18 @@ button.ghost.danger {
   gap: 12px;
 }
 
+.gate-divider {
+  text-align: center;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.gate-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
 .error-text {
   color: #dc2626;
   font-weight: 600;
@@ -540,7 +552,7 @@ button.ghost.danger {
   overflow-x: auto;
 }
 
-.admin-card {
+.settings-card {
   margin-top: 16px;
   padding: 16px;
   border-radius: 16px;
@@ -549,20 +561,9 @@ button.ghost.danger {
   gap: 16px;
 }
 
-.admin-form {
+.settings-form {
   display: grid;
   gap: 12px;
-}
-
-.admin-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.admin-row input {
-  flex: 1 1 220px;
 }
 
 @media (max-width: 720px) {

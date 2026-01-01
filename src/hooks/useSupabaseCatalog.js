@@ -13,6 +13,7 @@ const DEFAULT_CATALOG = {
 const STATUS_MESSAGES = {
   connecting: "Connecting to Supabase...",
   ready: "Connected to Supabase.",
+  waiting: "Choose or create a group to start syncing.",
   error:
     "Supabase tables are missing or inaccessible. Run the setup SQL in the app.",
 };
@@ -27,15 +28,10 @@ export const useSupabaseCatalog = () => {
   );
   const [groupCode, setGroupCode] = useLocalStorage(
     "recipe-group-code",
-    "home-kitchen"
+    ""
   );
   const [catalogId, setCatalogId] = useState(null);
   const [passwordHash, setPasswordHash] = useState(null);
-  const [adminPasswordHash, setAdminPasswordHash] = useState(null);
-  const [accessGranted, setAccessGranted] = useLocalStorage(
-    "recipe-access-granted",
-    false
-  );
   const [status, setStatus] = useState({
     state: "connecting",
     message: STATUS_MESSAGES.connecting,
@@ -87,18 +83,6 @@ export const useSupabaseCatalog = () => {
     }
 
     setPasswordHash(data?.value || "");
-    const { data: adminData, error: adminError } = await supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "admin_password_hash")
-      .maybeSingle();
-
-    if (adminError) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return null;
-    }
-
-    setAdminPasswordHash(adminData?.value || "");
     return data?.value || "";
   }, []);
 
@@ -158,6 +142,10 @@ export const useSupabaseCatalog = () => {
   useEffect(() => {
     let isMounted = true;
     const bootstrap = async () => {
+      if (!groupCode) {
+        setStatus({ state: "waiting", message: STATUS_MESSAGES.waiting });
+        return;
+      }
       setStatus({ state: "connecting", message: STATUS_MESSAGES.connecting });
       const settingsResult = await loadSettings();
       const catalogResult = await ensureCatalog();
@@ -172,10 +160,10 @@ export const useSupabaseCatalog = () => {
     return () => {
       isMounted = false;
     };
-  }, [ensureCatalog, loadSettings]);
+  }, [ensureCatalog, groupCode, loadSettings]);
 
   useEffect(() => {
-    if (!catalogId || !accessGranted) {
+    if (!catalogId) {
       return undefined;
     }
 
@@ -197,7 +185,7 @@ export const useSupabaseCatalog = () => {
     }, 600);
 
     return () => window.clearTimeout(timeout);
-  }, [accessGranted, catalog, catalogId]);
+  }, [catalog, catalogId]);
 
   const setAccessPassword = useCallback(async (value) => {
     const hash = await hashPassword(value);
@@ -213,59 +201,9 @@ export const useSupabaseCatalog = () => {
     }
 
     setPasswordHash(hash);
-    setAccessGranted(true);
-    return true;
-  }, [setAccessGranted]);
-
-  const setAdminPassword = useCallback(async (value) => {
-    const hash = await hashPassword(value);
-    const { error } = await supabase.from("site_settings").upsert({
-      key: "admin_password_hash",
-      value: hash,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return false;
-    }
-
-    setAdminPasswordHash(hash);
     return true;
   }, []);
 
-  const verifyAccessPassword = useCallback(
-    async (value) => {
-      const hash = await hashPassword(value);
-      const isMatch = hash === passwordHash;
-      setAccessGranted(isMatch);
-      return isMatch;
-    },
-    [passwordHash, setAccessGranted]
-  );
-
-  const runAdminSql = useCallback(async ({ sql, password }) => {
-    const trimmedSql = sql.trim();
-    if (!trimmedSql) {
-      return { ok: false, error: "SQL cannot be empty." };
-    }
-
-    const hash = await hashPassword(password);
-    const { error } = await supabase.rpc("run_admin_sql", {
-      sql: trimmedSql,
-      password_hash: hash,
-    });
-
-    if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return {
-        ok: false,
-        error: error?.message || "Failed to run admin SQL.",
-      };
-    }
-
-    return { ok: true };
-  }, []);
 
   const createNewGroup = useCallback(
     async ({ name, duplicate }) => {
@@ -294,6 +232,20 @@ export const useSupabaseCatalog = () => {
     [catalog, setCatalog, setGroupCode]
   );
 
+  const joinGroup = useCallback(
+    (code) => {
+      const trimmed = code.trim();
+      if (!trimmed) {
+        return false;
+      }
+      setGroupCode(trimmed);
+      setCatalogId(null);
+      setCatalog(DEFAULT_CATALOG);
+      return true;
+    },
+    [setCatalog, setGroupCode]
+  );
+
   return {
     catalog,
     setRecipes,
@@ -302,15 +254,11 @@ export const useSupabaseCatalog = () => {
     setLogs,
     status,
     isSaving,
-    accessGranted,
     passwordHash,
-    adminPasswordHash,
     setAccessPassword,
-    setAdminPassword,
-    verifyAccessPassword,
-    runAdminSql,
     inviteUrl,
     groupCode,
     createNewGroup,
+    joinGroup,
   };
 };
