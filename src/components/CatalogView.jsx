@@ -5,6 +5,7 @@ import {
   getInitials,
   groupOptions,
 } from "../utils/recipeUtils";
+import { StarRating } from "./StarRating";
 
 export const CatalogView = ({
   groupedRecipes,
@@ -96,9 +97,17 @@ export const CatalogView = ({
                   <p className="recipe-meta">
                     Cuisine: {recipe.cuisine || "Uncategorized"}
                   </p>
+                  <div className="recipe-rating">
+                    <StarRating
+                      value={recipe.rating || 0}
+                      label="Recipe rating"
+                    />
+                    <span className="recipe-rating-text">
+                      {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}
+                    </span>
+                  </div>
                   <p className="recipe-meta">
-                    Rating: {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}{" "}
-                    · Duration: {formatDuration(recipe.durationMinutes)}
+                    {formatDuration(recipe.durationMinutes)}
                   </p>
                   <div className="recipe-footer">
                     <span>{recipe.timesCooked} cooks logged</span>
