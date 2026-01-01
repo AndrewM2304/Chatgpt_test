@@ -31,6 +31,7 @@ export const useSupabaseCatalog = () => {
   );
   const [catalogId, setCatalogId] = useState(null);
   const [passwordHash, setPasswordHash] = useState(null);
+  const [adminPasswordHash, setAdminPasswordHash] = useState(null);
   const [accessGranted, setAccessGranted] = useLocalStorage(
     "recipe-access-granted",
     false
@@ -86,6 +87,18 @@ export const useSupabaseCatalog = () => {
     }
 
     setPasswordHash(data?.value || "");
+    const { data: adminData, error: adminError } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "admin_password_hash")
+      .maybeSingle();
+
+    if (adminError) {
+      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      return null;
+    }
+
+    setAdminPasswordHash(adminData?.value || "");
     return data?.value || "";
   }, []);
 
@@ -204,6 +217,23 @@ export const useSupabaseCatalog = () => {
     return true;
   }, [setAccessGranted]);
 
+  const setAdminPassword = useCallback(async (value) => {
+    const hash = await hashPassword(value);
+    const { error } = await supabase.from("site_settings").upsert({
+      key: "admin_password_hash",
+      value: hash,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      return false;
+    }
+
+    setAdminPasswordHash(hash);
+    return true;
+  }, []);
+
   const verifyAccessPassword = useCallback(
     async (value) => {
       const hash = await hashPassword(value);
@@ -213,6 +243,29 @@ export const useSupabaseCatalog = () => {
     },
     [passwordHash, setAccessGranted]
   );
+
+  const runAdminSql = useCallback(async ({ sql, password }) => {
+    const trimmedSql = sql.trim();
+    if (!trimmedSql) {
+      return { ok: false, error: "SQL cannot be empty." };
+    }
+
+    const hash = await hashPassword(password);
+    const { error } = await supabase.rpc("run_admin_sql", {
+      sql: trimmedSql,
+      password_hash: hash,
+    });
+
+    if (error) {
+      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      return {
+        ok: false,
+        error: error?.message || "Failed to run admin SQL.",
+      };
+    }
+
+    return { ok: true };
+  }, []);
 
   const createNewGroup = useCallback(
     async ({ name, duplicate }) => {
@@ -251,8 +304,11 @@ export const useSupabaseCatalog = () => {
     isSaving,
     accessGranted,
     passwordHash,
+    adminPasswordHash,
     setAccessPassword,
+    setAdminPassword,
     verifyAccessPassword,
+    runAdminSql,
     inviteUrl,
     groupCode,
     createNewGroup,

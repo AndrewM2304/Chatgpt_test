@@ -13,4 +13,31 @@ create table if not exists public.catalogs (
   data jsonb not null,
   updated_at timestamptz not null default now()
 );
+
+-- Allow admin SQL changes from the app (protected by admin_password_hash).
+create or replace function public.run_admin_sql(sql text, password_hash text)
+returns void
+language plpgsql
+security definer
+as $$
+declare
+  stored_hash text;
+begin
+  select value into stored_hash
+  from public.site_settings
+  where key = 'admin_password_hash';
+
+  if stored_hash is null or stored_hash = '' then
+    raise exception 'Admin password not set';
+  end if;
+
+  if stored_hash <> password_hash then
+    raise exception 'Invalid admin password';
+  end if;
+
+  execute sql;
+end;
+$$;
+
+grant execute on function public.run_admin_sql(text, text) to anon;
 `;
