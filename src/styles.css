@@ -1072,7 +1072,7 @@ button.secondary.icon-button {
   gap: 12px;
 }
 
-@media (max-width: 900px) {
+@media (width < 900px) {
   .hero {
     gap: 6px;
   }
@@ -1127,7 +1127,7 @@ button.secondary.icon-button {
 
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (width > 900px) {
   .app-header {
     display: block;
   }
@@ -1185,10 +1185,6 @@ button.secondary.icon-button {
   .header-nav.is-catalog .header-add {
     display: none;
   }
-
-}
-
-@media (min-width: 900px) {
   .panel-content {
     padding: 32px 24px 48px;
   }
