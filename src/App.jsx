@@ -18,6 +18,7 @@ import { RecipePreviewModal } from "./components/RecipePreviewModal";
 import { ScheduleModal } from "./components/ScheduleModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
+import { ToastStack } from "./components/ToastStack";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
 
@@ -95,6 +96,7 @@ export default function App() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewRecipeId, setPreviewRecipeId] = useState(null);
   const [shouldNavigateAfterLog, setShouldNavigateAfterLog] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -298,12 +300,21 @@ export default function App() {
     setEditingId(null);
   };
 
+  const addToast = (message) => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, message }]);
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 3200);
+  };
+
   const handleSaveRecipe = async (event) => {
     event.preventDefault();
     const trimmedName = formData.name.trim();
     if (!trimmedName) {
       return;
     }
+    const isEditing = Boolean(editingId);
     const sourceType = formData.sourceType || "cookbook";
     const trimmedCookbook = formData.cookbookTitle.trim();
     const trimmedCuisine = formData.cuisine.trim();
@@ -361,6 +372,9 @@ export default function App() {
       setRecipes([newRecipe, ...latestRecipes]);
     }
 
+    addToast(
+      `${trimmedName} ${isEditing ? "updated" : "created"}.`
+    );
     resetForm();
     setIsModalOpen(false);
   };
@@ -410,6 +424,7 @@ export default function App() {
   };
 
   const handleDeleteRecipe = (recipeId) => {
+    const recipeName = recipeById[recipeId]?.name || "Recipe";
     setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
     setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
     if (recipeMatch?.params?.recipeId === recipeId) {
@@ -422,6 +437,7 @@ export default function App() {
       setIsPreviewOpen(false);
       setPreviewRecipeId(null);
     }
+    addToast(`${recipeName} deleted.`);
   };
 
   const handleDeleteFromView = (recipeId) => {
@@ -644,7 +660,16 @@ export default function App() {
     }
     if (nextInvite && navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(nextInvite);
+      addToast("Invite link copied.");
     }
+  };
+
+  const handleCopyGroupCode = async () => {
+    if (!groupCode || !navigator.clipboard?.writeText) {
+      return;
+    }
+    await navigator.clipboard.writeText(groupCode);
+    addToast("Group code copied.");
   };
 
   const handleJoinGroup = (value) => {
@@ -821,7 +846,9 @@ export default function App() {
                   onGenerateInvite={handleGenerateInvite}
                   onClearData={handleClearData}
                   onJoinGroup={handleJoinGroup}
+                  onCopyGroupCode={handleCopyGroupCode}
                   inviteUrl={showInvite ? inviteUrl : ""}
+                  groupCode={groupCode}
                   statusMessage={status.state === "error" ? status.message : ""}
                   hasGroup={Boolean(groupCode)}
                 />
@@ -832,6 +859,7 @@ export default function App() {
         </div>
       </main>
       <MobileTabBar />
+      <ToastStack toasts={toasts} />
       <RecipeModal
         isOpen={isModalOpen}
         editingId={editingId}
