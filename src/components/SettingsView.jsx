@@ -16,9 +16,8 @@ export const SettingsView = ({
 }) => {
   const [groupInput, setGroupInput] = useState("");
   const [groupError, setGroupError] = useState("");
-  const installHelp = isIosDevice
-    ? "On iOS, open the Share menu, tap the three-dot menu, then choose “Add to Home Screen” to save the catalog page."
-    : "On Android, open the browser menu and tap “Install app.”";
+  const installHelp =
+    "On iPhone or iPad, open the Share menu, tap the three-dot menu, then choose “Add to Home Screen” to save the catalog page. On Android, open the browser menu and tap “Install app.”";
 
   const handleJoin = (event) => {
     event.preventDefault();
@@ -56,6 +55,7 @@ export const SettingsView = ({
         <p>
           Copy an invite link to sync this cookbook across devices or with a
           collaborator. If you don&apos;t have a group yet, we&apos;ll create one.
+          Keep the group code handy—you&apos;ll need it to re-add the group later.
         </p>
         <div className="invite-actions">
           <button type="button" className="primary" onClick={onGenerateInvite}>
