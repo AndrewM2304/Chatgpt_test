@@ -4,7 +4,7 @@ import {
   getInitials,
   groupOptions,
 } from "../utils/recipeUtils";
-import { StarRating } from "./StarRating";
+import { RecipeRating } from "./RecipeRating";
 
 export const CatalogView = ({
   groupedRecipes,
@@ -93,12 +93,10 @@ export const CatalogView = ({
                           {formatDuration(recipe.durationMinutes)}
                         </p>
                       ) : null}
-                      <div className="recipe-rating is-static">
-                        <StarRating
-                          value={recipe.rating || 0}
-                          label="Recipe rating"
-                        />
-                      </div>
+                      <RecipeRating
+                        value={recipe.rating || 0}
+                        label="Recipe rating"
+                      />
                     </div>
                   </article>
                 );
