@@ -55,13 +55,13 @@ export default function App() {
   const [activeRecipeId, setActiveRecipeId] = useState(null);
   const [logRecipeId, setLogRecipeId] = useState("");
   const [logRecipeQuery, setLogRecipeQuery] = useState("");
-  const [logDate, setLogDate] = useState(() =>
-    toDateInputValue(new Date())
-  );
   const [logWeekDate, setLogWeekDate] = useState(() =>
     toDateInputValue(new Date())
   );
-  const [logMeal, setLogMeal] = useState("dinner");
+  const [logSelectedDays, setLogSelectedDays] = useState(() => [
+    toDateInputValue(new Date()),
+  ]);
+  const [logSelectedMeals, setLogSelectedMeals] = useState(["dinner"]);
   const [logNote, setLogNote] = useState("");
   const [editingLogId, setEditingLogId] = useState(null);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -327,8 +327,8 @@ export default function App() {
     setLogRecipeQuery(recipeName);
     const today = new Date();
     setLogWeekDate(toDateInputValue(today));
-    setLogDate(toDateInputValue(today));
-    setLogMeal("dinner");
+    setLogSelectedDays([toDateInputValue(today)]);
+    setLogSelectedMeals(["dinner"]);
     setLogNote("");
     setActiveTab("log");
     setEditingLogId(null);
@@ -384,47 +384,65 @@ export default function App() {
     if (!logRecipeId) {
       return;
     }
-    if (!logDate) {
+    if (!logSelectedDays.length || !logSelectedMeals.length) {
       return;
     }
     const selectedRecipe = recipeById[logRecipeId];
     if (!selectedRecipe) {
       return;
     }
+    const [selectedDay] = logSelectedDays;
+    const [selectedMeal] = logSelectedMeals;
+    if (!selectedDay || !selectedMeal) {
+      return;
+    }
     const nowStamp = new Date().toISOString();
-    const entryPayload = {
-      id: editingLogId || crypto.randomUUID(),
-      recipeId: selectedRecipe.id,
-      name: selectedRecipe.name,
-      cuisine: selectedRecipe.cuisine,
-      cookbookTitle: selectedRecipe.cookbookTitle,
-      date: logDate,
-      meal: logMeal,
-      timestamp: nowStamp,
-      note: logNote.trim(),
-    };
 
     if (editingLogId) {
+      const entryPayload = {
+        id: editingLogId,
+        recipeId: selectedRecipe.id,
+        name: selectedRecipe.name,
+        cuisine: selectedRecipe.cuisine,
+        cookbookTitle: selectedRecipe.cookbookTitle,
+        date: selectedDay,
+        meal: selectedMeal,
+        timestamp: nowStamp,
+        note: logNote.trim(),
+      };
       setLogs((prev) =>
         prev.map((entry) =>
           entry.id === editingLogId ? entryPayload : entry
         )
       );
     } else {
-      setLogs((prev) => [entryPayload, ...prev]);
+      const entries = logSelectedDays.flatMap((day) =>
+        logSelectedMeals.map((meal) => ({
+          id: crypto.randomUUID(),
+          recipeId: selectedRecipe.id,
+          name: selectedRecipe.name,
+          cuisine: selectedRecipe.cuisine,
+          cookbookTitle: selectedRecipe.cookbookTitle,
+          date: day,
+          meal,
+          timestamp: nowStamp,
+          note: logNote.trim(),
+        }))
+      );
+      setLogs((prev) => [...entries, ...prev]);
       setRecipes((prev) =>
         prev.map((recipe) =>
           recipe.id === selectedRecipe.id
             ? {
                 ...recipe,
-                timesCooked: recipe.timesCooked + 1,
+                timesCooked: recipe.timesCooked + entries.length,
                 lastCooked: nowStamp,
               }
             : recipe
         )
       );
     }
-    setLogWeekDate(logDate);
+    setLogWeekDate(selectedDay);
     setLogRecipeId("");
     setLogRecipeQuery("");
     setLogNote("");
@@ -467,16 +485,16 @@ export default function App() {
       setEditingLogId(entry.id);
       setLogRecipeId(entry.recipeId);
       setLogRecipeQuery(entry.name || "");
-      setLogDate(entry.date);
-      setLogMeal(entry.meal || "dinner");
+      setLogSelectedDays([entry.date]);
+      setLogSelectedMeals([entry.meal || "dinner"]);
       setLogNote(entry.note || "");
     } else {
       setEditingLogId(null);
       setLogRecipeId("");
       setLogRecipeQuery("");
       setLogNote("");
-      setLogDate(date || toDateInputValue(new Date()));
-      setLogMeal(meal || "dinner");
+      setLogSelectedDays([date || logWeekDate]);
+      setLogSelectedMeals([meal || "dinner"]);
     }
     setIsLogModalOpen(true);
   };
@@ -486,7 +504,31 @@ export default function App() {
     setLogRecipeId("");
     setLogRecipeQuery("");
     setLogNote("");
+    setLogSelectedDays([logWeekDate]);
+    setLogSelectedMeals(["dinner"]);
     setIsLogModalOpen(false);
+  };
+
+  const handleToggleLogDay = (value) => {
+    setLogSelectedDays((prev) => {
+      if (editingLogId) {
+        return [value];
+      }
+      return prev.includes(value)
+        ? prev.filter((day) => day !== value)
+        : [...prev, value];
+    });
+  };
+
+  const handleToggleLogMeal = (value) => {
+    setLogSelectedMeals((prev) => {
+      if (editingLogId) {
+        return [value];
+      }
+      return prev.includes(value)
+        ? prev.filter((meal) => meal !== value)
+        : [...prev, value];
+    });
   };
 
   const handleExport = () => {
@@ -646,10 +688,10 @@ export default function App() {
               onLogRecipeQuery={handleLogRecipeQuery}
               logWeekDate={logWeekDate}
               onLogWeekDate={setLogWeekDate}
-              logDate={logDate}
-              onLogDate={setLogDate}
-              logMeal={logMeal}
-              onLogMeal={setLogMeal}
+              selectedDays={logSelectedDays}
+              selectedMeals={logSelectedMeals}
+              onToggleDay={handleToggleLogDay}
+              onToggleMeal={handleToggleLogMeal}
               logNote={logNote}
               onLogNote={setLogNote}
               onSubmit={handleLogCook}

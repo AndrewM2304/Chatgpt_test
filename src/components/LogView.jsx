@@ -8,10 +8,10 @@ export const LogView = ({
   onLogRecipeQuery,
   logWeekDate,
   onLogWeekDate,
-  logDate,
-  onLogDate,
-  logMeal,
-  onLogMeal,
+  selectedDays,
+  selectedMeals,
+  onToggleDay,
+  onToggleMeal,
   logNote,
   onLogNote,
   onSubmit,
@@ -34,19 +34,30 @@ export const LogView = ({
             Tap a scheduled meal to edit or remove it.
           </p>
         </div>
-        <label className="log-week-picker" htmlFor="week-of">
-          Week of
-          <input
-            id="week-of"
-            type="date"
-            value={logWeekDate}
-            onChange={(event) => onLogWeekDate(event.target.value)}
-          />
-        </label>
+        <div className="log-week-controls">
+          <label className="log-week-picker" htmlFor="week-of">
+            Week of
+            <input
+              id="week-of"
+              type="date"
+              value={logWeekDate}
+              onChange={(event) => onLogWeekDate(event.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className="primary log-inline-action"
+            onClick={() => onOpenLogModal()}
+          >
+            Schedule a meal
+          </button>
+        </div>
       </div>
       <div
         className="log-schedule-grid"
-        style={{ gridTemplateColumns: `140px repeat(${mealOptions.length}, 1fr)` }}
+        style={{
+          gridTemplateColumns: `minmax(64px, 80px) repeat(${mealOptions.length}, minmax(0, 1fr))`,
+        }}
       >
         <div className="log-schedule-corner">Date</div>
         {mealOptions.map((meal) => (
@@ -59,12 +70,6 @@ export const LogView = ({
             <div className="log-schedule-day">
               <span className="log-day-name">
                 {day.date.toLocaleDateString(undefined, { weekday: "short" })}
-              </span>
-              <span className="log-day-date">
-                {day.date.toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                })}
               </span>
             </div>
             {mealOptions.map((meal) => {
@@ -107,10 +112,11 @@ export const LogView = ({
       logRecipeId={logRecipeId}
       logRecipeQuery={logRecipeQuery}
       onLogRecipeQuery={onLogRecipeQuery}
-      logDate={logDate}
-      onLogDate={onLogDate}
-      logMeal={logMeal}
-      onLogMeal={onLogMeal}
+      selectedDays={selectedDays}
+      selectedMeals={selectedMeals}
+      onToggleDay={onToggleDay}
+      onToggleMeal={onToggleMeal}
+      weekDays={weekDays}
       logNote={logNote}
       onLogNote={onLogNote}
       onSubmit={onSubmit}
