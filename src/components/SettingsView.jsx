@@ -1,10 +1,7 @@
 import { useState } from "react";
 
 export const SettingsView = ({
-  onExport,
-  onImport,
   onGenerateInvite,
-  onCreateGroup,
   onClearData,
   onJoinGroup,
   inviteUrl,
@@ -26,22 +23,19 @@ export const SettingsView = ({
   return (
     <section className="settings">
       <div className="settings-card">
-        <h2>Sharing & sync</h2>
+        <h2>Invite your group</h2>
         <p>
-          Keep your catalog synced with Supabase and share it with a single
-          invite link.
+          Copy an invite link to sync this cookbook across devices or with a
+          collaborator. If you don&apos;t have a group yet, we&apos;ll create one.
         </p>
         <div className="invite-actions">
           <button type="button" className="primary" onClick={onGenerateInvite}>
-            Generate & copy invite link
-          </button>
-          <button type="button" className="ghost" onClick={onCreateGroup}>
-            Create new group
+            Copy invite link
           </button>
         </div>
         {inviteUrl && (
           <div className="invite-link">
-            <span>Invite URL</span>
+            <span>Invite link</span>
             <input type="text" readOnly value={inviteUrl} />
           </div>
         )}
@@ -73,20 +67,6 @@ export const SettingsView = ({
             Join group
           </button>
         </form>
-      </div>
-
-      <div className="settings-card">
-        <h2>Backups</h2>
-        <p>Export your recipes for safekeeping or import a saved catalog.</p>
-        <div className="share-actions">
-          <button type="button" className="primary" onClick={onExport}>
-            Export catalog
-          </button>
-          <label className="ghost file-input">
-            Import catalog
-            <input type="file" accept="application/json" onChange={onImport} />
-          </label>
-        </div>
       </div>
 
       <div className="settings-card danger-card">

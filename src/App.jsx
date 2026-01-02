@@ -75,8 +75,10 @@ export default function App() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    sourceType: "cookbook",
     cookbookTitle: "",
     page: "",
+    url: "",
     cuisine: "",
     rating: "",
     duration: "",
@@ -123,6 +125,7 @@ export default function App() {
         recipe.cookbookTitle,
         recipe.cuisine,
         recipe.page,
+        recipe.url,
       ]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(term));
@@ -241,8 +244,10 @@ export default function App() {
   const resetForm = () => {
     setFormData({
       name: "",
+      sourceType: "cookbook",
       cookbookTitle: "",
       page: "",
+      url: "",
       cuisine: "",
       rating: "",
       duration: "",
@@ -256,8 +261,12 @@ export default function App() {
     if (!trimmedName) {
       return;
     }
+    const sourceType = formData.sourceType || "cookbook";
     const trimmedCookbook = formData.cookbookTitle.trim();
     const trimmedCuisine = formData.cuisine.trim();
+    const trimmedUrl = formData.url.trim();
+    const pageValue = sourceType === "website" ? "" : formData.page.trim();
+    const urlValue = sourceType === "website" ? trimmedUrl : "";
     const ratingValue = formData.rating
       ? Number.parseInt(formData.rating, 10)
       : null;
@@ -272,8 +281,10 @@ export default function App() {
             ? {
                 ...recipe,
                 name: trimmedName,
+                sourceType,
                 cookbookTitle: trimmedCookbook,
-                page: formData.page.trim(),
+                page: pageValue,
+                url: urlValue,
                 cuisine: trimmedCuisine,
                 rating: Number.isNaN(ratingValue) ? null : ratingValue,
                 durationMinutes: Number.isNaN(durationValue)
@@ -287,8 +298,10 @@ export default function App() {
       const newRecipe = {
         id: crypto.randomUUID(),
         name: trimmedName,
+        sourceType,
         cookbookTitle: trimmedCookbook,
-        page: formData.page.trim(),
+        page: pageValue,
+        url: urlValue,
         cuisine: trimmedCuisine,
         rating: Number.isNaN(ratingValue) ? null : ratingValue,
         durationMinutes: Number.isNaN(durationValue) ? null : durationValue,
@@ -305,8 +318,10 @@ export default function App() {
   const handleEditRecipe = (recipe) => {
     setFormData({
       name: recipe.name,
+      sourceType: recipe.sourceType || (recipe.url ? "website" : "cookbook"),
       cookbookTitle: recipe.cookbookTitle,
       page: recipe.page,
+      url: recipe.url || "",
       cuisine: recipe.cuisine,
       rating: recipe.rating ? String(recipe.rating) : "",
       duration: recipe.durationMinutes
@@ -515,62 +530,31 @@ export default function App() {
     });
   };
 
-  const handleExport = () => {
-    const payload = {
-      recipes,
-      cookbooks: cookbookOptions,
-      cuisines: cuisineOptions,
-      logs,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "recipe-catalog.json";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
+  const buildInviteUrl = (code) => {
+    if (!code || typeof window === "undefined") {
+      return "";
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        if (data.recipes) {
-          setRecipes(data.recipes);
-        }
-        if (data.cookbooks) {
-          setCookbooks(data.cookbooks);
-        }
-        if (data.cuisines) {
-          setCuisines(data.cuisines);
-        }
-        if (data.logs) {
-          setLogs(data.logs);
-        }
-      } catch (error) {
-        console.error("Failed to import catalog", error);
-      }
-    };
-    reader.readAsText(file);
+    const baseUrl = new URL(
+      import.meta.env.BASE_URL || "/",
+      window.location.origin
+    );
+    baseUrl.searchParams.set("invite", code);
+    return baseUrl.toString();
   };
 
   const handleGenerateInvite = async () => {
     setShowInvite(true);
-    if (inviteUrl && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(inviteUrl);
+    let nextInvite = inviteUrl;
+    if (!groupCode) {
+      const newCode = await createNewGroup({
+        name: "Shared kitchen",
+        duplicate: true,
+      });
+      nextInvite = buildInviteUrl(newCode);
     }
-  };
-
-  const handleCreateGroup = async () => {
-    await createNewGroup({ name: "Shared kitchen", duplicate: true });
-    setShowInvite(true);
+    if (nextInvite && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(nextInvite);
+    }
   };
 
   const handleJoinGroup = (value) => {
@@ -705,10 +689,7 @@ export default function App() {
               path="/settings"
               element={
                 <SettingsView
-                  onExport={handleExport}
-                  onImport={handleImport}
                   onGenerateInvite={handleGenerateInvite}
-                  onCreateGroup={handleCreateGroup}
                   onClearData={handleClearData}
                   onJoinGroup={handleJoinGroup}
                   inviteUrl={showInvite ? inviteUrl : ""}
