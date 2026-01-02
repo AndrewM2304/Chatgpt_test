@@ -806,6 +806,27 @@ button.secondary.icon-button {
   background: #ffffff;
 }
 
+.invite-code {
+  display: grid;
+  gap: 6px;
+}
+
+.invite-code-button {
+  border: 1px solid #cbd5f5;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.invite-code-button:hover {
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
 .sync-status {
   color: #0f172a;
   font-weight: 600;
@@ -1033,6 +1054,31 @@ button.secondary.icon-button {
 .danger-card {
   border: 1px solid #fecaca;
   background: #fef2f2;
+}
+
+.toast-stack {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 10px;
+  z-index: 40;
+  max-width: min(320px, calc(100vw - 32px));
+}
+
+.toast {
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.3);
+}
+
+@media (max-width: 899px) {
+  .toast-stack {
+    bottom: calc(16px + var(--tabbar-height) + env(safe-area-inset-bottom));
+  }
 }
 
 .modal-backdrop {

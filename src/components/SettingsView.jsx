@@ -4,7 +4,9 @@ export const SettingsView = ({
   onGenerateInvite,
   onClearData,
   onJoinGroup,
+  onCopyGroupCode,
   inviteUrl,
+  groupCode,
   statusMessage,
   hasGroup,
 }) => {
@@ -37,6 +39,18 @@ export const SettingsView = ({
           <div className="invite-link">
             <span>Invite link</span>
             <input type="text" readOnly value={inviteUrl} />
+          </div>
+        )}
+        {hasGroup && groupCode && (
+          <div className="invite-code">
+            <span>Invite group code</span>
+            <button
+              type="button"
+              className="invite-code-button"
+              onClick={onCopyGroupCode}
+            >
+              {groupCode}
+            </button>
           </div>
         )}
         {!hasGroup && (
