@@ -17,7 +17,7 @@ export const SettingsView = ({
   const [groupInput, setGroupInput] = useState("");
   const [groupError, setGroupError] = useState("");
   const installHelp = isIosDevice
-    ? "On iOS, open the Share menu and tap “Add to Home Screen.”"
+    ? "On iOS, open the Share menu, tap the three-dot menu, then choose “Add to Home Screen” to save the catalog page."
     : "On Android, open the browser menu and tap “Install app.”";
 
   const handleJoin = (event) => {
