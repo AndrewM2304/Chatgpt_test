@@ -79,17 +79,6 @@ export default function App() {
   const [logNote, setLogNote] = useState("");
   const [editingLogId, setEditingLogId] = useState(null);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    sourceType: "cookbook",
-    cookbookTitle: "",
-    page: "",
-    url: "",
-    cuisine: "",
-    rating: "",
-    duration: "",
-    notes: "",
-  });
   const [editingId, setEditingId] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -281,30 +270,7 @@ export default function App() {
     return schedule;
   }, [logs, weekDays]);
 
-  const handleFormChange = (field) => (event) => {
-    setFormData((prev) => ({ ...prev, [field]: event.target.value }));
-  };
-
-  const handleFormValueChange = (field) => (value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleRatingChange = (value) => {
-    setFormData((prev) => ({ ...prev, rating: value }));
-  };
-
   const resetForm = () => {
-    setFormData({
-      name: "",
-      sourceType: "cookbook",
-      cookbookTitle: "",
-      page: "",
-      url: "",
-      cuisine: "",
-      rating: "",
-      duration: "",
-      notes: "",
-    });
     setEditingId(null);
   };
 
@@ -316,25 +282,24 @@ export default function App() {
     }, 3200);
   };
 
-  const handleSaveRecipe = async (event) => {
-    event.preventDefault();
-    const trimmedName = formData.name.trim();
+  const handleSaveRecipe = async (draft) => {
+    const trimmedName = draft.name.trim();
     if (!trimmedName) {
       return;
     }
     const isEditing = Boolean(editingId);
-    const sourceType = formData.sourceType || "cookbook";
-    const trimmedCookbook = formData.cookbookTitle.trim();
-    const trimmedCuisine = formData.cuisine.trim();
-    const trimmedUrl = formData.url.trim();
-    const trimmedNotes = formData.notes.trim();
-    const pageValue = sourceType === "website" ? "" : formData.page.trim();
+    const sourceType = draft.sourceType || "cookbook";
+    const trimmedCookbook = draft.cookbookTitle.trim();
+    const trimmedCuisine = draft.cuisine.trim();
+    const trimmedUrl = draft.url.trim();
+    const trimmedNotes = draft.notes.trim();
+    const pageValue = sourceType === "website" ? "" : draft.page.trim();
     const urlValue = sourceType === "website" ? trimmedUrl : "";
-    const ratingValue = formData.rating
-      ? Number.parseInt(formData.rating, 10)
+    const ratingValue = draft.rating
+      ? Number.parseInt(draft.rating, 10)
       : null;
-    const durationValue = formData.duration
-      ? Number.parseInt(formData.duration, 10)
+    const durationValue = draft.duration
+      ? Number.parseInt(draft.duration, 10)
       : null;
 
     if (editingId) {
@@ -386,19 +351,6 @@ export default function App() {
   };
 
   const handleEditRecipe = (recipe) => {
-    setFormData({
-      name: recipe.name,
-      sourceType: recipe.sourceType || (recipe.url ? "website" : "cookbook"),
-      cookbookTitle: recipe.cookbookTitle,
-      page: recipe.page,
-      url: recipe.url || "",
-      cuisine: recipe.cuisine,
-      rating: recipe.rating ? String(recipe.rating) : "",
-      duration: recipe.durationMinutes
-        ? String(recipe.durationMinutes)
-        : "",
-      notes: recipe.notes || "",
-    });
     setEditingId(recipe.id);
     setIsModalOpen(true);
   };
@@ -868,11 +820,7 @@ export default function App() {
       <ToastStack toasts={toasts} />
       <RecipeModal
         isOpen={isModalOpen}
-        editingId={editingId}
-        formData={formData}
-        onFormChange={handleFormChange}
-        onValueChange={handleFormValueChange}
-        onRatingChange={handleRatingChange}
+        editingRecipe={editingId ? recipeById[editingId] : null}
         onSaveRecipe={handleSaveRecipe}
         onClose={handleCloseModal}
         onDeleteRecipe={handleDeleteFromModal}
