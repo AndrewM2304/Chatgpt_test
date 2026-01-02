@@ -150,6 +150,15 @@ export const RecipeModal = ({
             </div>
           </div>
 
+          <label htmlFor="recipe-notes">Details or notes</label>
+          <textarea
+            id="recipe-notes"
+            rows="4"
+            value={formData.notes}
+            onChange={onFormChange("notes")}
+            placeholder="Add tips, substitutions, or reminders."
+          />
+
           <div className="form-actions">
             <button className="primary" type="submit">
               {editingId ? "Save changes" : "Add recipe"}

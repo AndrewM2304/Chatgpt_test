@@ -48,7 +48,7 @@ export const formatDate = (value) => {
 
 export const formatDuration = (value) => {
   if (!value) {
-    return "No duration";
+    return "";
   }
   return `${value} min`;
 };

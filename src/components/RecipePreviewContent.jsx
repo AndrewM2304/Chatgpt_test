@@ -18,6 +18,7 @@ export const RecipePreviewContent = ({
     recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
   const sourceTitle =
     recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+  const durationLabel = formatDuration(recipe.durationMinutes);
 
   return (
     <div className="recipe-view-card">
@@ -53,7 +54,10 @@ export const RecipePreviewContent = ({
             onChange={onRatingChange}
           />
         </div>
-        <p className="recipe-meta">{formatDuration(recipe.durationMinutes)}</p>
+        {durationLabel ? (
+          <p className="recipe-meta">{durationLabel}</p>
+        ) : null}
+        {recipe.notes ? <p className="recipe-notes">{recipe.notes}</p> : null}
         <div className="recipe-footer">
           <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
         </div>
