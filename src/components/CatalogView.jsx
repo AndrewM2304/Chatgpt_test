@@ -123,6 +123,16 @@ export const CatalogView = ({
       {!hasRecipes && (
         <p className="empty">No recipes yet. Add your first cookbook hit.</p>
       )}
+
+      <div className="log-sticky-action catalog-sticky-action">
+        <button
+          type="button"
+          className="primary log-sticky-button"
+          onClick={onAddRecipe}
+        >
+          Add recipe
+        </button>
+      </div>
     </section>
   );
 };

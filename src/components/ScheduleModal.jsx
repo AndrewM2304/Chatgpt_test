@@ -7,10 +7,11 @@ export const ScheduleModal = ({
   logRecipeId,
   logRecipeQuery,
   onLogRecipeQuery,
-  logDate,
-  onLogDate,
-  logMeal,
-  onLogMeal,
+  selectedDays,
+  selectedMeals,
+  onToggleDay,
+  onToggleMeal,
+  weekDays,
   logNote,
   onLogNote,
   onSubmit,
@@ -62,31 +63,45 @@ export const ScheduleModal = ({
             Pick a random meal
           </button>
 
-          <div className="modal-grid">
-            <div className="control">
-              <label htmlFor="log-date">Date</label>
-              <input
-                id="log-date"
-                type="date"
-                value={logDate}
-                onChange={(event) => onLogDate(event.target.value)}
-              />
+          <fieldset className="log-days">
+            <legend>Days</legend>
+            <div className="log-days-grid">
+              {weekDays.map((day) => {
+                const inputId = `log-day-${day.value}`;
+                return (
+                  <label key={day.value} className="log-day-option" htmlFor={inputId}>
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      checked={selectedDays.includes(day.value)}
+                      onChange={() => onToggleDay(day.value)}
+                    />
+                    <span>{day.label}</span>
+                  </label>
+                );
+              })}
             </div>
-            <div className="control">
-              <label htmlFor="log-meal">Meal slot</label>
-              <select
-                id="log-meal"
-                value={logMeal}
-                onChange={(event) => onLogMeal(event.target.value)}
-              >
-                {mealOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+          </fieldset>
+
+          <fieldset className="log-days">
+            <legend>Meals</legend>
+            <div className="log-days-grid">
+              {mealOptions.map((option) => {
+                const inputId = `log-meal-${option.value}`;
+                return (
+                  <label key={option.value} className="log-day-option" htmlFor={inputId}>
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      checked={selectedMeals.includes(option.value)}
+                      onChange={() => onToggleMeal(option.value)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                );
+              })}
             </div>
-          </div>
+          </fieldset>
 
           <label htmlFor="log-note">Notes (optional)</label>
           <input
@@ -101,7 +116,12 @@ export const ScheduleModal = ({
             <button
               className="primary"
               type="submit"
-              disabled={!hasRecipes || !logRecipeId || !logDate}
+              disabled={
+                !hasRecipes ||
+                !logRecipeId ||
+                !selectedDays.length ||
+                !selectedMeals.length
+              }
             >
               {editingLogId ? "Save changes" : "Add to schedule"}
             </button>
