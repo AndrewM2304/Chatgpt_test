@@ -44,7 +44,7 @@ export const RandomView = ({
         </div>
         <button
           type="button"
-          className="primary"
+          className="primary random-inline-action"
           onClick={onPickRandom}
           disabled={!randomCandidates.length}
         >
@@ -91,6 +91,17 @@ export const RandomView = ({
           </button>
         </div>
       )}
+
+      <div className="log-sticky-action random-sticky-action">
+        <button
+          type="button"
+          className="primary log-sticky-button"
+          onClick={onPickRandom}
+          disabled={!randomCandidates.length}
+        >
+          Pick a random recipe
+        </button>
+      </div>
     </section>
   );
 };
