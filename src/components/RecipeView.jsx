@@ -2,7 +2,6 @@ import { RecipePreviewContent } from "./RecipePreviewContent";
 
 export const RecipeView = ({
   activeRecipe,
-  onBack,
   onStartLog,
   onEditRecipe,
   onDeleteRecipe,
@@ -13,9 +12,6 @@ export const RecipeView = ({
       <section className="recipe-view">
         <div className="recipe-view-empty">
           <p className="empty">That recipe is no longer available.</p>
-          <button type="button" className="secondary" onClick={onBack}>
-            Back to catalog
-          </button>
         </div>
       </section>
     );
@@ -23,11 +19,6 @@ export const RecipeView = ({
 
   return (
     <section className="recipe-view">
-      <div className="recipe-view-header">
-        <button type="button" className="secondary" onClick={onBack}>
-          Back to catalog
-        </button>
-      </div>
       <RecipePreviewContent
         recipe={activeRecipe}
         onStartLog={onStartLog}

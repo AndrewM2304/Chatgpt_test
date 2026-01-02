@@ -888,12 +888,17 @@ button.secondary.icon-button {
   width: min(720px, 100%);
 }
 
+.recipe-preview-modal .recipe-view-card {
+  background: transparent;
+  padding: 0;
+}
+
 .recipe-preview-body {
   display: grid;
   gap: 16px;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
   .catalog-detail {
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     align-items: start;
@@ -1074,8 +1079,8 @@ button.secondary.icon-button {
 
 .star-rating {
   display: inline-flex;
-  gap: 6px;
-  font-size: 1.2rem;
+  gap: 8px;
+  font-size: 1.5rem;
   color: #cbd5f5;
 }
 
@@ -1083,7 +1088,7 @@ button.secondary.icon-button {
 .star-rating .star-button {
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 2px;
   cursor: default;
   line-height: 1;
 }

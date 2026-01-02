@@ -25,8 +25,13 @@ export const RecipePreviewModal = ({
           <div>
             <h2 id="recipe-preview-title">{recipe.name}</h2>
           </div>
-          <button type="button" className="secondary" onClick={onClose}>
-            Close
+          <button
+            type="button"
+            className="secondary icon-button"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <span aria-hidden="true">×</span>
           </button>
         </header>
         <div className="recipe-preview-body">

@@ -15,6 +15,7 @@ import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
 import { RecipeModal } from "./components/RecipeModal";
 import { RecipePreviewModal } from "./components/RecipePreviewModal";
+import { ScheduleModal } from "./components/ScheduleModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
@@ -91,6 +92,13 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewRecipeId, setPreviewRecipeId] = useState(null);
+  const [shouldNavigateAfterLog, setShouldNavigateAfterLog] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return window.matchMedia("(min-width: 900px)").matches;
+  });
 
   useEffect(() => {
     const shouldLock = isModalOpen || isLogModalOpen || isPreviewOpen;
@@ -99,6 +107,21 @@ export default function App() {
       document.body.classList.remove("modal-open");
     };
   }, [isModalOpen, isLogModalOpen, isPreviewOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia("(min-width: 900px)");
+    const handleChange = (event) => setIsDesktop(event.matches);
+    setIsDesktop(mediaQuery.matches);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
 
   const cookbookOptions = useMemo(() => {
     return Array.from(
@@ -189,6 +212,10 @@ export default function App() {
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [filteredRecipes, groupBy]);
+
+  const defaultRecipeId = useMemo(() => {
+    return groupedRecipes[0]?.items?.[0]?.id ?? null;
+  }, [groupedRecipes]);
 
   const randomCandidates = useMemo(() => {
     if (!recipes.length) {
@@ -350,10 +377,7 @@ export default function App() {
   };
 
   const handleOpenRecipe = (recipe) => {
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 1023px)").matches
-    ) {
+    if (!isDesktop) {
       setPreviewRecipeId(recipe.id);
       setIsPreviewOpen(true);
       return;
@@ -361,7 +385,7 @@ export default function App() {
     navigate(`/recipe/${recipe.id}`);
   };
 
-  const handleStartLog = (recipeId) => {
+  const handleStartLog = (recipeId, { deferNavigation = false } = {}) => {
     setLogRecipeId(recipeId);
     const recipeName = recipeById[recipeId]?.name || "";
     setLogRecipeQuery(recipeName);
@@ -370,7 +394,10 @@ export default function App() {
     setLogSelectedDays([toDateInputValue(today)]);
     setLogSelectedMeals(["dinner"]);
     setLogNote("");
-    navigate("/log");
+    setShouldNavigateAfterLog(deferNavigation);
+    if (!deferNavigation) {
+      navigate("/log");
+    }
     setEditingLogId(null);
     setIsLogModalOpen(true);
   };
@@ -489,6 +516,10 @@ export default function App() {
     setLogNote("");
     setEditingLogId(null);
     setIsLogModalOpen(false);
+    if (shouldNavigateAfterLog) {
+      navigate("/log");
+      setShouldNavigateAfterLog(false);
+    }
   };
 
   const handleDeleteLogEntry = (entryId) => {
@@ -528,10 +559,7 @@ export default function App() {
       );
       if (!shouldEdit) {
         if (entry.recipeId) {
-          if (
-            typeof window !== "undefined" &&
-            window.matchMedia("(max-width: 1023px)").matches
-          ) {
+          if (!isDesktop) {
             setPreviewRecipeId(entry.recipeId);
             setIsPreviewOpen(true);
             return;
@@ -554,6 +582,7 @@ export default function App() {
       setLogSelectedDays([date || logWeekDate]);
       setLogSelectedMeals([meal || "dinner"]);
     }
+    setShouldNavigateAfterLog(false);
     setIsLogModalOpen(true);
   };
 
@@ -565,6 +594,7 @@ export default function App() {
     setLogSelectedDays([logWeekDate]);
     setLogSelectedMeals(["dinner"]);
     setIsLogModalOpen(false);
+    setShouldNavigateAfterLog(false);
   };
 
   const handleToggleLogDay = (value) => {
@@ -669,9 +699,8 @@ export default function App() {
     );
   };
 
-  const RecipeRoute = () => {
-    const { recipeId } = useParams();
-    const activeRecipe = recipeId ? recipeById[recipeId] || null : null;
+  const CatalogDetailLayout = ({ activeRecipeId }) => {
+    const activeRecipe = activeRecipeId ? recipeById[activeRecipeId] || null : null;
 
     return (
       <div className="catalog-detail">
@@ -692,8 +721,9 @@ export default function App() {
         <div className="catalog-detail-preview">
           <RecipeView
             activeRecipe={activeRecipe}
-            onBack={() => navigate("/catalog")}
-            onStartLog={handleStartLog}
+            onStartLog={(recipeId) =>
+              handleStartLog(recipeId, { deferNavigation: true })
+            }
             onEditRecipe={handleEditRecipe}
             onDeleteRecipe={handleDeleteFromView}
             onRatingChange={(value) =>
@@ -703,6 +733,11 @@ export default function App() {
         </div>
       </div>
     );
+  };
+
+  const RecipeRoute = () => {
+    const { recipeId } = useParams();
+    return <CatalogDetailLayout activeRecipeId={recipeId} />;
   };
 
   const handleClosePreview = () => {
@@ -723,18 +758,22 @@ export default function App() {
             <Route
               path="/catalog"
               element={
-                <CatalogView
-                  groupedRecipes={groupedRecipes}
-                  totalRecipes={recipes.length}
-                  searchTerm={searchTerm}
-                  onSearchTerm={setSearchTerm}
-                  groupBy={groupBy}
-                  onGroupBy={setGroupBy}
-                  onOpenRecipe={handleOpenRecipe}
-                  onUpdateRating={handleUpdateRecipeRating}
-                  hasRecipes={recipes.length > 0}
-                  onAddRecipe={handleOpenAddModal}
-                />
+                isDesktop ? (
+                  <CatalogDetailLayout activeRecipeId={defaultRecipeId} />
+                ) : (
+                  <CatalogView
+                    groupedRecipes={groupedRecipes}
+                    totalRecipes={recipes.length}
+                    searchTerm={searchTerm}
+                    onSearchTerm={setSearchTerm}
+                    groupBy={groupBy}
+                    onGroupBy={setGroupBy}
+                    onOpenRecipe={handleOpenRecipe}
+                    onUpdateRating={handleUpdateRecipeRating}
+                    hasRecipes={recipes.length > 0}
+                    onAddRecipe={handleOpenAddModal}
+                  />
+                )
               }
             />
             <Route
@@ -757,28 +796,12 @@ export default function App() {
               path="/log"
               element={
                 <LogView
-                  recipes={recipes}
-                  logRecipeId={logRecipeId}
-                  logRecipeQuery={logRecipeQuery}
-                  onLogRecipeQuery={handleLogRecipeQuery}
                   logWeekDate={logWeekDate}
                   onLogWeekDate={setLogWeekDate}
-                  selectedDays={logSelectedDays}
-                  selectedMeals={logSelectedMeals}
-                  onToggleDay={handleToggleLogDay}
-                  onToggleMeal={handleToggleLogMeal}
-                  logNote={logNote}
-                  onLogNote={setLogNote}
-                  onSubmit={handleLogCook}
                   weekDays={weekDays}
                   weeklySchedule={weeklySchedule}
                   mealOptions={MEAL_OPTIONS}
-                  isLogModalOpen={isLogModalOpen}
-                  editingLogId={editingLogId}
                   onOpenLogModal={handleOpenLogModal}
-                  onCloseLogModal={handleCloseLogModal}
-                  onDeleteLogEntry={handleDeleteLogEntry}
-                  onPickRandomMeal={handlePickRandomMeal}
                 />
               }
             />
@@ -819,7 +842,7 @@ export default function App() {
         onClose={handleClosePreview}
         onStartLog={(recipeId) => {
           handleClosePreview();
-          handleStartLog(recipeId);
+          handleStartLog(recipeId, { deferNavigation: true });
         }}
         onEditRecipe={(recipe) => {
           handleClosePreview();
@@ -832,6 +855,30 @@ export default function App() {
         onRatingChange={(value) =>
           handleUpdateRecipeRating(previewRecipeId, value)
         }
+      />
+      <ScheduleModal
+        isOpen={isLogModalOpen}
+        editingLogId={editingLogId}
+        recipeOptions={recipes
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((recipe) => recipe.name)}
+        logRecipeId={logRecipeId}
+        logRecipeQuery={logRecipeQuery}
+        onLogRecipeQuery={handleLogRecipeQuery}
+        selectedDays={logSelectedDays}
+        selectedMeals={logSelectedMeals}
+        onToggleDay={handleToggleLogDay}
+        onToggleMeal={handleToggleLogMeal}
+        weekDays={weekDays}
+        logNote={logNote}
+        onLogNote={setLogNote}
+        onSubmit={handleLogCook}
+        onClose={handleCloseLogModal}
+        onDelete={handleDeleteLogEntry}
+        onPickRandom={handlePickRandomMeal}
+        mealOptions={MEAL_OPTIONS}
+        hasRecipes={recipes.length > 0}
       />
     </div>
   );

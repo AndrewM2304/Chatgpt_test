@@ -1,5 +1,4 @@
 import {
-  formatDate,
   formatDuration,
   getCoverColor,
   getInitials,
@@ -89,25 +88,6 @@ export const CatalogView = ({
                     <header>
                       <h3>{recipe.name}</h3>
                     </header>
-                    <p className="recipe-meta">
-                      {sourceTitle}
-                      {!isWebsite && recipe.page ? ` · Page ${recipe.page}` : ""}
-                    </p>
-                    {isWebsite && recipe.url && (
-                      <p className="recipe-meta">
-                        <a
-                          href={recipe.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          {recipe.url}
-                        </a>
-                      </p>
-                    )}
-                    <p className="recipe-meta">
-                      Cuisine: {recipe.cuisine || "Uncategorized"}
-                    </p>
                     <div
                       className="recipe-rating"
                       onClick={(event) => event.stopPropagation()}
@@ -125,9 +105,6 @@ export const CatalogView = ({
                     <p className="recipe-meta">
                       {formatDuration(recipe.durationMinutes)}
                     </p>
-                    <div className="recipe-footer">
-                      <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
-                    </div>
                   </div>
                 </article>
               );
