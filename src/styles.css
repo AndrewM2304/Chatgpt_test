@@ -1151,6 +1151,7 @@ button.secondary.icon-button {
   .header-nav-inner {
     padding-top: 0;
     padding-bottom: 0;
+    align-items: stretch;
   }
 
   .header-tabs {
@@ -1161,6 +1162,13 @@ button.secondary.icon-button {
   .header-tab {
     align-self: stretch;
     padding: 0 12px;
+  }
+
+  .header-add {
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
   }
 
   .header-tab.is-active::after {

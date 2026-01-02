@@ -508,6 +508,15 @@ export default function App() {
 
   const handleOpenLogModal = ({ date, meal, entry } = {}) => {
     if (entry) {
+      const shouldEdit = window.confirm(
+        `Edit "${entry.name}"? Select OK to edit the schedule entry, or Cancel to view the recipe.`
+      );
+      if (!shouldEdit) {
+        if (entry.recipeId) {
+          navigate(`/recipe/${entry.recipeId}`);
+          return;
+        }
+      }
       setEditingLogId(entry.id);
       setLogRecipeId(entry.recipeId);
       setLogRecipeQuery(entry.name || "");

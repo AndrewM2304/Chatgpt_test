@@ -31,7 +31,7 @@ export const LogView = ({
         <div>
           <h2>Weekly schedule</h2>
           <p className="log-schedule-caption">
-            Tap a scheduled meal to edit or remove it.
+            Tap a scheduled meal to edit it or view the recipe.
           </p>
         </div>
         <div className="log-week-controls">
