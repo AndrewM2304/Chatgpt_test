@@ -51,7 +51,7 @@ export const ScheduleModal = ({
             value={logRecipeQuery}
             onChange={onLogRecipeQuery}
             options={recipeOptions}
-            placeholder="Search recipes"
+            placeholder="Search recipes or type a note"
           />
           <button
             type="button"
@@ -116,8 +116,7 @@ export const ScheduleModal = ({
               className="primary"
               type="submit"
               disabled={
-                !hasRecipes ||
-                !logRecipeId ||
+                !logRecipeQuery.trim() ||
                 !selectedDays.length ||
                 !selectedMeals.length
               }
