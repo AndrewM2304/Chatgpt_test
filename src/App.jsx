@@ -398,27 +398,14 @@ export default function App() {
     }
     const nowStamp = new Date().toISOString();
 
-    if (editingLogId) {
-      const entryPayload = {
-        id: editingLogId,
-        recipeId: selectedRecipe.id,
-        name: selectedRecipe.name,
-        cuisine: selectedRecipe.cuisine,
-        cookbookTitle: selectedRecipe.cookbookTitle,
-        date: selectedDay,
-        meal: selectedMeal,
-        timestamp: nowStamp,
-        note: logNote.trim(),
-      };
-      setLogs((prev) =>
-        prev.map((entry) =>
-          entry.id === editingLogId ? entryPayload : entry
-        )
-      );
-    } else {
-      const entries = logSelectedDays.flatMap((day) =>
-        logSelectedMeals.map((meal) => ({
-          id: crypto.randomUUID(),
+    let entryIndex = 0;
+    const entries = logSelectedDays.flatMap((day) =>
+      logSelectedMeals.map((meal) => {
+        const id =
+          editingLogId && entryIndex === 0 ? editingLogId : crypto.randomUUID();
+        entryIndex += 1;
+        return {
+          id,
           recipeId: selectedRecipe.id,
           name: selectedRecipe.name,
           cuisine: selectedRecipe.cuisine,
@@ -427,8 +414,15 @@ export default function App() {
           meal,
           timestamp: nowStamp,
           note: logNote.trim(),
-        }))
-      );
+        };
+      })
+    );
+    if (editingLogId) {
+      setLogs((prev) => {
+        const remaining = prev.filter((entry) => entry.id !== editingLogId);
+        return [...entries, ...remaining];
+      });
+    } else {
       setLogs((prev) => [...entries, ...prev]);
       setRecipes((prev) =>
         prev.map((recipe) =>
@@ -511,9 +505,6 @@ export default function App() {
 
   const handleToggleLogDay = (value) => {
     setLogSelectedDays((prev) => {
-      if (editingLogId) {
-        return [value];
-      }
       return prev.includes(value)
         ? prev.filter((day) => day !== value)
         : [...prev, value];
@@ -522,9 +513,6 @@ export default function App() {
 
   const handleToggleLogMeal = (value) => {
     setLogSelectedMeals((prev) => {
-      if (editingLogId) {
-        return [value];
-      }
       return prev.includes(value)
         ? prev.filter((meal) => meal !== value)
         : [...prev, value];

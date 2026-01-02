@@ -30,7 +30,6 @@ export const ScheduleModal = ({
       <div className="modal-card">
         <header className="modal-header">
           <div>
-            <p className="eyebrow">Schedule meals</p>
             <h2 id="schedule-modal-title">
               {editingLogId ? "Edit meal" : "Add a meal"}
             </h2>
