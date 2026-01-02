@@ -6,7 +6,10 @@ export const ToastStack = ({ toasts }) => {
   return (
     <div className="toast-stack" role="status" aria-live="polite">
       {toasts.map((toast) => (
-        <div className="toast" key={toast.id}>
+        <div
+          className={`toast toast--${toast.variant || "info"}`}
+          key={toast.id}
+        >
           {toast.message}
         </div>
       ))}
