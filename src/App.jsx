@@ -14,6 +14,7 @@ import { SettingsView } from "./components/SettingsView";
 import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
 import { RecipeModal } from "./components/RecipeModal";
+import { RecipePreviewModal } from "./components/RecipePreviewModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
@@ -88,14 +89,16 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewRecipeId, setPreviewRecipeId] = useState(null);
 
   useEffect(() => {
-    const shouldLock = isModalOpen || isLogModalOpen;
+    const shouldLock = isModalOpen || isLogModalOpen || isPreviewOpen;
     document.body.classList.toggle("modal-open", shouldLock);
     return () => {
       document.body.classList.remove("modal-open");
     };
-  }, [isModalOpen, isLogModalOpen]);
+  }, [isModalOpen, isLogModalOpen, isPreviewOpen]);
 
   const cookbookOptions = useMemo(() => {
     return Array.from(
@@ -347,6 +350,14 @@ export default function App() {
   };
 
   const handleOpenRecipe = (recipe) => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 1023px)").matches
+    ) {
+      setPreviewRecipeId(recipe.id);
+      setIsPreviewOpen(true);
+      return;
+    }
     navigate(`/recipe/${recipe.id}`);
   };
 
@@ -372,6 +383,10 @@ export default function App() {
     }
     if (editingId === recipeId) {
       resetForm();
+    }
+    if (previewRecipeId === recipeId) {
+      setIsPreviewOpen(false);
+      setPreviewRecipeId(null);
     }
   };
 
@@ -509,10 +524,18 @@ export default function App() {
   const handleOpenLogModal = ({ date, meal, entry } = {}) => {
     if (entry) {
       const shouldEdit = window.confirm(
-        `Edit "${entry.name}"? Select OK to edit the schedule entry, or Cancel to view the recipe.`
+        `Edit "${entry.name}"? Select OK to edit the schedule entry, or Cancel to open the recipe preview.`
       );
       if (!shouldEdit) {
         if (entry.recipeId) {
+          if (
+            typeof window !== "undefined" &&
+            window.matchMedia("(max-width: 1023px)").matches
+          ) {
+            setPreviewRecipeId(entry.recipeId);
+            setIsPreviewOpen(true);
+            return;
+          }
           navigate(`/recipe/${entry.recipeId}`);
           return;
         }
@@ -629,19 +652,62 @@ export default function App() {
     setIsModalOpen(false);
   };
 
+  const handleUpdateRecipeRating = (recipeId, value) => {
+    if (!recipeId) {
+      return;
+    }
+    const nextRating = value ? Number.parseInt(value, 10) : null;
+    setRecipes((prev) =>
+      prev.map((recipe) =>
+        recipe.id === recipeId
+          ? {
+              ...recipe,
+              rating: Number.isNaN(nextRating) ? null : nextRating,
+            }
+          : recipe
+      )
+    );
+  };
+
   const RecipeRoute = () => {
     const { recipeId } = useParams();
     const activeRecipe = recipeId ? recipeById[recipeId] || null : null;
 
     return (
-      <RecipeView
-        activeRecipe={activeRecipe}
-        onBack={() => navigate("/catalog")}
-        onStartLog={handleStartLog}
-        onEditRecipe={handleEditRecipe}
-        onDeleteRecipe={handleDeleteFromView}
-      />
+      <div className="catalog-detail">
+        <div className="catalog-detail-sidebar">
+          <CatalogView
+            groupedRecipes={groupedRecipes}
+            totalRecipes={recipes.length}
+            searchTerm={searchTerm}
+            onSearchTerm={setSearchTerm}
+            groupBy={groupBy}
+            onGroupBy={setGroupBy}
+            onOpenRecipe={handleOpenRecipe}
+            onUpdateRating={handleUpdateRecipeRating}
+            hasRecipes={recipes.length > 0}
+            onAddRecipe={handleOpenAddModal}
+          />
+        </div>
+        <div className="catalog-detail-preview">
+          <RecipeView
+            activeRecipe={activeRecipe}
+            onBack={() => navigate("/catalog")}
+            onStartLog={handleStartLog}
+            onEditRecipe={handleEditRecipe}
+            onDeleteRecipe={handleDeleteFromView}
+            onRatingChange={(value) =>
+              handleUpdateRecipeRating(activeRecipe?.id, value)
+            }
+          />
+        </div>
+      </div>
     );
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewRecipeId(null);
   };
 
   return (
@@ -665,6 +731,7 @@ export default function App() {
                   groupBy={groupBy}
                   onGroupBy={setGroupBy}
                   onOpenRecipe={handleOpenRecipe}
+                  onUpdateRating={handleUpdateRecipeRating}
                   hasRecipes={recipes.length > 0}
                   onAddRecipe={handleOpenAddModal}
                 />
@@ -745,6 +812,26 @@ export default function App() {
         onDeleteRecipe={handleDeleteFromModal}
         cookbookOptions={cookbookOptions}
         cuisineOptions={cuisineOptions}
+      />
+      <RecipePreviewModal
+        isOpen={isPreviewOpen}
+        recipe={previewRecipeId ? recipeById[previewRecipeId] : null}
+        onClose={handleClosePreview}
+        onStartLog={(recipeId) => {
+          handleClosePreview();
+          handleStartLog(recipeId);
+        }}
+        onEditRecipe={(recipe) => {
+          handleClosePreview();
+          handleEditRecipe(recipe);
+        }}
+        onDeleteRecipe={(recipeId) => {
+          handleClosePreview();
+          handleDeleteFromView(recipeId);
+        }}
+        onRatingChange={(value) =>
+          handleUpdateRecipeRating(previewRecipeId, value)
+        }
       />
     </div>
   );

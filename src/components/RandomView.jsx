@@ -79,7 +79,6 @@ export const RandomView = ({
             Cuisine: {randomPick.cuisine || "Uncategorized"}
           </p>
           <div className="recipe-footer">
-            <span>{randomPick.timesCooked} cooks logged</span>
             <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
           </div>
           <button

@@ -15,6 +15,7 @@ export const CatalogView = ({
   groupBy,
   onGroupBy,
   onOpenRecipe,
+  onUpdateRating,
   hasRecipes,
   onAddRecipe,
 }) => {
@@ -107,10 +108,15 @@ export const CatalogView = ({
                     <p className="recipe-meta">
                       Cuisine: {recipe.cuisine || "Uncategorized"}
                     </p>
-                    <div className="recipe-rating">
+                    <div
+                      className="recipe-rating"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <StarRating
                         value={recipe.rating || 0}
                         label="Recipe rating"
+                        isEditable
+                        onChange={(value) => onUpdateRating(recipe.id, value)}
                       />
                       <span className="recipe-rating-text">
                         {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}
@@ -120,7 +126,6 @@ export const CatalogView = ({
                       {formatDuration(recipe.durationMinutes)}
                     </p>
                     <div className="recipe-footer">
-                      <span>{recipe.timesCooked} cooks logged</span>
                       <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
                     </div>
                   </div>
