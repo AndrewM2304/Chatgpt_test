@@ -177,7 +177,7 @@ export const RecipeModal = ({
           />
 
           <div className="modal-grid">
-            {editingId && (
+            {editingRecipe && (
               <div className="control">
                 <label id="rating-label">Rating</label>
                 <div id="rating" aria-labelledby="rating-label">
