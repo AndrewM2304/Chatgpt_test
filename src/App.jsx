@@ -300,9 +300,9 @@ export default function App() {
     setEditingId(null);
   };
 
-  const addToast = (message) => {
+  const addToast = (message, variant = "info") => {
     const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, message }]);
+    setToasts((prev) => [...prev, { id, message, variant }]);
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, 3200);
@@ -372,9 +372,7 @@ export default function App() {
       setRecipes([newRecipe, ...latestRecipes]);
     }
 
-    addToast(
-      `${trimmedName} ${isEditing ? "updated" : "created"}.`
-    );
+    addToast(`${trimmedName} ${isEditing ? "updated" : "created"}.`, "success");
     resetForm();
     setIsModalOpen(false);
   };
@@ -437,7 +435,7 @@ export default function App() {
       setIsPreviewOpen(false);
       setPreviewRecipeId(null);
     }
-    addToast(`${recipeName} deleted.`);
+    addToast(`${recipeName} deleted.`, "success");
   };
 
   const handleDeleteFromView = (recipeId) => {
@@ -660,7 +658,7 @@ export default function App() {
     }
     if (nextInvite && navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(nextInvite);
-      addToast("Invite link copied.");
+      addToast("Invite link copied.", "success");
     }
   };
 
@@ -669,7 +667,7 @@ export default function App() {
       return;
     }
     await navigator.clipboard.writeText(groupCode);
-    addToast("Group code copied.");
+    addToast("Group code copied.", "success");
   };
 
   const handleJoinGroup = (value) => {
