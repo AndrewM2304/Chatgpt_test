@@ -5,13 +5,20 @@ export const SettingsView = ({
   onClearData,
   onJoinGroup,
   onCopyGroupCode,
+  onInstallApp,
   inviteUrl,
   groupCode,
   statusMessage,
   hasGroup,
+  canInstallApp,
+  isInstalled,
+  isIosDevice,
 }) => {
   const [groupInput, setGroupInput] = useState("");
   const [groupError, setGroupError] = useState("");
+  const installHelp = isIosDevice
+    ? "On iOS, open the Share menu and tap “Add to Home Screen.”"
+    : "On Android, open the browser menu and tap “Install app.”";
 
   const handleJoin = (event) => {
     event.preventDefault();
@@ -24,6 +31,26 @@ export const SettingsView = ({
 
   return (
     <section className="settings">
+      <div className="settings-card">
+        <h2>Install the app</h2>
+        <p>
+          Save Cookbook Keeper to your home screen for offline access and a
+          full-screen experience.
+        </p>
+        {isInstalled && (
+          <p className="status-banner">
+            Cookbook Keeper is already installed on this device.
+          </p>
+        )}
+        {!isInstalled && !canInstallApp && (
+          <p className="status-banner">{installHelp}</p>
+        )}
+        {canInstallApp && (
+          <button type="button" className="primary" onClick={onInstallApp}>
+            Install app
+          </button>
+        )}
+      </div>
       <div className="settings-card">
         <h2>Invite your group</h2>
         <p>
