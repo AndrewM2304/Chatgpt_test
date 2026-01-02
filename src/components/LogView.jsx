@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
 export const LogView = ({
   logWeekDate,
@@ -82,7 +83,9 @@ export const LogView = ({
                         onOpenLogModal({ date: day.value, meal: meal.value })
                       }
                       aria-label={`Schedule ${meal.label.toLowerCase()} on ${day.label}`}
-                    ></button>
+                    >
+                      <PlusCircleIcon className="log-empty-icon" aria-hidden="true" />
+                    </button>
                   )}
                 </div>
               );
