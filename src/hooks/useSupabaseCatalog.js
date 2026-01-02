@@ -37,6 +37,7 @@ export const useSupabaseCatalog = () => {
     message: STATUS_MESSAGES.connecting,
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [hasLoadedCatalog, setHasLoadedCatalog] = useState(false);
 
   const inviteUrl = useMemo(() => {
     if (typeof window === "undefined" || !groupCode) {
@@ -145,6 +146,10 @@ export const useSupabaseCatalog = () => {
   }, [groupCode, setGroupCode]);
 
   useEffect(() => {
+    setHasLoadedCatalog(false);
+  }, [groupCode]);
+
+  useEffect(() => {
     let isMounted = true;
     const bootstrap = async () => {
       if (!groupCode) {
@@ -157,6 +162,7 @@ export const useSupabaseCatalog = () => {
 
       if (isMounted && settingsResult !== null && catalogResult !== null) {
         setStatus({ state: "ready", message: STATUS_MESSAGES.ready });
+        setHasLoadedCatalog(true);
       }
     };
 
@@ -168,7 +174,7 @@ export const useSupabaseCatalog = () => {
   }, [ensureCatalog, groupCode, loadSettings]);
 
   useEffect(() => {
-    if (!groupCode) {
+    if (!groupCode || !hasLoadedCatalog) {
       return undefined;
     }
 
