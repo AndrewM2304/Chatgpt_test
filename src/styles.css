@@ -848,6 +848,7 @@ button.secondary.icon-button {
   gap: 20px;
   min-height: 0;
   overflow-y: auto;
+  background: #f8fafc;
   padding-bottom: 20px;
 }
 
@@ -1167,7 +1168,7 @@ button.secondary.icon-button {
   }
 
   .panel-content {
-    padding: 20px 16px
+    padding: calc(20px + env(safe-area-inset-top)) 16px
       calc(var(--tabbar-height) + 20px + env(safe-area-inset-bottom));
   }
 
