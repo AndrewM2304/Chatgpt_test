@@ -676,6 +676,13 @@ button.secondary.icon-button {
   font: inherit;
 }
 
+.log-entry-button.log-empty-button {
+  background: transparent;
+  border: 1px dashed #e2e8f0;
+  justify-content: center;
+  text-align: center;
+}
+
 .log-entry-button:hover,
 .log-entry-button:focus {
   background: #e0f2fe;

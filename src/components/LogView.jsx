@@ -75,7 +75,16 @@ export const LogView = ({
                       ))}
                     </ul>
                   ) : (
-                    <span className="empty">—</span>
+                    <button
+                      type="button"
+                      className="log-entry-button log-empty-button"
+                      onClick={() =>
+                        onOpenLogModal({ date: day.value, meal: meal.value })
+                      }
+                      aria-label={`Schedule ${meal.label.toLowerCase()} on ${day.label}`}
+                    >
+                      <span className="empty">—</span>
+                    </button>
                   )}
                 </div>
               );
