@@ -708,7 +708,11 @@ export default function App() {
     }
     const codeMatch = trimmed.match(/invite=([^&]+)/i);
     const code = codeMatch ? decodeURIComponent(codeMatch[1]) : trimmed;
-    return joinGroup(code);
+    const joined = joinGroup(code);
+    if (joined) {
+      addToast("Joined group successfully.", "success");
+    }
+    return joined;
   };
 
   const handleOpenAddModal = () => {

@@ -199,6 +199,28 @@ export const useSupabaseCatalog = () => {
   }, [ensureCatalog, groupCode, loadSettings]);
 
   useEffect(() => {
+    if (!groupCode || typeof window === "undefined") {
+      return undefined;
+    }
+
+    const refreshCatalog = () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+      syncCatalog();
+    };
+
+    refreshCatalog();
+    window.addEventListener("focus", refreshCatalog);
+    document.addEventListener("visibilitychange", refreshCatalog);
+
+    return () => {
+      window.removeEventListener("focus", refreshCatalog);
+      document.removeEventListener("visibilitychange", refreshCatalog);
+    };
+  }, [groupCode, syncCatalog]);
+
+  useEffect(() => {
     if (!groupCode || !hasLoadedCatalog) {
       return undefined;
     }
