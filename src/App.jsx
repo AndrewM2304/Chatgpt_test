@@ -14,7 +14,8 @@ import { SettingsView } from "./components/SettingsView";
 import { RandomView } from "./components/RandomView";
 import { RecipeView } from "./components/RecipeView";
 import { RecipeModal } from "./components/RecipeModal";
-import { TabNav } from "./components/TabNav";
+import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
+import { MobileTabBar } from "./components/MobileTabBar";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
 
@@ -629,11 +630,11 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <Hero />
-        <TabNav onAddRecipe={handleOpenAddModal} />
+        <LandscapeHeaderNav onAddRecipe={handleOpenAddModal} />
       </header>
       <main className="panel">
         <div className="panel-content">
+          <Hero />
           <Routes>
             <Route path="/" element={<Navigate to="/catalog" replace />} />
             <Route
@@ -714,6 +715,7 @@ export default function App() {
           </Routes>
         </div>
       </main>
+      <MobileTabBar />
       <RecipeModal
         isOpen={isModalOpen}
         editingId={editingId}
