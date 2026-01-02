@@ -82,9 +82,7 @@ export const LogView = ({
                         onOpenLogModal({ date: day.value, meal: meal.value })
                       }
                       aria-label={`Schedule ${meal.label.toLowerCase()} on ${day.label}`}
-                    >
-                      <span className="empty">—</span>
-                    </button>
+                    ></button>
                   )}
                 </div>
               );
