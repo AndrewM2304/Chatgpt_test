@@ -25,6 +25,12 @@ body {
 
 body.modal-open {
   overflow: hidden;
+  touch-action: none;
+}
+
+body.modal-open .panel,
+body.modal-open .panel-content {
+  overflow: hidden;
 }
 
 #root {
@@ -1165,7 +1171,7 @@ button.secondary.icon-button {
   }
 
   .panel-content {
-    padding-top: calc(var(--header-height) + 24px + env(safe-area-inset-top));
+    padding-top: calc(var(--header-height) + 12px + env(safe-area-inset-top));
   }
 
   .log-sticky-action {
