@@ -781,6 +781,7 @@ export default function App() {
             onOpenRecipe={handleOpenRecipe}
             hasRecipes={recipes.length > 0}
             onAddRecipe={handleOpenAddModal}
+            onRatingChange={handleUpdateRecipeRating}
           />
         </div>
         <div className="catalog-detail-preview">
@@ -840,6 +841,7 @@ export default function App() {
                     onOpenRecipe={handleOpenRecipe}
                     hasRecipes={recipes.length > 0}
                     onAddRecipe={handleOpenAddModal}
+                    onRatingChange={handleUpdateRecipeRating}
                   />
                 )
               }

@@ -16,6 +16,7 @@ export const CatalogView = ({
   onOpenRecipe,
   hasRecipes,
   onAddRecipe,
+  onRatingChange,
 }) => {
   const recipeCountLabel = totalRecipes === 1 ? "recipe" : "recipes";
 
@@ -93,10 +94,18 @@ export const CatalogView = ({
                           {formatDuration(recipe.durationMinutes)}
                         </p>
                       ) : null}
-                      <RecipeRating
-                        value={recipe.rating || 0}
-                        label="Recipe rating"
-                      />
+                      <div
+                        className="recipe-rating-control"
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
+                      >
+                        <RecipeRating
+                          value={recipe.rating || 0}
+                          label="Recipe rating"
+                          isEditable
+                          onChange={(value) => onRatingChange?.(recipe.id, value)}
+                        />
+                      </div>
                     </div>
                   </article>
                 );
