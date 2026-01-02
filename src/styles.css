@@ -830,6 +830,20 @@ button.secondary.icon-button {
   gap: 16px;
 }
 
+.catalog-detail {
+  display: grid;
+  gap: 24px;
+}
+
+.catalog-detail-sidebar {
+  display: none;
+}
+
+.catalog-detail-preview {
+  display: grid;
+  gap: 16px;
+}
+
 .recipe-view-header {
   display: flex;
   justify-content: flex-start;
@@ -868,6 +882,26 @@ button.secondary.icon-button {
 .recipe-view-empty {
   display: grid;
   gap: 12px;
+}
+
+.recipe-preview-modal {
+  width: min(720px, 100%);
+}
+
+.recipe-preview-body {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .catalog-detail {
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .catalog-detail-sidebar {
+    display: block;
+  }
 }
 
 .gate {
