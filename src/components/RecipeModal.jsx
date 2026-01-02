@@ -151,9 +151,9 @@ export const RecipeModal = ({
           </div>
 
           <label htmlFor="recipe-notes">Details or notes</label>
-          <textarea
+          <input
             id="recipe-notes"
-            rows="4"
+            type="text"
             value={formData.notes}
             onChange={onFormChange("notes")}
             placeholder="Add tips, substitutions, or reminders."

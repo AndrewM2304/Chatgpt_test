@@ -4,7 +4,7 @@ import {
   getCoverColor,
   getInitials,
 } from "../utils/recipeUtils";
-import { StarRating } from "./StarRating";
+import { RecipeRating } from "./RecipeRating";
 
 export const RecipePreviewContent = ({
   recipe,
@@ -46,14 +46,12 @@ export const RecipePreviewContent = ({
         <p className="recipe-meta">
           Cuisine: {recipe.cuisine || "Uncategorized"}
         </p>
-        <div className="recipe-rating">
-          <StarRating
-            value={recipe.rating || 0}
-            label="Recipe rating"
-            isEditable
-            onChange={onRatingChange}
-          />
-        </div>
+        <RecipeRating
+          value={recipe.rating || 0}
+          label="Recipe rating"
+          isEditable
+          onChange={onRatingChange}
+        />
         {durationLabel ? (
           <p className="recipe-meta">{durationLabel}</p>
         ) : null}
