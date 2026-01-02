@@ -855,15 +855,18 @@ button.secondary.icon-button {
   display: grid;
   gap: 24px;
   min-height: 0;
+  height: 100%;
 }
 
 .catalog-detail-sidebar {
   display: none;
+  min-height: 0;
 }
 
 .catalog-detail-preview {
   display: grid;
   gap: 16px;
+  min-height: 0;
 }
 
 .recipe-view-header {
@@ -1123,6 +1126,8 @@ button.secondary.icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: inherit;
+  font-size: inherit;
 }
 
 .star-rating.is-editable .star-button {
