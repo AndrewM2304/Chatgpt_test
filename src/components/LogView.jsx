@@ -1,29 +1,12 @@
 import { Fragment } from "react";
-import { ScheduleModal } from "./ScheduleModal";
 
 export const LogView = ({
-  recipes,
-  logRecipeId,
-  logRecipeQuery,
-  onLogRecipeQuery,
   logWeekDate,
   onLogWeekDate,
-  selectedDays,
-  selectedMeals,
-  onToggleDay,
-  onToggleMeal,
-  logNote,
-  onLogNote,
-  onSubmit,
   weekDays,
   weeklySchedule,
   mealOptions,
-  isLogModalOpen,
-  editingLogId,
   onOpenLogModal,
-  onCloseLogModal,
-  onDeleteLogEntry,
-  onPickRandomMeal,
 }) => (
   <section className="log">
     <div className="log-schedule">
@@ -101,31 +84,6 @@ export const LogView = ({
         ))}
       </div>
     </div>
-
-    <ScheduleModal
-      isOpen={isLogModalOpen}
-      editingLogId={editingLogId}
-      recipeOptions={recipes
-        .slice()
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((recipe) => recipe.name)}
-      logRecipeId={logRecipeId}
-      logRecipeQuery={logRecipeQuery}
-      onLogRecipeQuery={onLogRecipeQuery}
-      selectedDays={selectedDays}
-      selectedMeals={selectedMeals}
-      onToggleDay={onToggleDay}
-      onToggleMeal={onToggleMeal}
-      weekDays={weekDays}
-      logNote={logNote}
-      onLogNote={onLogNote}
-      onSubmit={onSubmit}
-      onClose={onCloseLogModal}
-      onDelete={onDeleteLogEntry}
-      onPickRandom={onPickRandomMeal}
-      mealOptions={mealOptions}
-      hasRecipes={recipes.length > 0}
-    />
 
     <div className="log-sticky-action">
       <button
