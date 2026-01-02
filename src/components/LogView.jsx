@@ -58,9 +58,24 @@ export const LogView = ({
             </div>
             {mealOptions.map((meal) => {
               const entries = weeklySchedule[index][meal.value];
+              const isEmpty = entries.length === 0;
               return (
-                <div key={`${day.value}-${meal.value}`} className="log-schedule-cell">
-                  {entries.length ? (
+                <div
+                  key={`${day.value}-${meal.value}`}
+                  className={`log-schedule-cell${isEmpty ? " is-empty" : ""}`}
+                >
+                  {isEmpty ? (
+                    <button
+                      type="button"
+                      className="log-entry-button log-empty-button"
+                      onClick={() =>
+                        onOpenLogModal({ date: day.value, meal: meal.value })
+                      }
+                      aria-label={`Schedule ${meal.label.toLowerCase()} on ${day.label}`}
+                    >
+                      <PlusCircleIcon className="log-empty-icon" aria-hidden="true" />
+                    </button>
+                  ) : (
                     <ul>
                       {entries.map((entry) => (
                         <li key={entry.id}>
@@ -75,17 +90,6 @@ export const LogView = ({
                         </li>
                       ))}
                     </ul>
-                  ) : (
-                    <button
-                      type="button"
-                      className="log-entry-button log-empty-button"
-                      onClick={() =>
-                        onOpenLogModal({ date: day.value, meal: meal.value })
-                      }
-                      aria-label={`Schedule ${meal.label.toLowerCase()} on ${day.label}`}
-                    >
-                      <PlusCircleIcon className="log-empty-icon" aria-hidden="true" />
-                    </button>
                   )}
                 </div>
               );

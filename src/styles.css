@@ -652,6 +652,12 @@ button.secondary.icon-button {
   gap: 6px;
 }
 
+.log-schedule-cell.is-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .log-schedule-cell ul {
   list-style: none;
   display: grid;
