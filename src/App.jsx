@@ -87,6 +87,7 @@ export default function App() {
     cuisine: "",
     rating: "",
     duration: "",
+    notes: "",
   });
   const [editingId, setEditingId] = useState(null);
   const [showInvite, setShowInvite] = useState(false);
@@ -292,6 +293,7 @@ export default function App() {
       cuisine: "",
       rating: "",
       duration: "",
+      notes: "",
     });
     setEditingId(null);
   };
@@ -306,6 +308,7 @@ export default function App() {
     const trimmedCookbook = formData.cookbookTitle.trim();
     const trimmedCuisine = formData.cuisine.trim();
     const trimmedUrl = formData.url.trim();
+    const trimmedNotes = formData.notes.trim();
     const pageValue = sourceType === "website" ? "" : formData.page.trim();
     const urlValue = sourceType === "website" ? trimmedUrl : "";
     const ratingValue = formData.rating
@@ -331,6 +334,7 @@ export default function App() {
                 durationMinutes: Number.isNaN(durationValue)
                   ? null
                   : durationValue,
+                notes: trimmedNotes,
               }
             : recipe
         )
@@ -346,6 +350,7 @@ export default function App() {
         cuisine: trimmedCuisine,
         rating: Number.isNaN(ratingValue) ? null : ratingValue,
         durationMinutes: Number.isNaN(durationValue) ? null : durationValue,
+        notes: trimmedNotes,
         timesCooked: 0,
         lastCooked: null,
       };
@@ -372,6 +377,7 @@ export default function App() {
       duration: recipe.durationMinutes
         ? String(recipe.durationMinutes)
         : "",
+      notes: recipe.notes || "",
     });
     setEditingId(recipe.id);
     setIsModalOpen(true);

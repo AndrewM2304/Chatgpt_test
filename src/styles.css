@@ -840,6 +840,7 @@ button.secondary.icon-button {
   gap: 16px;
   min-height: 0;
   grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
 }
 
 .catalog-body {
@@ -896,9 +897,20 @@ button.secondary.icon-button {
   color: #64748b;
 }
 
+.recipe-rating.is-static {
+  pointer-events: none;
+  touch-action: none;
+}
+
 .recipe-view-empty {
   display: grid;
   gap: 12px;
+}
+
+.recipe-notes {
+  white-space: pre-wrap;
+  color: #475569;
+  font-size: 0.95rem;
 }
 
 .recipe-preview-modal {
@@ -924,7 +936,7 @@ button.secondary.icon-button {
 
   .catalog-detail-sidebar {
     display: block;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .catalog-detail-preview {

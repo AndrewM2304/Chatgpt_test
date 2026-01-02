@@ -88,13 +88,12 @@ export const CatalogView = ({
                       <header>
                         <h3>{recipe.name}</h3>
                       </header>
-                      <p className="recipe-meta">
-                        {formatDuration(recipe.durationMinutes)}
-                      </p>
-                      <div
-                        className="recipe-rating"
-                        onClick={(event) => event.stopPropagation()}
-                      >
+                      {recipe.durationMinutes ? (
+                        <p className="recipe-meta">
+                          {formatDuration(recipe.durationMinutes)}
+                        </p>
+                      ) : null}
+                      <div className="recipe-rating is-static">
                         <StarRating
                           value={recipe.rating || 0}
                           label="Recipe rating"
