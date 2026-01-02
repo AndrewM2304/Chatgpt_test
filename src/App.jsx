@@ -103,6 +103,14 @@ export default function App() {
     }
     return window.matchMedia("(min-width: 900px)").matches;
   });
+  const recipeOptions = useMemo(
+    () =>
+      recipes
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((recipe) => recipe.name),
+    [recipes]
+  );
 
   useEffect(() => {
     const shouldLock = isModalOpen || isLogModalOpen || isPreviewOpen;
@@ -894,10 +902,7 @@ export default function App() {
       <ScheduleModal
         isOpen={isLogModalOpen}
         editingLogId={editingLogId}
-        recipeOptions={recipes
-          .slice()
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((recipe) => recipe.name)}
+        recipeOptions={recipeOptions}
         logRecipeId={logRecipeId}
         logRecipeQuery={logRecipeQuery}
         onLogRecipeQuery={handleLogRecipeQuery}

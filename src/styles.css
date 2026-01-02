@@ -1118,8 +1118,12 @@ button.secondary.icon-button {
   background: rgba(15, 23, 42, 0.4);
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: calc(24px + env(safe-area-inset-top))
+    calc(24px + env(safe-area-inset-right))
+    calc(24px + env(safe-area-inset-bottom))
+    calc(24px + env(safe-area-inset-left));
   z-index: 50;
+  overflow-y: auto;
 }
 
 .modal-card {
@@ -1130,7 +1134,7 @@ button.secondary.icon-button {
   display: grid;
   gap: 16px;
   box-shadow: 0 24px 40px rgba(15, 23, 42, 0.2);
-  max-height: min(90vh, 720px);
+  max-height: min(calc(100dvh - 48px), 720px);
   overflow-y: auto;
 }
 
