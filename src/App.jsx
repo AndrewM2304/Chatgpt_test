@@ -60,6 +60,7 @@ export default function App() {
   } = useSupabaseCatalog();
   const navigate = useNavigate();
   const recipeMatch = useMatch("/recipe/:recipeId");
+  const catalogMatch = useMatch("/catalog");
   const { recipes, logs } = catalog;
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
@@ -713,7 +714,6 @@ export default function App() {
             groupBy={groupBy}
             onGroupBy={setGroupBy}
             onOpenRecipe={handleOpenRecipe}
-            onUpdateRating={handleUpdateRecipeRating}
             hasRecipes={recipes.length > 0}
             onAddRecipe={handleOpenAddModal}
           />
@@ -751,7 +751,11 @@ export default function App() {
         <LandscapeHeaderNav onAddRecipe={handleOpenAddModal} />
       </header>
       <main className="panel">
-        <div className="panel-content">
+        <div
+          className={`panel-content${
+            catalogMatch || recipeMatch ? " is-catalog" : ""
+          }`}
+        >
           <Hero />
           <Routes>
             <Route path="/" element={<Navigate to="/catalog" replace />} />
@@ -769,7 +773,6 @@ export default function App() {
                     groupBy={groupBy}
                     onGroupBy={setGroupBy}
                     onOpenRecipe={handleOpenRecipe}
-                    onUpdateRating={handleUpdateRecipeRating}
                     hasRecipes={recipes.length > 0}
                     onAddRecipe={handleOpenAddModal}
                   />

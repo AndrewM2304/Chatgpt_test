@@ -127,11 +127,6 @@ export const RecipeModal = ({
               <div className="control">
                 <label id="rating-label">Rating</label>
                 <div id="rating" aria-labelledby="rating-label">
-                  <div className="rating-row">
-                    <div className="rating-label">
-                      {formData.rating ? `${formData.rating} / 5` : "Unrated"}
-                    </div>
-                  </div>
                   <StarRating
                     value={formData.rating}
                     onChange={onRatingChange}

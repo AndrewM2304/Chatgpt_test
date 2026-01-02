@@ -52,9 +52,6 @@ export const RecipePreviewContent = ({
             isEditable
             onChange={onRatingChange}
           />
-          <span className="recipe-rating-text">
-            {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}
-          </span>
         </div>
         <p className="recipe-meta">{formatDuration(recipe.durationMinutes)}</p>
         <div className="recipe-footer">

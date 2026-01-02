@@ -14,7 +14,6 @@ export const CatalogView = ({
   groupBy,
   onGroupBy,
   onOpenRecipe,
-  onUpdateRating,
   hasRecipes,
   onAddRecipe,
 }) => {
@@ -51,71 +50,68 @@ export const CatalogView = ({
         </div>
       </div>
 
-      {groupedRecipes.map((group) => (
-        <div key={group.label} className="catalog-group">
-          <h2>{group.label}</h2>
-          <div className="recipe-grid">
-            {group.items.map((recipe) => {
-              const isWebsite =
-                recipe.sourceType === "website" ||
-                (!recipe.sourceType && recipe.url);
-              const sourceTitle =
-                recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+      <div className="catalog-body">
+        {groupedRecipes.map((group) => (
+          <div key={group.label} className="catalog-group">
+            <h2>{group.label}</h2>
+            <div className="recipe-grid">
+              {group.items.map((recipe) => {
+                const isWebsite =
+                  recipe.sourceType === "website" ||
+                  (!recipe.sourceType && recipe.url);
+                const sourceTitle =
+                  recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
 
-              return (
-                <article
-                  key={recipe.id}
-                  className="recipe-card"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onOpenRecipe(recipe)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onOpenRecipe(recipe);
-                    }
-                  }}
-                >
-                  <div
-                    className="recipe-cover"
-                    style={{
-                      background: getCoverColor(sourceTitle),
+                return (
+                  <article
+                    key={recipe.id}
+                    className="recipe-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onOpenRecipe(recipe)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onOpenRecipe(recipe);
+                      }
                     }}
                   >
-                    <span>{getInitials(sourceTitle)}</span>
-                  </div>
-                  <div className="recipe-details">
-                    <header>
-                      <h3>{recipe.name}</h3>
-                    </header>
                     <div
-                      className="recipe-rating"
-                      onClick={(event) => event.stopPropagation()}
+                      className="recipe-cover"
+                      style={{
+                        background: getCoverColor(sourceTitle),
+                      }}
                     >
-                      <StarRating
-                        value={recipe.rating || 0}
-                        label="Recipe rating"
-                        isEditable
-                        onChange={(value) => onUpdateRating(recipe.id, value)}
-                      />
-                      <span className="recipe-rating-text">
-                        {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}
-                      </span>
+                      <span>{getInitials(sourceTitle)}</span>
                     </div>
-                    <p className="recipe-meta">
-                      {formatDuration(recipe.durationMinutes)}
-                    </p>
-                  </div>
-                </article>
-              );
-            })}
+                    <div className="recipe-details">
+                      <header>
+                        <h3>{recipe.name}</h3>
+                      </header>
+                      <p className="recipe-meta">
+                        {formatDuration(recipe.durationMinutes)}
+                      </p>
+                      <div
+                        className="recipe-rating"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <StarRating
+                          value={recipe.rating || 0}
+                          label="Recipe rating"
+                        />
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      {!hasRecipes && (
-        <p className="empty">No recipes yet. Add your first cookbook hit.</p>
-      )}
+        {!hasRecipes && (
+          <p className="empty">No recipes yet. Add your first cookbook hit.</p>
+        )}
+      </div>
 
       <div className="log-sticky-action catalog-sticky-action">
         <button
