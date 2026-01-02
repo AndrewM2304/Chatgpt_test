@@ -1,13 +1,10 @@
+import { useEffect, useMemo, useState } from "react";
 import { StarRating } from "./StarRating";
 import { TypeaheadInput } from "./TypeaheadInput";
 
 export const RecipeModal = ({
   isOpen,
-  editingId,
-  formData,
-  onFormChange,
-  onValueChange,
-  onRatingChange,
+  editingRecipe,
   onSaveRecipe,
   onClose,
   onDeleteRecipe,
@@ -18,7 +15,64 @@ export const RecipeModal = ({
     return null;
   }
 
+  const emptyForm = useMemo(
+    () => ({
+      name: "",
+      sourceType: "cookbook",
+      cookbookTitle: "",
+      page: "",
+      url: "",
+      cuisine: "",
+      rating: "",
+      duration: "",
+      notes: "",
+    }),
+    []
+  );
+  const [formData, setFormData] = useState(emptyForm);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    if (!editingRecipe) {
+      setFormData(emptyForm);
+      return;
+    }
+    setFormData({
+      name: editingRecipe.name,
+      sourceType:
+        editingRecipe.sourceType || (editingRecipe.url ? "website" : "cookbook"),
+      cookbookTitle: editingRecipe.cookbookTitle,
+      page: editingRecipe.page,
+      url: editingRecipe.url || "",
+      cuisine: editingRecipe.cuisine,
+      rating: editingRecipe.rating ? String(editingRecipe.rating) : "",
+      duration: editingRecipe.durationMinutes
+        ? String(editingRecipe.durationMinutes)
+        : "",
+      notes: editingRecipe.notes || "",
+    });
+  }, [editingRecipe, emptyForm, isOpen]);
+
   const isWebsite = formData.sourceType === "website";
+
+  const handleFormChange = (field) => (event) => {
+    setFormData((prev) => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleFormValueChange = (field) => (value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleRatingChange = (value) => {
+    setFormData((prev) => ({ ...prev, rating: value }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSaveRecipe(formData);
+  };
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -26,7 +80,7 @@ export const RecipeModal = ({
         <header className="modal-header">
           <div>
             <h2 id="recipe-modal-title">
-              {editingId ? "Edit recipe" : "Add a recipe"}
+              {editingRecipe ? "Edit recipe" : "Add a recipe"}
             </h2>
           </div>
           <button
@@ -38,13 +92,13 @@ export const RecipeModal = ({
             <span aria-hidden="true">×</span>
           </button>
         </header>
-        <form onSubmit={onSaveRecipe} className="modal-form">
+        <form onSubmit={handleSubmit} className="modal-form">
           <label htmlFor="recipe-name">Recipe name</label>
           <input
             id="recipe-name"
             type="text"
             value={formData.name}
-            onChange={onFormChange("name")}
+            onChange={handleFormChange("name")}
             placeholder="Creamy lemon pasta"
           />
 
@@ -58,7 +112,7 @@ export const RecipeModal = ({
                   name="sourceType"
                   value="cookbook"
                   checked={!isWebsite}
-                  onChange={onFormChange("sourceType")}
+                  onChange={handleFormChange("sourceType")}
                 />
                 Cookbook
               </label>
@@ -69,7 +123,7 @@ export const RecipeModal = ({
                   name="sourceType"
                   value="website"
                   checked={isWebsite}
-                  onChange={onFormChange("sourceType")}
+                  onChange={handleFormChange("sourceType")}
                 />
                 Website
               </label>
@@ -81,7 +135,7 @@ export const RecipeModal = ({
             name="cookbook"
             label={isWebsite ? "Website name" : "Cookbook title"}
             value={formData.cookbookTitle}
-            onChange={onValueChange("cookbookTitle")}
+            onChange={handleFormValueChange("cookbookTitle")}
             options={cookbookOptions}
             placeholder={isWebsite ? "NYT Cooking" : "Sunday Suppers"}
           />
@@ -93,7 +147,7 @@ export const RecipeModal = ({
                 id="recipe-url"
                 type="url"
                 value={formData.url}
-                onChange={onFormChange("url")}
+                onChange={handleFormChange("url")}
                 placeholder="https://example.com/recipe"
               />
             </>
@@ -106,7 +160,7 @@ export const RecipeModal = ({
                 inputMode="numeric"
                 min="1"
                 value={formData.page}
-                onChange={onFormChange("page")}
+                onChange={handleFormChange("page")}
                 placeholder="112"
               />
             </>
@@ -117,7 +171,7 @@ export const RecipeModal = ({
             name="cuisine"
             label="Cuisine"
             value={formData.cuisine}
-            onChange={onValueChange("cuisine")}
+            onChange={handleFormValueChange("cuisine")}
             options={cuisineOptions}
             placeholder="Italian"
           />
@@ -129,7 +183,7 @@ export const RecipeModal = ({
                 <div id="rating" aria-labelledby="rating-label">
                   <StarRating
                     value={formData.rating}
-                    onChange={onRatingChange}
+                    onChange={handleRatingChange}
                     label="Recipe rating"
                     isEditable
                   />
@@ -144,7 +198,7 @@ export const RecipeModal = ({
                 min="1"
                 inputMode="numeric"
                 value={formData.duration}
-                onChange={onFormChange("duration")}
+                onChange={handleFormChange("duration")}
                 placeholder="45"
               />
             </div>
@@ -155,22 +209,22 @@ export const RecipeModal = ({
             id="recipe-notes"
             type="text"
             value={formData.notes}
-            onChange={onFormChange("notes")}
+            onChange={handleFormChange("notes")}
             placeholder="Add tips, substitutions, or reminders."
           />
 
           <div className="form-actions">
             <button className="primary" type="submit">
-              {editingId ? "Save changes" : "Add recipe"}
+              {editingRecipe ? "Save changes" : "Add recipe"}
             </button>
             <button type="button" className="secondary" onClick={onClose}>
               Cancel
             </button>
-            {editingId && (
+            {editingRecipe && (
               <button
                 type="button"
                 className="secondary danger"
-                onClick={() => onDeleteRecipe(editingId)}
+                onClick={() => onDeleteRecipe(editingRecipe.id)}
               >
                 Delete recipe
               </button>
