@@ -500,14 +500,13 @@ export default function App() {
 
   const handleLogCook = async (event) => {
     event.preventDefault();
-    if (!logRecipeId) {
-      return;
-    }
     if (!logSelectedDays.length || !logSelectedMeals.length) {
       return;
     }
-    const selectedRecipe = recipeById[logRecipeId];
-    if (!selectedRecipe) {
+    const trimmedRecipeQuery = logRecipeQuery.trim();
+    const selectedRecipe = logRecipeId ? recipeById[logRecipeId] : null;
+    const recipeName = selectedRecipe?.name || trimmedRecipeQuery;
+    if (!recipeName) {
       return;
     }
     const [selectedDay] = logSelectedDays;
@@ -525,10 +524,10 @@ export default function App() {
         entryIndex += 1;
         return {
           id,
-          recipeId: selectedRecipe.id,
-          name: selectedRecipe.name,
-          cuisine: selectedRecipe.cuisine,
-          cookbookTitle: selectedRecipe.cookbookTitle,
+          recipeId: selectedRecipe?.id || null,
+          name: recipeName,
+          cuisine: selectedRecipe?.cuisine || null,
+          cookbookTitle: selectedRecipe?.cookbookTitle || null,
           date: day,
           meal,
           timestamp: nowStamp,
@@ -550,17 +549,19 @@ export default function App() {
         ? latestCatalog.logs
         : logs;
       setLogs([...entries, ...latestLogs]);
-      setRecipes(
-        latestRecipes.map((recipe) =>
-          recipe.id === selectedRecipe.id
-            ? {
-                ...recipe,
-                timesCooked: recipe.timesCooked + entries.length,
-                lastCooked: nowStamp,
-              }
-            : recipe
-        )
-      );
+      if (selectedRecipe) {
+        setRecipes(
+          latestRecipes.map((recipe) =>
+            recipe.id === selectedRecipe.id
+              ? {
+                  ...recipe,
+                  timesCooked: recipe.timesCooked + entries.length,
+                  lastCooked: nowStamp,
+                }
+              : recipe
+          )
+        );
+      }
     }
     setLogWeekDate(selectedDay);
     setLogRecipeId("");
@@ -606,11 +607,11 @@ export default function App() {
 
   const handleOpenLogModal = ({ date, meal, entry } = {}) => {
     if (entry) {
-      const shouldEdit = window.confirm(
-        `Edit "${entry.name}"? Select OK to edit the schedule entry, or Cancel to open the recipe preview.`
-      );
-      if (!shouldEdit) {
-        if (entry.recipeId) {
+      if (entry.recipeId) {
+        const shouldEdit = window.confirm(
+          `Edit "${entry.name}"? Select OK to edit the schedule entry, or Cancel to open the recipe preview.`
+        );
+        if (!shouldEdit) {
           if (!isDesktop) {
             setPreviewRecipeId(entry.recipeId);
             setIsPreviewOpen(true);
@@ -621,7 +622,7 @@ export default function App() {
         }
       }
       setEditingLogId(entry.id);
-      setLogRecipeId(entry.recipeId);
+      setLogRecipeId(entry.recipeId || "");
       setLogRecipeQuery(entry.name || "");
       setLogSelectedDays([entry.date]);
       setLogSelectedMeals([entry.meal || "dinner"]);
