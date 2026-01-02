@@ -86,12 +86,23 @@ export default function App() {
   const [previewRecipeId, setPreviewRecipeId] = useState(null);
   const [shouldNavigateAfterLog, setShouldNavigateAfterLog] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isIosDevice, setIsIosDevice] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") {
       return false;
     }
     return window.matchMedia("(min-width: 900px)").matches;
   });
+
+  const addToast = (message, variant = "info") => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, message, variant }]);
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 3200);
+  };
   const recipeOptions = useMemo(
     () =>
       recipes
@@ -108,6 +119,60 @@ export default function App() {
       document.body.classList.remove("modal-open");
     };
   }, [isModalOpen, isLogModalOpen, isPreviewOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const checkInstalled = () => {
+      const isStandalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone;
+      setIsInstalled(Boolean(isStandalone));
+    };
+
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault();
+      setInstallPrompt(event);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null);
+      setIsInstalled(true);
+      addToast("Cookbook Keeper is installed.", "success");
+    };
+
+    const displayModeQuery = window.matchMedia("(display-mode: standalone)");
+    const handleDisplayModeChange = () => checkInstalled();
+    if (displayModeQuery.addEventListener) {
+      displayModeQuery.addEventListener("change", handleDisplayModeChange);
+    } else {
+      displayModeQuery.addListener(handleDisplayModeChange);
+    }
+
+    checkInstalled();
+    setIsIosDevice(
+      /iphone|ipad|ipod/i.test(window.navigator.userAgent) &&
+        !window.MSStream
+    );
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+      if (displayModeQuery.removeEventListener) {
+        displayModeQuery.removeEventListener("change", handleDisplayModeChange);
+      } else {
+        displayModeQuery.removeListener(handleDisplayModeChange);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -274,12 +339,18 @@ export default function App() {
     setEditingId(null);
   };
 
-  const addToast = (message, variant = "info") => {
-    const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, message, variant }]);
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 3200);
+  const handleInstallApp = async () => {
+    if (!installPrompt) {
+      return;
+    }
+    installPrompt.prompt();
+    const outcome = await installPrompt.userChoice;
+    setInstallPrompt(null);
+    if (outcome?.outcome === "accepted") {
+      addToast("Install request sent to your device.", "success");
+    } else {
+      addToast("Install dismissed.", "info");
+    }
   };
 
   const handleSaveRecipe = async (draft) => {
@@ -805,10 +876,14 @@ export default function App() {
                   onClearData={handleClearData}
                   onJoinGroup={handleJoinGroup}
                   onCopyGroupCode={handleCopyGroupCode}
+                  onInstallApp={handleInstallApp}
                   inviteUrl={showInvite ? inviteUrl : ""}
                   groupCode={groupCode}
                   statusMessage={status.state === "error" ? status.message : ""}
                   hasGroup={Boolean(groupCode)}
+                  canInstallApp={Boolean(installPrompt) && !isInstalled}
+                  isInstalled={isInstalled}
+                  isIosDevice={isIosDevice}
                 />
               }
             />
