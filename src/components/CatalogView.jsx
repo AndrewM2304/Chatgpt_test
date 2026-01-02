@@ -62,60 +62,78 @@ export const CatalogView = ({
         <div key={group.label} className="catalog-group">
           <h2>{group.label}</h2>
           <div className="recipe-grid">
-            {group.items.map((recipe) => (
-              <article
-                key={recipe.id}
-                className="recipe-card"
-                role="button"
-                tabIndex={0}
-                onClick={() => onOpenRecipe(recipe)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onOpenRecipe(recipe);
-                  }
-                }}
-              >
-                <div
-                  className="recipe-cover"
-                  style={{
-                    background: getCoverColor(
-                      recipe.cookbookTitle || "Cookbook"
-                    ),
+            {group.items.map((recipe) => {
+              const isWebsite =
+                recipe.sourceType === "website" ||
+                (!recipe.sourceType && recipe.url);
+              const sourceTitle =
+                recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+
+              return (
+                <article
+                  key={recipe.id}
+                  className="recipe-card"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onOpenRecipe(recipe)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onOpenRecipe(recipe);
+                    }
                   }}
                 >
-                  <span>{getInitials(recipe.cookbookTitle || "Cookbook")}</span>
-                </div>
-                <div className="recipe-details">
-                  <header>
-                    <h3>{recipe.name}</h3>
-                  </header>
-                  <p className="recipe-meta">
-                    {recipe.cookbookTitle || "No cookbook"}
-                    {recipe.page ? ` · Page ${recipe.page}` : ""}
-                  </p>
-                  <p className="recipe-meta">
-                    Cuisine: {recipe.cuisine || "Uncategorized"}
-                  </p>
-                  <div className="recipe-rating">
-                    <StarRating
-                      value={recipe.rating || 0}
-                      label="Recipe rating"
-                    />
-                    <span className="recipe-rating-text">
-                      {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}
-                    </span>
+                  <div
+                    className="recipe-cover"
+                    style={{
+                      background: getCoverColor(sourceTitle),
+                    }}
+                  >
+                    <span>{getInitials(sourceTitle)}</span>
                   </div>
-                  <p className="recipe-meta">
-                    {formatDuration(recipe.durationMinutes)}
-                  </p>
-                  <div className="recipe-footer">
-                    <span>{recipe.timesCooked} cooks logged</span>
-                    <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
+                  <div className="recipe-details">
+                    <header>
+                      <h3>{recipe.name}</h3>
+                    </header>
+                    <p className="recipe-meta">
+                      {sourceTitle}
+                      {!isWebsite && recipe.page ? ` · Page ${recipe.page}` : ""}
+                    </p>
+                    {isWebsite && recipe.url && (
+                      <p className="recipe-meta">
+                        <a
+                          href={recipe.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {recipe.url}
+                        </a>
+                      </p>
+                    )}
+                    <p className="recipe-meta">
+                      Cuisine: {recipe.cuisine || "Uncategorized"}
+                    </p>
+                    <div className="recipe-rating">
+                      <StarRating
+                        value={recipe.rating || 0}
+                        label="Recipe rating"
+                      />
+                      <span className="recipe-rating-text">
+                        {recipe.rating ? `${recipe.rating} / 5` : "Unrated"}
+                      </span>
+                    </div>
+                    <p className="recipe-meta">
+                      {formatDuration(recipe.durationMinutes)}
+                    </p>
+                    <div className="recipe-footer">
+                      <span>{recipe.timesCooked} cooks logged</span>
+                      <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </div>
       ))}

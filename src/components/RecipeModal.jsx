@@ -18,6 +18,8 @@ export const RecipeModal = ({
     return null;
   }
 
+  const isWebsite = formData.sourceType === "website";
+
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal-card">
@@ -47,26 +49,69 @@ export const RecipeModal = ({
             placeholder="Creamy lemon pasta"
           />
 
+          <div className="control">
+            <span className="radio-group-label">Entry type</span>
+            <div className="radio-options">
+              <label className="radio-option" htmlFor="source-cookbook">
+                <input
+                  id="source-cookbook"
+                  type="radio"
+                  name="sourceType"
+                  value="cookbook"
+                  checked={!isWebsite}
+                  onChange={onFormChange("sourceType")}
+                />
+                Cookbook
+              </label>
+              <label className="radio-option" htmlFor="source-website">
+                <input
+                  id="source-website"
+                  type="radio"
+                  name="sourceType"
+                  value="website"
+                  checked={isWebsite}
+                  onChange={onFormChange("sourceType")}
+                />
+                Website
+              </label>
+            </div>
+          </div>
+
           <TypeaheadInput
             id="cookbook"
             name="cookbook"
-            label="Cookbook title"
+            label={isWebsite ? "Website name" : "Cookbook title"}
             value={formData.cookbookTitle}
             onChange={onValueChange("cookbookTitle")}
             options={cookbookOptions}
-            placeholder="Sunday Suppers"
+            placeholder={isWebsite ? "NYT Cooking" : "Sunday Suppers"}
           />
 
-          <label htmlFor="page">Page</label>
-          <input
-            id="page"
-            type="number"
-            inputMode="numeric"
-            min="1"
-            value={formData.page}
-            onChange={onFormChange("page")}
-            placeholder="112"
-          />
+          {isWebsite ? (
+            <>
+              <label htmlFor="recipe-url">Recipe URL</label>
+              <input
+                id="recipe-url"
+                type="url"
+                value={formData.url}
+                onChange={onFormChange("url")}
+                placeholder="https://example.com/recipe"
+              />
+            </>
+          ) : (
+            <>
+              <label htmlFor="page">Page</label>
+              <input
+                id="page"
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={formData.page}
+                onChange={onFormChange("page")}
+                placeholder="112"
+              />
+            </>
+          )}
 
           <TypeaheadInput
             id="cuisine"
