@@ -89,6 +89,14 @@ export default function App() {
   const [showInvite, setShowInvite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    const shouldLock = isModalOpen || isLogModalOpen;
+    document.body.classList.toggle("modal-open", shouldLock);
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, [isModalOpen, isLogModalOpen]);
+
   const cookbookOptions = useMemo(() => {
     return Array.from(
       new Set(recipes.map((recipe) => recipe.cookbookTitle).filter(Boolean))

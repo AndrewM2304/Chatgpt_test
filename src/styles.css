@@ -23,6 +23,10 @@ body {
   background: radial-gradient(circle at top, #e0f2fe 0%, #f8fafc 55%);
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 #root {
   width: 100%;
   margin: 0 auto;
@@ -954,7 +958,7 @@ button.secondary.icon-button {
   display: grid;
   place-items: center;
   padding: 24px;
-  z-index: 10;
+  z-index: 50;
 }
 
 .modal-card {
@@ -1138,8 +1142,14 @@ button.secondary.icon-button {
     right: 0;
   }
 
+  .header-nav-inner {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   .header-tabs {
     align-self: stretch;
+    align-items: stretch;
   }
 
   .header-tab {
@@ -1150,7 +1160,8 @@ button.secondary.icon-button {
   .header-tab.is-active::after {
     left: 0;
     right: 0;
-    bottom: -1px;
+    bottom: 0;
+    height: 1px;
   }
 
   .panel-content {
