@@ -686,8 +686,9 @@ button.secondary.icon-button {
   min-height: 100%;
   height: 100%;
   align-self: stretch;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .log-entry-button:hover,
@@ -705,7 +706,7 @@ button.secondary.icon-button {
 .log-empty-icon {
   width: 24px;
   height: 24px;
-  color: #cbd5e1;
+  color: #e2e8f0;
 }
 
 .log-sticky-action {
