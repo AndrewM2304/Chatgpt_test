@@ -128,6 +128,31 @@ export const useSupabaseCatalog = () => {
     setCatalogId(created.id);
     setCatalog(created.data || DEFAULT_CATALOG);
     return created.id;
+  }, [groupCode, setCatalog, setHasLoadedCatalog]);
+
+  const syncCatalog = useCallback(async () => {
+    if (!groupCode) {
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("catalogs")
+      .select("id, data")
+      .eq("group_code", groupCode)
+      .maybeSingle();
+
+    if (error) {
+      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    setCatalogId(data.id);
+    setCatalog(data.data || DEFAULT_CATALOG);
+    setHasLoadedCatalog(true);
+    return data.data || DEFAULT_CATALOG;
   }, [groupCode, setCatalog]);
 
   useEffect(() => {
@@ -285,5 +310,6 @@ export const useSupabaseCatalog = () => {
     groupCode,
     createNewGroup,
     joinGroup,
+    syncCatalog,
   };
 };

@@ -53,6 +53,7 @@ export default function App() {
     groupCode,
     createNewGroup,
     joinGroup,
+    syncCatalog,
   } = useSupabaseCatalog();
   const navigate = useNavigate();
   const recipeMatch = useMatch("/recipe/:recipeId");
@@ -255,7 +256,7 @@ export default function App() {
     setEditingId(null);
   };
 
-  const handleSaveRecipe = (event) => {
+  const handleSaveRecipe = async (event) => {
     event.preventDefault();
     const trimmedName = formData.name.trim();
     if (!trimmedName) {
@@ -308,7 +309,11 @@ export default function App() {
         timesCooked: 0,
         lastCooked: null,
       };
-      setRecipes((prev) => [newRecipe, ...prev]);
+      const latestCatalog = await syncCatalog();
+      const latestRecipes = Array.isArray(latestCatalog?.recipes)
+        ? latestCatalog.recipes
+        : recipes;
+      setRecipes([newRecipe, ...latestRecipes]);
     }
 
     resetForm();
@@ -390,7 +395,7 @@ export default function App() {
     setRandomPick(randomCandidates[index]);
   };
 
-  const handleLogCook = (event) => {
+  const handleLogCook = async (event) => {
     event.preventDefault();
     if (!logRecipeId) {
       return;
@@ -434,9 +439,16 @@ export default function App() {
         return [...entries, ...remaining];
       });
     } else {
-      setLogs((prev) => [...entries, ...prev]);
-      setRecipes((prev) =>
-        prev.map((recipe) =>
+      const latestCatalog = await syncCatalog();
+      const latestRecipes = Array.isArray(latestCatalog?.recipes)
+        ? latestCatalog.recipes
+        : recipes;
+      const latestLogs = Array.isArray(latestCatalog?.logs)
+        ? latestCatalog.logs
+        : logs;
+      setLogs([...entries, ...latestLogs]);
+      setRecipes(
+        latestRecipes.map((recipe) =>
           recipe.id === selectedRecipe.id
             ? {
                 ...recipe,
