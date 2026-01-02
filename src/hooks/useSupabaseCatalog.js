@@ -232,7 +232,7 @@ export const useSupabaseCatalog = () => {
     }, 600);
 
     return () => window.clearTimeout(timeout);
-  }, [catalog, catalogId, groupCode]);
+  }, [catalog, catalogId, groupCode, hasLoadedCatalog]);
 
   const setAccessPassword = useCallback(async (value) => {
     const hash = await hashPassword(value);
