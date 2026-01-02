@@ -1,13 +1,15 @@
 import { Fragment } from "react";
+import { ScheduleModal } from "./ScheduleModal";
 
 export const LogView = ({
   recipes,
   logRecipeId,
-  onLogRecipeId,
+  logRecipeQuery,
+  onLogRecipeQuery,
   logWeekDate,
   onLogWeekDate,
-  logDays,
-  onToggleLogDay,
+  logDate,
+  onLogDate,
   logMeal,
   onLogMeal,
   logNote,
@@ -16,104 +18,56 @@ export const LogView = ({
   weekDays,
   weeklySchedule,
   mealOptions,
+  isLogModalOpen,
+  editingLogId,
+  onOpenLogModal,
+  onCloseLogModal,
+  onDeleteLogEntry,
+  onPickRandomMeal,
 }) => (
   <section className="log">
-    <div className="log-form">
-      <h2>Schedule meals</h2>
-      <form onSubmit={onSubmit}>
-        <label htmlFor="recipe">Recipe</label>
-        <select
-          id="recipe"
-          value={logRecipeId}
-          onChange={(event) => onLogRecipeId(event.target.value)}
-        >
-          <option value="">Select a recipe</option>
-          {recipes
-            .slice()
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((recipe) => (
-              <option key={recipe.id} value={recipe.id}>
-                {recipe.name}
-              </option>
-            ))}
-        </select>
-
-        <label htmlFor="week-of">Week of</label>
-        <input
-          id="week-of"
-          type="date"
-          value={logWeekDate}
-          onChange={(event) => onLogWeekDate(event.target.value)}
-        />
-
-        <label htmlFor="meal-type">Meal slot</label>
-        <select
-          id="meal-type"
-          value={logMeal}
-          onChange={(event) => onLogMeal(event.target.value)}
-        >
-          {mealOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-
-        <fieldset className="log-days">
-          <legend>Days</legend>
-          <div className="log-days-grid">
-            {weekDays.map((day, index) => (
-              <label key={day.value} className="log-day-option">
-                <input
-                  type="checkbox"
-                  checked={logDays.includes(index)}
-                  onChange={() => onToggleLogDay(index)}
-                />
-                <span>
-                  {day.label}
-                </span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <label htmlFor="cook-note">Notes (optional)</label>
-        <input
-          id="cook-note"
-          type="text"
-          placeholder="Added extra basil"
-          value={logNote}
-          onChange={(event) => onLogNote(event.target.value)}
-        />
-
-        <button
-          className="primary"
-          type="submit"
-          disabled={!recipes.length || !logRecipeId || !logDays.length}
-        >
-          Add to schedule
-        </button>
-      </form>
-    </div>
-
     <div className="log-schedule">
-      <h2>Weekly schedule</h2>
+      <div className="log-schedule-header">
+        <div>
+          <h2>Weekly schedule</h2>
+          <p className="log-schedule-caption">
+            Tap a scheduled meal to edit or remove it.
+          </p>
+        </div>
+        <label className="log-week-picker" htmlFor="week-of">
+          Week of
+          <input
+            id="week-of"
+            type="date"
+            value={logWeekDate}
+            onChange={(event) => onLogWeekDate(event.target.value)}
+          />
+        </label>
+      </div>
       <div
         className="log-schedule-grid"
-        style={{ gridTemplateColumns: `140px repeat(${weekDays.length}, 1fr)` }}
+        style={{ gridTemplateColumns: `140px repeat(${mealOptions.length}, 1fr)` }}
       >
-        <div className="log-schedule-corner" />
-        {weekDays.map((day) => (
-          <div key={day.value} className="log-schedule-day">
-            <span>{day.label}</span>
+        <div className="log-schedule-corner">Date</div>
+        {mealOptions.map((meal) => (
+          <div key={meal.value} className="log-schedule-meal">
+            {meal.label}
           </div>
         ))}
-        {mealOptions.map((meal) => (
-          <Fragment key={meal.value}>
-            <div className="log-schedule-meal">
-              {meal.label}
+        {weekDays.map((day, index) => (
+          <Fragment key={day.value}>
+            <div className="log-schedule-day">
+              <span className="log-day-name">
+                {day.date.toLocaleDateString(undefined, { weekday: "short" })}
+              </span>
+              <span className="log-day-date">
+                {day.date.toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
             </div>
-            {weekDays.map((day, index) => {
+            {mealOptions.map((meal) => {
               const entries = weeklySchedule[index][meal.value];
               return (
                 <div key={`${day.value}-${meal.value}`} className="log-schedule-cell">
@@ -121,8 +75,14 @@ export const LogView = ({
                     <ul>
                       {entries.map((entry) => (
                         <li key={entry.id}>
-                          <strong>{entry.name}</strong>
-                          {entry.note && <em>“{entry.note}”</em>}
+                          <button
+                            type="button"
+                            className="log-entry-button"
+                            onClick={() => onOpenLogModal({ entry })}
+                          >
+                            <strong>{entry.name}</strong>
+                            {entry.note && <em>“{entry.note}”</em>}
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -135,6 +95,40 @@ export const LogView = ({
           </Fragment>
         ))}
       </div>
+    </div>
+
+    <ScheduleModal
+      isOpen={isLogModalOpen}
+      editingLogId={editingLogId}
+      recipeOptions={recipes
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((recipe) => recipe.name)}
+      logRecipeId={logRecipeId}
+      logRecipeQuery={logRecipeQuery}
+      onLogRecipeQuery={onLogRecipeQuery}
+      logDate={logDate}
+      onLogDate={onLogDate}
+      logMeal={logMeal}
+      onLogMeal={onLogMeal}
+      logNote={logNote}
+      onLogNote={onLogNote}
+      onSubmit={onSubmit}
+      onClose={onCloseLogModal}
+      onDelete={onDeleteLogEntry}
+      onPickRandom={onPickRandomMeal}
+      mealOptions={mealOptions}
+      hasRecipes={recipes.length > 0}
+    />
+
+    <div className="log-sticky-action">
+      <button
+        type="button"
+        className="primary log-sticky-button"
+        onClick={() => onOpenLogModal()}
+      >
+        Schedule a meal
+      </button>
     </div>
   </section>
 );

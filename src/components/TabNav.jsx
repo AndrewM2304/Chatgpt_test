@@ -48,7 +48,7 @@ export const TabNav = ({ activeTab, onSelect, onAddRecipe }) => {
       )}
       <button
         type="button"
-        className="tabs-toggle"
+        className="tabs-toggle primary"
         aria-expanded={isOpen}
         aria-controls="tabs-menu"
         aria-label={isOpen ? "Close menu" : "Open menu"}
