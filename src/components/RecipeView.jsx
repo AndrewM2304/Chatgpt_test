@@ -18,7 +18,7 @@ export const RecipeView = ({
       <section className="recipe-view">
         <div className="recipe-view-empty">
           <p className="empty">That recipe is no longer available.</p>
-          <button type="button" className="ghost" onClick={onBack}>
+          <button type="button" className="secondary" onClick={onBack}>
             Back to catalog
           </button>
         </div>
@@ -35,7 +35,7 @@ export const RecipeView = ({
   return (
     <section className="recipe-view">
       <div className="recipe-view-header">
-        <button type="button" className="ghost" onClick={onBack}>
+        <button type="button" className="secondary" onClick={onBack}>
           Back to catalog
         </button>
       </div>
@@ -97,14 +97,14 @@ export const RecipeView = ({
             </button>
             <button
               type="button"
-              className="ghost"
+              className="secondary"
               onClick={() => onEditRecipe(activeRecipe)}
             >
               Edit recipe
             </button>
             <button
               type="button"
-              className="ghost danger"
+              className="secondary danger"
               onClick={() => onDeleteRecipe?.(activeRecipe.id)}
             >
               Delete recipe

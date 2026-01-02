@@ -26,7 +26,7 @@ export const LandscapeHeaderNav = ({ onAddRecipe }) => {
             );
           })}
         </nav>
-        <button type="button" className="header-add" onClick={onAddRecipe}>
+        <button type="button" className="primary header-add" onClick={onAddRecipe}>
           Add recipe
         </button>
       </div>

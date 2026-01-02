@@ -57,7 +57,7 @@ export const GroupGate = ({ onJoinGroup, onCreateGroup, statusMessage }) => {
         <div className="gate-actions">
           <p>Need a new shared space?</p>
           <button
-            className="ghost"
+            className="secondary"
             type="button"
             onClick={handleCreate}
             disabled={isWorking}
