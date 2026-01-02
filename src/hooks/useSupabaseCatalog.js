@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
-import { hashPassword } from "../lib/crypto";
-import { useLocalStorage } from "./useLocalStorage";
+import { supabase } from "../lib/supabaseClient.js";
+import { hashPassword } from "../lib/crypto.js";
+import { useLocalStorage } from "./useLocalStorage.js";
 
 const DEFAULT_CATALOG = {
   recipes: [],
@@ -44,7 +44,7 @@ export const useSupabaseCatalog = () => {
       return "";
     }
     const baseUrl = new URL(
-      import.meta.env.BASE_URL || "/",
+      import.meta.env?.BASE_URL || "/",
       window.location.origin
     );
     baseUrl.searchParams.set("invite", groupCode);
