@@ -475,10 +475,6 @@ button.secondary.icon-button {
   justify-self: start;
 }
 
-.random-sticky-action {
-  display: none;
-}
-
 .chip-grid {
   display: flex;
   flex-wrap: wrap;
@@ -683,13 +679,15 @@ button.secondary.icon-button {
 }
 
 .log-sticky-action {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tabbar-height) + 16px + env(safe-area-inset-bottom));
+  z-index: 15;
+  display: none;
   justify-content: center;
-  padding: 12px;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0), #f8fafc 45%);
+  padding: 0 16px;
+  background: transparent;
 }
 
 .log-sticky-button {
@@ -1064,7 +1062,7 @@ button.secondary.icon-button {
   gap: 12px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .hero {
     gap: 6px;
   }
@@ -1091,6 +1089,10 @@ button.secondary.icon-button {
     display: none;
   }
 
+  .log-sticky-action {
+    display: flex;
+  }
+
   .catalog-sticky-action {
     display: flex;
   }
@@ -1110,7 +1112,7 @@ button.secondary.icon-button {
   .log,
   .catalog,
   .random {
-    padding-bottom: 140px;
+    padding-bottom: calc(var(--tabbar-height) + 120px);
   }
 
 }
@@ -1148,6 +1150,7 @@ button.secondary.icon-button {
   .header-tab.is-active::after {
     left: 0;
     right: 0;
+    bottom: -1px;
   }
 
   .panel-content {
@@ -1159,6 +1162,10 @@ button.secondary.icon-button {
   }
 
   .catalog-add {
+    display: none;
+  }
+
+  .header-nav.is-catalog .header-add {
     display: none;
   }
 
