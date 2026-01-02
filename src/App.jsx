@@ -1,4 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useMatch,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { CatalogView } from "./components/CatalogView";
 import { Hero } from "./components/Hero";
 import { LogView } from "./components/LogView";
@@ -34,7 +42,6 @@ const getWeekStart = (dateString) => {
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("catalog");
   const {
     catalog,
     setRecipes,
@@ -47,12 +54,13 @@ export default function App() {
     createNewGroup,
     joinGroup,
   } = useSupabaseCatalog();
+  const navigate = useNavigate();
+  const recipeMatch = useMatch("/recipe/:recipeId");
   const { recipes, logs } = catalog;
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
   const [excludedCuisines, setExcludedCuisines] = useState([]);
   const [randomPick, setRandomPick] = useState(null);
-  const [activeRecipeId, setActiveRecipeId] = useState(null);
   const [logRecipeId, setLogRecipeId] = useState("");
   const [logRecipeQuery, setLogRecipeQuery] = useState("");
   const [logWeekDate, setLogWeekDate] = useState(() =>
@@ -103,13 +111,6 @@ export default function App() {
       return accumulator;
     }, {});
   }, [recipes]);
-
-  const activeRecipe = useMemo(() => {
-    if (!activeRecipeId) {
-      return null;
-    }
-    return recipeById[activeRecipeId] || null;
-  }, [activeRecipeId, recipeById]);
 
   const filteredRecipes = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -317,8 +318,7 @@ export default function App() {
   };
 
   const handleOpenRecipe = (recipe) => {
-    setActiveRecipeId(recipe.id);
-    setActiveTab("recipe");
+    navigate(`/recipe/${recipe.id}`);
   };
 
   const handleStartLog = (recipeId) => {
@@ -330,7 +330,7 @@ export default function App() {
     setLogSelectedDays([toDateInputValue(today)]);
     setLogSelectedMeals(["dinner"]);
     setLogNote("");
-    setActiveTab("log");
+    navigate("/log");
     setEditingLogId(null);
     setIsLogModalOpen(true);
   };
@@ -338,13 +338,9 @@ export default function App() {
   const handleDeleteRecipe = (recipeId) => {
     setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
     setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
-    setActiveRecipeId((prev) => {
-      if (prev === recipeId) {
-        setActiveTab("catalog");
-        return null;
-      }
-      return prev;
-    });
+    if (recipeMatch?.params?.recipeId === recipeId) {
+      navigate("/catalog");
+    }
     if (editingId === recipeId) {
       resetForm();
     }
@@ -619,95 +615,110 @@ export default function App() {
     setIsModalOpen(false);
   };
 
+  const RecipeRoute = () => {
+    const { recipeId } = useParams();
+    const activeRecipe = recipeId ? recipeById[recipeId] || null : null;
+
+    return (
+      <RecipeView
+        activeRecipe={activeRecipe}
+        onBack={() => navigate("/catalog")}
+        onStartLog={handleStartLog}
+        onEditRecipe={handleEditRecipe}
+        onDeleteRecipe={handleDeleteFromView}
+      />
+    );
+  };
+
   return (
     <div className="app">
       <header className="app-header">
         <Hero />
-        <TabNav
-          activeTab={activeTab}
-          onSelect={setActiveTab}
-          onAddRecipe={handleOpenAddModal}
-        />
+        <TabNav onAddRecipe={handleOpenAddModal} />
       </header>
       <main className="panel">
         <div className="panel-content">
-          {activeTab === "catalog" && (
-            <CatalogView
-              groupedRecipes={groupedRecipes}
-              totalRecipes={recipes.length}
-              searchTerm={searchTerm}
-              onSearchTerm={setSearchTerm}
-              groupBy={groupBy}
-              onGroupBy={setGroupBy}
-              onOpenRecipe={handleOpenRecipe}
-              hasRecipes={recipes.length > 0}
-              onAddRecipe={handleOpenAddModal}
+          <Routes>
+            <Route path="/" element={<Navigate to="/catalog" replace />} />
+            <Route
+              path="/catalog"
+              element={
+                <CatalogView
+                  groupedRecipes={groupedRecipes}
+                  totalRecipes={recipes.length}
+                  searchTerm={searchTerm}
+                  onSearchTerm={setSearchTerm}
+                  groupBy={groupBy}
+                  onGroupBy={setGroupBy}
+                  onOpenRecipe={handleOpenRecipe}
+                  hasRecipes={recipes.length > 0}
+                  onAddRecipe={handleOpenAddModal}
+                />
+              }
             />
-          )}
-
-          {activeTab === "random" && (
-            <RandomView
-              cuisineOptions={cuisineOptions}
-              excludedCuisines={excludedCuisines}
-              onToggleCuisine={handleToggleCuisine}
-              onPickRandom={handlePickRandom}
-              randomCandidates={randomCandidates}
-              randomPick={randomPick}
-              onStartLog={handleStartLog}
-              hasRecipes={recipes.length > 0}
+            <Route
+              path="/random"
+              element={
+                <RandomView
+                  cuisineOptions={cuisineOptions}
+                  excludedCuisines={excludedCuisines}
+                  onToggleCuisine={handleToggleCuisine}
+                  onPickRandom={handlePickRandom}
+                  randomCandidates={randomCandidates}
+                  randomPick={randomPick}
+                  onStartLog={handleStartLog}
+                  hasRecipes={recipes.length > 0}
+                />
+              }
             />
-          )}
-
-          {activeTab === "recipe" && (
-            <RecipeView
-              activeRecipe={activeRecipe}
-              onBack={() => setActiveTab("catalog")}
-              onStartLog={handleStartLog}
-              onEditRecipe={handleEditRecipe}
-              onDeleteRecipe={handleDeleteFromView}
+            <Route path="/recipe/:recipeId" element={<RecipeRoute />} />
+            <Route
+              path="/log"
+              element={
+                <LogView
+                  recipes={recipes}
+                  logRecipeId={logRecipeId}
+                  logRecipeQuery={logRecipeQuery}
+                  onLogRecipeQuery={handleLogRecipeQuery}
+                  logWeekDate={logWeekDate}
+                  onLogWeekDate={setLogWeekDate}
+                  selectedDays={logSelectedDays}
+                  selectedMeals={logSelectedMeals}
+                  onToggleDay={handleToggleLogDay}
+                  onToggleMeal={handleToggleLogMeal}
+                  logNote={logNote}
+                  onLogNote={setLogNote}
+                  onSubmit={handleLogCook}
+                  weekDays={weekDays}
+                  weeklySchedule={weeklySchedule}
+                  mealOptions={MEAL_OPTIONS}
+                  isLogModalOpen={isLogModalOpen}
+                  editingLogId={editingLogId}
+                  onOpenLogModal={handleOpenLogModal}
+                  onCloseLogModal={handleCloseLogModal}
+                  onDeleteLogEntry={handleDeleteLogEntry}
+                  onPickRandomMeal={handlePickRandomMeal}
+                />
+              }
             />
-          )}
-
-          {activeTab === "log" && (
-            <LogView
-              recipes={recipes}
-              logRecipeId={logRecipeId}
-              logRecipeQuery={logRecipeQuery}
-              onLogRecipeQuery={handleLogRecipeQuery}
-              logWeekDate={logWeekDate}
-              onLogWeekDate={setLogWeekDate}
-              selectedDays={logSelectedDays}
-              selectedMeals={logSelectedMeals}
-              onToggleDay={handleToggleLogDay}
-              onToggleMeal={handleToggleLogMeal}
-              logNote={logNote}
-              onLogNote={setLogNote}
-              onSubmit={handleLogCook}
-              weekDays={weekDays}
-              weeklySchedule={weeklySchedule}
-              mealOptions={MEAL_OPTIONS}
-              isLogModalOpen={isLogModalOpen}
-              editingLogId={editingLogId}
-              onOpenLogModal={handleOpenLogModal}
-              onCloseLogModal={handleCloseLogModal}
-              onDeleteLogEntry={handleDeleteLogEntry}
-              onPickRandomMeal={handlePickRandomMeal}
+            <Route
+              path="/settings"
+              element={
+                <SettingsView
+                  onExport={handleExport}
+                  onImport={handleImport}
+                  onGenerateInvite={handleGenerateInvite}
+                  onCreateGroup={handleCreateGroup}
+                  onClearData={handleClearData}
+                  onJoinGroup={handleJoinGroup}
+                  inviteUrl={showInvite ? inviteUrl : ""}
+                  statusMessage={status.state === "error" ? status.message : ""}
+                  hasGroup={Boolean(groupCode)}
+                />
+              }
             />
-          )}
-
-          {activeTab === "settings" && (
-            <SettingsView
-              onExport={handleExport}
-              onImport={handleImport}
-              onGenerateInvite={handleGenerateInvite}
-              onCreateGroup={handleCreateGroup}
-              onClearData={handleClearData}
-              onJoinGroup={handleJoinGroup}
-              inviteUrl={showInvite ? inviteUrl : ""}
-              statusMessage={status.state === "error" ? status.message : ""}
-              hasGroup={Boolean(groupCode)}
-            />
-          )}
+            <Route path="*" element={<Navigate to="/catalog" replace />} />
+          </Routes>
         </div>
       </main>
       <RecipeModal
