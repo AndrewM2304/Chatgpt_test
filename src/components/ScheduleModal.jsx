@@ -36,7 +36,7 @@ export const ScheduleModal = ({
           </div>
           <button
             type="button"
-            className="ghost icon-button"
+            className="secondary icon-button"
             onClick={onClose}
             aria-label="Close"
           >
@@ -55,7 +55,7 @@ export const ScheduleModal = ({
           />
           <button
             type="button"
-            className="ghost"
+            className="secondary"
             onClick={onPickRandom}
             disabled={!hasRecipes}
           >
@@ -124,13 +124,13 @@ export const ScheduleModal = ({
             >
               {editingLogId ? "Save changes" : "Add to schedule"}
             </button>
-            <button type="button" className="ghost" onClick={onClose}>
+            <button type="button" className="secondary" onClick={onClose}>
               Cancel
             </button>
             {editingLogId && (
               <button
                 type="button"
-                className="ghost danger"
+                className="secondary danger"
                 onClick={() => onDelete(editingLogId)}
               >
                 Remove meal

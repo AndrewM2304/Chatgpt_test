@@ -25,14 +25,13 @@ export const RecipeModal = ({
       <div className="modal-card">
         <header className="modal-header">
           <div>
-            <p className="eyebrow">Recipe form</p>
             <h2 id="recipe-modal-title">
               {editingId ? "Edit recipe" : "Add a recipe"}
             </h2>
           </div>
           <button
             type="button"
-            className="ghost icon-button"
+            className="secondary icon-button"
             onClick={onClose}
             aria-label="Close"
           >
@@ -160,13 +159,13 @@ export const RecipeModal = ({
             <button className="primary" type="submit">
               {editingId ? "Save changes" : "Add recipe"}
             </button>
-            <button type="button" className="ghost" onClick={onClose}>
+            <button type="button" className="secondary" onClick={onClose}>
               Cancel
             </button>
             {editingId && (
               <button
                 type="button"
-                className="ghost danger"
+                className="secondary danger"
                 onClick={() => onDeleteRecipe(editingId)}
               >
                 Delete recipe

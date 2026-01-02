@@ -95,10 +95,11 @@ h1 {
   background: transparent;
   color: #1e293b;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease;
   text-decoration: none;
 }
 
@@ -108,19 +109,12 @@ h1 {
 }
 
 .header-tab.is-active {
-  background: #0ea5e9;
-  color: #ffffff;
+  color: #0ea5e9;
+  border-bottom-color: #0ea5e9;
 }
 
 .header-add {
   margin-left: auto;
-  border: none;
-  background: #0ea5e9;
-  color: #ffffff;
-  font-weight: 700;
-  padding: 10px 18px;
-  border-radius: 999px;
-  cursor: pointer;
   box-shadow: 0 12px 22px rgba(14, 165, 233, 0.25);
 }
 
@@ -154,6 +148,7 @@ h1 {
   font-weight: 600;
   padding: 8px 6px;
   border-radius: 16px;
+  position: relative;
 }
 
 .mobile-tab svg {
@@ -163,7 +158,18 @@ h1 {
 
 .mobile-tab.is-active {
   color: #0ea5e9;
-  background: rgba(14, 165, 233, 0.12);
+  background: transparent;
+}
+
+.mobile-tab.is-active::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  border-radius: 999px;
+  background: #0ea5e9;
 }
 
 .mobile-tab-label {
@@ -254,12 +260,18 @@ textarea {
   resize: vertical;
 }
 
-button.primary {
+button.primary,
+button.secondary {
   border: none;
   border-radius: 999px;
-  padding: 12px 18px;
   font-size: 1rem;
   font-weight: 600;
+  padding: 12px 18px;
+  font-family: inherit;
+  line-height: 1.1;
+}
+
+button.primary {
   color: #ffffff;
   background: linear-gradient(135deg, #38bdf8, #0ea5e9);
   cursor: pointer;
@@ -277,17 +289,15 @@ button.primary:hover:not(:disabled) {
   box-shadow: 0 12px 24px rgba(14, 165, 233, 0.3);
 }
 
-button.ghost {
+button.secondary {
   border: 1px solid #e2e8f0;
-  background: #ffffff;
+  background: transparent;
   color: #1f2937;
-  padding: 8px 14px;
-  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
 }
 
-button.ghost.danger {
+button.secondary.danger {
   border-color: #fecaca;
   color: #dc2626;
 }
@@ -296,6 +306,11 @@ button.ghost.danger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+button.secondary.icon-button {
+  padding: 8px 12px;
+  border-radius: 12px;
 }
 
 .sr-only {
@@ -448,8 +463,6 @@ button.ghost.danger {
 
 .random-controls .primary {
   justify-self: start;
-  padding: 10px 16px;
-  font-size: 0.95rem;
 }
 
 .chip-grid {
@@ -672,7 +685,7 @@ button.ghost.danger {
 }
 
 .log-inline-action {
-  display: none;
+  display: inline-flex;
   white-space: nowrap;
 }
 
@@ -1063,6 +1076,10 @@ button.ghost.danger {
     display: flex;
   }
 
+  .log-inline-action {
+    display: none;
+  }
+
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
@@ -1094,9 +1111,6 @@ button.ghost.danger {
     display: none;
   }
 
-  .log-inline-action {
-    display: inline-flex;
-  }
 }
 
 @media (min-width: 900px) {

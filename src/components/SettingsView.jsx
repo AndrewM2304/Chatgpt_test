@@ -75,7 +75,7 @@ export const SettingsView = ({
           Remove all recipes, logs, and saved filters from this catalog. This
           action cannot be undone.
         </p>
-        <button type="button" className="ghost danger" onClick={onClearData}>
+        <button type="button" className="secondary danger" onClick={onClearData}>
           Delete all data
         </button>
       </div>
