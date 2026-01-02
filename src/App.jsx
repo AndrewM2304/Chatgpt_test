@@ -14,7 +14,6 @@ const MEAL_OPTIONS = [
   { value: "breakfast", label: "Breakfast" },
   { value: "lunch", label: "Lunch" },
   { value: "dinner", label: "Dinner" },
-  { value: "leftovers", label: "Leftovers" },
 ];
 
 const toDateInputValue = (date) => {
@@ -55,14 +54,17 @@ export default function App() {
   const [randomPick, setRandomPick] = useState(null);
   const [activeRecipeId, setActiveRecipeId] = useState(null);
   const [logRecipeId, setLogRecipeId] = useState("");
+  const [logRecipeQuery, setLogRecipeQuery] = useState("");
+  const [logDate, setLogDate] = useState(() =>
+    toDateInputValue(new Date())
+  );
   const [logWeekDate, setLogWeekDate] = useState(() =>
     toDateInputValue(new Date())
   );
-  const [logDays, setLogDays] = useState(() => [
-    getWeekdayIndex(new Date()),
-  ]);
   const [logMeal, setLogMeal] = useState("dinner");
   const [logNote, setLogNote] = useState("");
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     cookbookTitle: "",
@@ -205,7 +207,6 @@ export default function App() {
       breakfast: [],
       lunch: [],
       dinner: [],
-      leftovers: [],
     }));
     const dateIndex = new Map(
       weekDays.map((day, index) => [day.value, index])
@@ -223,14 +224,6 @@ export default function App() {
     });
     return schedule;
   }, [logs, weekDays]);
-
-  useEffect(() => {
-    if (!logWeekDate) {
-      return;
-    }
-    const selectedDate = new Date(`${logWeekDate}T00:00:00`);
-    setLogDays([getWeekdayIndex(selectedDate)]);
-  }, [logWeekDate]);
 
   const handleFormChange = (field) => (event) => {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
@@ -330,12 +323,16 @@ export default function App() {
 
   const handleStartLog = (recipeId) => {
     setLogRecipeId(recipeId);
+    const recipeName = recipeById[recipeId]?.name || "";
+    setLogRecipeQuery(recipeName);
     const today = new Date();
     setLogWeekDate(toDateInputValue(today));
-    setLogDays([getWeekdayIndex(today)]);
+    setLogDate(toDateInputValue(today));
     setLogMeal("dinner");
     setLogNote("");
     setActiveTab("log");
+    setEditingLogId(null);
+    setIsLogModalOpen(true);
   };
 
   const handleDeleteRecipe = (recipeId) => {
@@ -387,56 +384,109 @@ export default function App() {
     if (!logRecipeId) {
       return;
     }
-    if (!logWeekDate) {
+    if (!logDate) {
       return;
     }
     const selectedRecipe = recipeById[logRecipeId];
     if (!selectedRecipe) {
       return;
     }
-    if (!logDays.length) {
-      return;
-    }
-    const weekStart = getWeekStart(logWeekDate);
     const nowStamp = new Date().toISOString();
-    const newEntries = logDays.map((dayIndex) => {
-      const scheduledDate = new Date(weekStart);
-      scheduledDate.setDate(weekStart.getDate() + dayIndex);
-      return {
-        id: crypto.randomUUID(),
-        recipeId: selectedRecipe.id,
-        name: selectedRecipe.name,
-        cuisine: selectedRecipe.cuisine,
-        cookbookTitle: selectedRecipe.cookbookTitle,
-        date: toDateInputValue(scheduledDate),
-        meal: logMeal,
-        timestamp: nowStamp,
-        note: logNote.trim(),
-      };
-    });
+    const entryPayload = {
+      id: editingLogId || crypto.randomUUID(),
+      recipeId: selectedRecipe.id,
+      name: selectedRecipe.name,
+      cuisine: selectedRecipe.cuisine,
+      cookbookTitle: selectedRecipe.cookbookTitle,
+      date: logDate,
+      meal: logMeal,
+      timestamp: nowStamp,
+      note: logNote.trim(),
+    };
 
-    setLogs((prev) => [...newEntries, ...prev]);
-    setRecipes((prev) =>
-      prev.map((recipe) =>
-        recipe.id === selectedRecipe.id
-          ? {
-              ...recipe,
-              timesCooked: recipe.timesCooked + newEntries.length,
-              lastCooked: nowStamp,
-            }
-          : recipe
-      )
-    );
+    if (editingLogId) {
+      setLogs((prev) =>
+        prev.map((entry) =>
+          entry.id === editingLogId ? entryPayload : entry
+        )
+      );
+    } else {
+      setLogs((prev) => [entryPayload, ...prev]);
+      setRecipes((prev) =>
+        prev.map((recipe) =>
+          recipe.id === selectedRecipe.id
+            ? {
+                ...recipe,
+                timesCooked: recipe.timesCooked + 1,
+                lastCooked: nowStamp,
+              }
+            : recipe
+        )
+      );
+    }
+    setLogWeekDate(logDate);
     setLogRecipeId("");
+    setLogRecipeQuery("");
     setLogNote("");
+    setEditingLogId(null);
+    setIsLogModalOpen(false);
   };
 
-  const handleToggleLogDay = (dayIndex) => {
-    setLogDays((prev) =>
-      prev.includes(dayIndex)
-        ? prev.filter((item) => item !== dayIndex)
-        : [...prev, dayIndex].sort((a, b) => a - b)
+  const handleDeleteLogEntry = (entryId) => {
+    if (!entryId) {
+      return;
+    }
+    setLogs((prev) => prev.filter((entry) => entry.id !== entryId));
+    setEditingLogId(null);
+    setIsLogModalOpen(false);
+  };
+
+  const handleLogRecipeQuery = (value) => {
+    setLogRecipeQuery(value);
+    const match = recipes.find(
+      (recipe) => recipe.name.toLowerCase() === value.trim().toLowerCase()
     );
+    setLogRecipeId(match ? match.id : "");
+  };
+
+  const handlePickRandomMeal = () => {
+    if (!recipes.length) {
+      return;
+    }
+    const index = Math.floor(Math.random() * recipes.length);
+    const randomRecipe = recipes[index];
+    if (!randomRecipe) {
+      return;
+    }
+    setLogRecipeId(randomRecipe.id);
+    setLogRecipeQuery(randomRecipe.name);
+  };
+
+  const handleOpenLogModal = ({ date, meal, entry } = {}) => {
+    if (entry) {
+      setEditingLogId(entry.id);
+      setLogRecipeId(entry.recipeId);
+      setLogRecipeQuery(entry.name || "");
+      setLogDate(entry.date);
+      setLogMeal(entry.meal || "dinner");
+      setLogNote(entry.note || "");
+    } else {
+      setEditingLogId(null);
+      setLogRecipeId("");
+      setLogRecipeQuery("");
+      setLogNote("");
+      setLogDate(date || toDateInputValue(new Date()));
+      setLogMeal(meal || "dinner");
+    }
+    setIsLogModalOpen(true);
+  };
+
+  const handleCloseLogModal = () => {
+    setEditingLogId(null);
+    setLogRecipeId("");
+    setLogRecipeQuery("");
+    setLogNote("");
+    setIsLogModalOpen(false);
   };
 
   const handleExport = () => {
@@ -592,11 +642,12 @@ export default function App() {
             <LogView
               recipes={recipes}
               logRecipeId={logRecipeId}
-              onLogRecipeId={setLogRecipeId}
+              logRecipeQuery={logRecipeQuery}
+              onLogRecipeQuery={handleLogRecipeQuery}
               logWeekDate={logWeekDate}
               onLogWeekDate={setLogWeekDate}
-              logDays={logDays}
-              onToggleLogDay={handleToggleLogDay}
+              logDate={logDate}
+              onLogDate={setLogDate}
               logMeal={logMeal}
               onLogMeal={setLogMeal}
               logNote={logNote}
@@ -605,6 +656,12 @@ export default function App() {
               weekDays={weekDays}
               weeklySchedule={weeklySchedule}
               mealOptions={MEAL_OPTIONS}
+              isLogModalOpen={isLogModalOpen}
+              editingLogId={editingLogId}
+              onOpenLogModal={handleOpenLogModal}
+              onCloseLogModal={handleCloseLogModal}
+              onDeleteLogEntry={handleDeleteLogEntry}
+              onPickRandomMeal={handlePickRandomMeal}
             />
           )}
 

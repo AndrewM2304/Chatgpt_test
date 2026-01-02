@@ -145,12 +145,11 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  padding: 10px 16px;
-  border-radius: 14px;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 999px;
   font-weight: 600;
-  color: #1e293b;
+  color: #ffffff;
   cursor: pointer;
   position: relative;
   z-index: 8;
@@ -173,14 +172,14 @@ h1 {
   display: block;
   width: 20px;
   height: 2px;
-  background: #0f172a;
+  background: #ffffff;
   border-radius: 999px;
 }
 
 .tabs-toggle-close {
   font-size: 1.4rem;
   font-weight: 600;
-  color: #0f172a;
+  color: #ffffff;
   line-height: 1;
 }
 
@@ -485,7 +484,7 @@ button.ghost.danger {
 .log {
   display: grid;
   gap: 24px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  padding-bottom: 96px;
 }
 
 .log-form form {
@@ -525,6 +524,32 @@ button.ghost.danger {
   gap: 12px;
 }
 
+.log-schedule-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.log-schedule-caption {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+}
+
+.log-week-picker {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.log-week-picker input {
+  font-size: 0.9rem;
+}
+
 .log-schedule-grid {
   display: grid;
   gap: 8px;
@@ -533,6 +558,13 @@ button.ghost.danger {
 
 .log-schedule-corner {
   height: 100%;
+  font-weight: 600;
+  color: #0f172a;
+  padding: 8px 10px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .log-schedule-day,
@@ -542,6 +574,22 @@ button.ghost.danger {
   padding: 8px 10px;
   background: #f1f5f9;
   border-radius: 10px;
+}
+
+.log-schedule-day {
+  display: grid;
+  gap: 4px;
+}
+
+.log-day-name {
+  font-size: 0.9rem;
+}
+
+.log-day-date {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .log-schedule-cell {
@@ -563,7 +611,26 @@ button.ghost.danger {
 
 .log-schedule-cell li {
   display: grid;
+}
+
+.log-entry-button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: #f8fafc;
+  padding: 8px 10px;
+  border-radius: 10px;
+  display: grid;
   gap: 4px;
+  color: #0f172a;
+  cursor: pointer;
+  font: inherit;
+}
+
+.log-entry-button:hover,
+.log-entry-button:focus {
+  background: #e0f2fe;
+  outline: none;
 }
 
 .log-schedule-cell em {
@@ -575,6 +642,22 @@ button.ghost.danger {
 .log-schedule-cell .empty {
   color: #cbd5f5;
   font-size: 0.85rem;
+}
+
+.log-sticky-action {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0), #f8fafc 45%);
+}
+
+.log-sticky-button {
+  width: 100%;
+  justify-content: center;
+  display: inline-flex;
 }
 
 .log-history ul,
