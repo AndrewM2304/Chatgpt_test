@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export const SettingsView = ({
   onGenerateInvite,
-  onClearData,
+  onLogout,
   onJoinGroup,
   onCopyGroupCode,
   onInstallApp,
@@ -229,13 +229,13 @@ export const SettingsView = ({
       </div>
 
       <div className="settings-card danger-card">
-        <h2>Danger zone</h2>
+        <h2>Log out</h2>
         <p>
-          Remove all recipes, logs, and saved filters from this catalog. This
-          action cannot be undone.
+          Log out of this group to clear local recipes, logs, and filters. Your
+          shared data stays safely in Supabase.
         </p>
-        <button type="button" className="secondary danger" onClick={onClearData}>
-          Delete all data
+        <button type="button" className="secondary danger" onClick={onLogout}>
+          Log out and clear local data
         </button>
       </div>
     </section>

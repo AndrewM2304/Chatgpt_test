@@ -9,10 +9,7 @@ export const SettingsRoute = ({
   createNewGroup,
   joinGroup,
   addToast,
-  setRecipes,
-  setCookbooks,
-  setCuisines,
-  setLogs,
+  onLogout,
   cookbookCoverTargets,
   cookbookCoverMap,
 }) => {
@@ -139,17 +136,15 @@ export const SettingsRoute = ({
     return joined;
   };
 
-  const handleClearData = () => {
+  const handleLogout = () => {
     const confirmed = window.confirm(
-      "Delete all recipes, logs, and saved settings? This cannot be undone."
+      "Log out of this group and clear local data? Shared data will remain in Supabase."
     );
     if (!confirmed) {
       return;
     }
-    setRecipes([]);
-    setCookbooks([]);
-    setCuisines([]);
-    setLogs([]);
+    onLogout();
+    addToast("You have logged out of this group.", "success");
   };
 
   const handleUploadCookbookCover = async (title, file) => {
@@ -218,7 +213,7 @@ export const SettingsRoute = ({
   return (
     <SettingsView
       onGenerateInvite={handleGenerateInvite}
-      onClearData={handleClearData}
+      onLogout={handleLogout}
       onJoinGroup={handleJoinGroup}
       onCopyGroupCode={handleCopyGroupCode}
       onInstallApp={handleInstallApp}

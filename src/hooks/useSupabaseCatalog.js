@@ -84,6 +84,12 @@ export const useSupabaseCatalog = () => {
     statusMessages,
   });
 
+  const clearLocalData = useCallback(() => {
+    setGroupCode("");
+    setCatalogId(null);
+    setCatalog(DEFAULT_CATALOG);
+  }, [setCatalog, setCatalogId, setGroupCode]);
+
   return {
     catalog,
     setRecipes,
@@ -98,6 +104,7 @@ export const useSupabaseCatalog = () => {
     groupCode,
     createNewGroup,
     joinGroup,
+    clearLocalData,
     syncCatalog,
   };
 };
