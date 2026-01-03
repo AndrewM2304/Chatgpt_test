@@ -497,6 +497,7 @@ export default function App() {
                   recipes={recipes}
                   cuisineOptions={cuisineOptions}
                   onStartLog={handleStartLog}
+                  cookbookCovers={cookbookCoverMap}
                 />
               }
             />

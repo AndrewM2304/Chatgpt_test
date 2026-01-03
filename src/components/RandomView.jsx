@@ -1,4 +1,5 @@
-import { formatDate } from "../utils/recipeUtils";
+import { formatDate, getCoverColor, getInitials } from "../utils/recipeUtils";
+import { RecipeRating } from "./RecipeRating";
 
 export const RandomView = ({
   cuisineOptions,
@@ -12,6 +13,7 @@ export const RandomView = ({
   randomPick,
   onStartLog,
   hasRecipes,
+  cookbookCovers,
 }) => {
   const isWebsite =
     randomPick?.sourceType === "website" ||
@@ -19,6 +21,7 @@ export const RandomView = ({
   const sourceTitle = randomPick
     ? randomPick.cookbookTitle || (isWebsite ? "Website" : "No cookbook")
     : "";
+  const coverUrl = sourceTitle ? cookbookCovers?.[sourceTitle] : "";
 
   return (
     <section className="random">
@@ -76,6 +79,17 @@ export const RandomView = ({
       {randomPick && (
         <div className="random-result">
           <p className="eyebrow">Tonight&apos;s pick</p>
+          <div
+            className={`recipe-cover${coverUrl ? " has-image" : ""}`}
+            role="img"
+            aria-label={`${sourceTitle} cover`}
+            style={{
+              backgroundColor: getCoverColor(sourceTitle),
+              ...(coverUrl ? { backgroundImage: `url(${coverUrl})` } : {}),
+            }}
+          >
+            {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
+          </div>
           <h3>{randomPick.name}</h3>
           <p>
             {sourceTitle}
@@ -91,6 +105,10 @@ export const RandomView = ({
           <p className="recipe-meta">
             Cuisine: {randomPick.cuisine || "Uncategorized"}
           </p>
+          <RecipeRating
+            value={randomPick.rating || 0}
+            label="Recipe rating"
+          />
           <div className="recipe-footer">
             <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
           </div>
@@ -99,7 +117,7 @@ export const RandomView = ({
             className="primary"
             onClick={() => onStartLog(randomPick.id)}
           >
-            Log this cook
+            Schedule meal
           </button>
         </div>
       )}

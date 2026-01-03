@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { RandomView } from "../components/RandomView";
 import { durationBuckets } from "../utils/recipeUtils";
 
-export const RandomRoute = ({ recipes, cuisineOptions, onStartLog }) => {
+export const RandomRoute = ({ recipes, cuisineOptions, onStartLog, cookbookCovers }) => {
   const [selectedCuisine, setSelectedCuisine] = useState("all");
   const [selectedDuration, setSelectedDuration] = useState("all");
   const [randomPick, setRandomPick] = useState(null);
@@ -60,6 +60,7 @@ export const RandomRoute = ({ recipes, cuisineOptions, onStartLog }) => {
       randomPick={randomPick}
       onStartLog={onStartLog}
       hasRecipes={recipes.length > 0}
+      cookbookCovers={cookbookCovers}
     />
   );
 };
