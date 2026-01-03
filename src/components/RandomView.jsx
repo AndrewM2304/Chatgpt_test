@@ -2,8 +2,11 @@ import { formatDate } from "../utils/recipeUtils";
 
 export const RandomView = ({
   cuisineOptions,
-  excludedCuisines,
-  onToggleCuisine,
+  durationOptions,
+  selectedCuisine,
+  selectedDuration,
+  onCuisineChange,
+  onDurationChange,
   onPickRandom,
   randomCandidates,
   randomPick,
@@ -21,26 +24,38 @@ export const RandomView = ({
     <section className="random">
       <div className="random-controls">
         <h2>Random dinner picker</h2>
-        <p>
-          Toggle cuisines you want a break from, then pick a recipe at random.
-        </p>
-        <div className="chip-grid">
-          {cuisineOptions.length ? (
-            cuisineOptions.map((cuisine) => (
-              <button
-                key={cuisine}
-                type="button"
-                className={`chip${
-                  excludedCuisines.includes(cuisine) ? " is-off" : ""
-                }`}
-                onClick={() => onToggleCuisine(cuisine)}
-              >
-                {cuisine}
-              </button>
-            ))
-          ) : (
-            <span className="empty">Add cuisines to start filtering.</span>
-          )}
+        <p>Filter by cuisine or timing, then pick a recipe at random.</p>
+        <div className="random-filters">
+          <div className="control">
+            <label htmlFor="random-cuisine">Cuisine</label>
+            <select
+              id="random-cuisine"
+              value={selectedCuisine}
+              onChange={(event) => onCuisineChange(event.target.value)}
+            >
+              <option value="all">All cuisines</option>
+              {cuisineOptions.map((cuisine) => (
+                <option key={cuisine} value={cuisine}>
+                  {cuisine}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="control">
+            <label htmlFor="random-duration">Timing</label>
+            <select
+              id="random-duration"
+              value={selectedDuration}
+              onChange={(event) => onDurationChange(event.target.value)}
+            >
+              <option value="all">Any time</option>
+              {durationOptions.map((option) => (
+                <option key={option.label} value={option.label}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <button
           type="button"
@@ -51,9 +66,7 @@ export const RandomView = ({
           Pick a random recipe
         </button>
         {!randomCandidates.length && hasRecipes && (
-          <p className="empty">
-            All recipes are filtered out. Turn a cuisine back on.
-          </p>
+          <p className="empty">No recipes match the filters. Try another pick.</p>
         )}
         {!hasRecipes && (
           <p className="empty">Add recipes to unlock the picker.</p>

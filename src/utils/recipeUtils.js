@@ -19,7 +19,11 @@ export const durationBuckets = [
     label: "30-60 mins",
     test: (value) => value !== null && value >= 30 && value <= 60,
   },
-  { label: "Over 60 mins", test: (value) => value !== null && value > 60 },
+  {
+    label: "60-120 mins",
+    test: (value) => value !== null && value > 60 && value <= 120,
+  },
+  { label: "Over 120 mins", test: (value) => value !== null && value > 120 },
 ];
 
 export const getInitials = (title) =>

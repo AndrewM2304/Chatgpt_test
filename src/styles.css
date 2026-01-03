@@ -782,6 +782,12 @@ button.secondary.icon-button {
   justify-self: start;
 }
 
+.random-filters {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .chip-grid {
   display: flex;
   flex-wrap: wrap;
