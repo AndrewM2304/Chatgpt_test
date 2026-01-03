@@ -5,6 +5,62 @@ import { RecipeModal } from "../components/RecipeModal";
 import { RecipeView } from "../components/RecipeView";
 import { durationBuckets, timesBuckets } from "../utils/recipeUtils";
 
+const CatalogDetailLayout = ({
+  activeRecipeId,
+  groupedRecipes,
+  totalRecipes,
+  searchTerm,
+  onSearchTerm,
+  groupBy,
+  onGroupBy,
+  onOpenRecipe,
+  hasRecipes,
+  onAddRecipe,
+  onRatingChange,
+  cookbookCovers,
+  onStartLog,
+  onEditRecipe,
+  onDeleteRecipe,
+  recipeById,
+}) => {
+  const activeRecipe = activeRecipeId ? recipeById[activeRecipeId] || null : null;
+
+  return (
+    <div className="catalog-detail">
+      <div className="catalog-detail-sidebar">
+        <CatalogView
+          groupedRecipes={groupedRecipes}
+          totalRecipes={totalRecipes}
+          searchTerm={searchTerm}
+          onSearchTerm={onSearchTerm}
+          groupBy={groupBy}
+          onGroupBy={onGroupBy}
+          onOpenRecipe={onOpenRecipe}
+          hasRecipes={hasRecipes}
+          onAddRecipe={onAddRecipe}
+          onRatingChange={onRatingChange}
+          cookbookCovers={cookbookCovers}
+        />
+      </div>
+      <div className="catalog-detail-preview">
+        <RecipeView
+          activeRecipe={activeRecipe}
+          onStartLog={(recipeId) => onStartLog(recipeId, { deferNavigation: true })}
+          onEditRecipe={onEditRecipe}
+          onDeleteRecipe={onDeleteRecipe}
+          onRatingChange={(value) => onRatingChange(activeRecipe?.id, value)}
+          cookbookCovers={cookbookCovers}
+        />
+      </div>
+    </div>
+  );
+};
+
+const RecipeRoute = (props) => {
+  const { recipeId } = useParams();
+  return <CatalogDetailLayout activeRecipeId={recipeId} {...props} />;
+};
+
 export const CatalogRoute = ({
   recipes,
   setRecipes,
@@ -251,46 +307,26 @@ export const CatalogRoute = ({
     );
   }, [setRecipes]);
 
-  const CatalogDetailLayout = ({ activeRecipeId }) => {
-    const activeRecipe = activeRecipeId ? recipeById[activeRecipeId] || null : null;
-
-    return (
-      <div className="catalog-detail">
-        <div className="catalog-detail-sidebar">
-          <CatalogView
-            groupedRecipes={groupedRecipes}
-            totalRecipes={recipes.length}
-            searchTerm={searchTerm}
-            onSearchTerm={setSearchTerm}
-            groupBy={groupBy}
-            onGroupBy={setGroupBy}
-            onOpenRecipe={onOpenRecipe}
-            hasRecipes={recipes.length > 0}
-            onAddRecipe={handleOpenAddModal}
-            onRatingChange={handleUpdateRecipeRating}
-            cookbookCovers={cookbookCoverMap}
-          />
-        </div>
-        <div className="catalog-detail-preview">
-          <RecipeView
-            activeRecipe={activeRecipe}
-            onStartLog={(recipeId) =>
-              onStartLog(recipeId, { deferNavigation: true })
-            }
-            onEditRecipe={handleEditRecipe}
-            onDeleteRecipe={handleDeleteFromView}
-            onRatingChange={(value) =>
-              handleUpdateRecipeRating(activeRecipe?.id, value)
-            }
-            cookbookCovers={cookbookCoverMap}
-          />
-        </div>
-      </div>
-    );
+  const detailLayoutProps = {
+    groupedRecipes,
+    totalRecipes: recipes.length,
+    searchTerm,
+    onSearchTerm: setSearchTerm,
+    groupBy,
+    onGroupBy: setGroupBy,
+    onOpenRecipe,
+    hasRecipes: recipes.length > 0,
+    onAddRecipe: handleOpenAddModal,
+    onRatingChange: handleUpdateRecipeRating,
+    cookbookCovers: cookbookCoverMap,
+    onStartLog,
+    onEditRecipe: handleEditRecipe,
+    onDeleteRecipe: handleDeleteFromView,
+    recipeById,
   };
 
   const catalogContent = isDesktop ? (
-    <CatalogDetailLayout activeRecipeId={defaultRecipeId} />
+    <CatalogDetailLayout activeRecipeId={defaultRecipeId} {...detailLayoutProps} />
   ) : (
     <CatalogView
       groupedRecipes={groupedRecipes}
@@ -306,11 +342,6 @@ export const CatalogRoute = ({
       cookbookCovers={cookbookCoverMap}
     />
   );
-
-  const RecipeRoute = () => {
-    const { recipeId } = useParams();
-    return <CatalogDetailLayout activeRecipeId={recipeId} />;
-  };
 
   useEffect(() => {
     if (!pendingEditRecipeId) {
@@ -330,7 +361,7 @@ export const CatalogRoute = ({
       <Routes>
         <Route path="/" element={catalogContent} />
         <Route path="/catalog" element={catalogContent} />
-        <Route path="/recipe/:recipeId" element={<RecipeRoute />} />
+        <Route path="/recipe/:recipeId" element={<RecipeRoute {...detailLayoutProps} />} />
         <Route path="*" element={catalogContent} />
       </Routes>
       <RecipeModal
