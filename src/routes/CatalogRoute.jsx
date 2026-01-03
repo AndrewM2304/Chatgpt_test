@@ -76,6 +76,7 @@ export const CatalogRoute = ({
   onRecipeModalOpenChange,
   pendingEditRecipeId,
   onEditHandled,
+  onAddRecipeSignalHandled,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
@@ -102,8 +103,9 @@ export const CatalogRoute = ({
       lastAddSignal.current = openAddRecipeSignal;
       resetForm();
       setIsModalOpen(true);
+      onAddRecipeSignalHandled?.();
     }
-  }, [openAddRecipeSignal, resetForm]);
+  }, [onAddRecipeSignalHandled, openAddRecipeSignal, resetForm]);
 
   const cookbookOptions = useMemo(() => {
     return Array.from(

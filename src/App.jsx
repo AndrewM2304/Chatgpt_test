@@ -228,6 +228,10 @@ export default function App() {
     }
   };
 
+  const handleAddRecipeSignalHandled = () => {
+    setOpenAddRecipeSignal(0);
+  };
+
   const handleUpdateRecipeRating = useCallback((recipeId, value) => {
     if (!recipeId) {
       return;
@@ -444,6 +448,7 @@ export default function App() {
       onRecipeModalOpenChange={setIsRecipeModalOpen}
       pendingEditRecipeId={pendingEditRecipeId}
       onEditHandled={() => setPendingEditRecipeId(null)}
+      onAddRecipeSignalHandled={handleAddRecipeSignalHandled}
     />
   );
 
