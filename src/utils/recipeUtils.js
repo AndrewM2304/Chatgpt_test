@@ -36,6 +36,12 @@ export const getCoverColor = (title) => {
     hash = title.charCodeAt(i) + ((hash << 5) - hash);
   }
   const hue = Math.abs(hash) % 360;
+  const isDarkMode =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+  if (isDarkMode) {
+    return `hsla(${hue} 70% 88% / 0.22)`;
+  }
   return `hsl(${hue} 70% 88%)`;
 };
 
