@@ -1,4 +1,7 @@
-export const ToastStack = ({ toasts }) => {
+import { useUI } from "../context/UIContext.jsx";
+
+export const ToastStack = () => {
+  const { toasts } = useUI();
   if (!toasts.length) {
     return null;
   }

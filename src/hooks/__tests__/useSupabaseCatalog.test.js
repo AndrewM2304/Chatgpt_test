@@ -19,6 +19,13 @@ const createStorage = () => {
 beforeEach(() => {
   globalThis.window = {
     localStorage: createStorage(),
+    location: {
+      search: "",
+      href: "http://localhost/",
+    },
+    history: {
+      replaceState: () => {},
+    },
   };
 });
 
