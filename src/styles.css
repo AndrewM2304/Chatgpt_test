@@ -576,10 +576,11 @@ button.secondary.icon-button {
 
 .view-toggle {
   display: inline-flex;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   border-radius: 4px;
   background: transparent;
   overflow: hidden;
+  padding: 2px;
 }
 
 .view-toggle-button {
@@ -588,7 +589,7 @@ button.secondary.icon-button {
   color: var(--color-text-muted);
   font-weight: 600;
   padding: 6px 8px;
-  border-radius: 0;
+  border-radius: 2px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -604,7 +605,7 @@ button.secondary.icon-button {
 
 .view-toggle-button.is-active {
   background: var(--color-accent);
-  color: var(--color-accent-contrast);
+  color: var(--color-button-primary-text);
   box-shadow: none;
 }
 
