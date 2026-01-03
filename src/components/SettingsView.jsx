@@ -58,20 +58,25 @@ export const SettingsView = ({
     }
 
     setIsUploading(true);
-    const result = await onUploadCookbookCover(
-      selectedCookbook,
-      selectedFile
-    );
-    setIsUploading(false);
+    try {
+      const result = await onUploadCookbookCover(
+        selectedCookbook,
+        selectedFile
+      );
 
-    if (!result?.ok) {
-      setUploadError(result?.error || "Upload failed. Please try again.");
-      return;
+      if (!result?.ok) {
+        setUploadError(result?.error || "Upload failed. Please try again.");
+        return;
+      }
+
+      setSelectedFile(null);
+      setFileInputKey((prev) => prev + 1);
+      setUploadStatus(`Artwork saved for ${selectedCookbook}.`);
+    } catch (error) {
+      setUploadError(error?.message || "Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
-
-    setSelectedFile(null);
-    setFileInputKey((prev) => prev + 1);
-    setUploadStatus(`Artwork saved for ${selectedCookbook}.`);
   };
 
   const selectedCover = selectedCookbook
