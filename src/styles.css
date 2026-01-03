@@ -532,6 +532,12 @@ button.secondary.icon-button {
   color: var(--color-text-muted);
 }
 
+.empty-state {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
 .catalog {
   display: grid;
   gap: 24px;

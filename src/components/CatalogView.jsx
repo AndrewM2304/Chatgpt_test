@@ -21,6 +21,7 @@ export const CatalogView = memo(({
   cookbookCovers,
 }) => {
   const recipeCountLabel = totalRecipes === 1 ? "recipe" : "recipes";
+  const hasResults = groupedRecipes.length > 0;
 
   return (
     <section className="catalog">
@@ -121,6 +122,19 @@ export const CatalogView = memo(({
             </div>
           </div>
         ))}
+
+        {hasRecipes && !hasResults && (
+          <div className="empty-state">
+            <p className="empty">No recipes match your search.</p>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => onSearchTerm("")}
+            >
+              Clear search
+            </button>
+          </div>
+        )}
 
         {!hasRecipes && (
           <p className="empty">No recipes yet. Add your first cookbook hit.</p>
