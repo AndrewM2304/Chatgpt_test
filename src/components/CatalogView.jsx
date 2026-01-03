@@ -1,5 +1,9 @@
 import { memo } from "react";
 import {
+  QueueListIcon,
+  Squares2X2Icon,
+} from "@heroicons/react/24/outline";
+import {
   formatDuration,
   getCoverColor,
   getInitials,
@@ -37,7 +41,33 @@ export const CatalogView = memo(({
     <section className="catalog">
       <div className="catalog-toolbar">
         <div className="control">
-          <label htmlFor="search">{activeRecipesLabel}</label>
+          <div className="catalog-search-header">
+            <label htmlFor="search">{activeRecipesLabel}</label>
+            <div className="catalog-view-toggle">
+              <div className="view-toggle" role="group" aria-label="Catalog view">
+                <button
+                  type="button"
+                  className={`view-toggle-button${!isCardView ? " is-active" : ""}`}
+                  aria-pressed={!isCardView}
+                  aria-label="List view"
+                  title="List view"
+                  onClick={() => onViewModeChange("list")}
+                >
+                  <QueueListIcon className="view-toggle-icon" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className={`view-toggle-button${isCardView ? " is-active" : ""}`}
+                  aria-pressed={isCardView}
+                  aria-label="Card view"
+                  title="Card view"
+                  onClick={() => onViewModeChange("cards")}
+                >
+                  <Squares2X2Icon className="view-toggle-icon" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </div>
           <input
             id="search"
             type="search"
@@ -60,27 +90,6 @@ export const CatalogView = memo(({
               </option>
             ))}
           </select>
-        </div>
-        <div className="control catalog-view-toggle">
-          <span className="control-label">View</span>
-          <div className="view-toggle" role="group" aria-label="Catalog view">
-            <button
-              type="button"
-              className={`view-toggle-button${!isCardView ? " is-active" : ""}`}
-              aria-pressed={!isCardView}
-              onClick={() => onViewModeChange("list")}
-            >
-              List
-            </button>
-            <button
-              type="button"
-              className={`view-toggle-button${isCardView ? " is-active" : ""}`}
-              aria-pressed={isCardView}
-              onClick={() => onViewModeChange("cards")}
-            >
-              Cards
-            </button>
-          </div>
         </div>
       </div>
 
@@ -110,6 +119,9 @@ export const CatalogView = memo(({
                   key={cookbook.title}
                   type="button"
                   className="cookbook-card"
+                  aria-label={`${cookbook.title} (${cookbook.count} ${
+                    cookbook.count === 1 ? "recipe" : "recipes"
+                  })`}
                   onClick={() => onSelectCookbook(cookbook.title)}
                 >
                   <div
@@ -123,13 +135,6 @@ export const CatalogView = memo(({
                     }}
                   >
                     {!coverUrl && <span>{getInitials(cookbook.title)}</span>}
-                  </div>
-                  <div className="cookbook-info">
-                    <p className="cookbook-title">{cookbook.title}</p>
-                    <p className="cookbook-meta">
-                      {cookbook.count}{" "}
-                      {cookbook.count === 1 ? "recipe" : "recipes"}
-                    </p>
                   </div>
                 </button>
               );
