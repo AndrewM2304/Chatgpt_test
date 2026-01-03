@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Navigate,
   Route,
@@ -410,9 +410,9 @@ export default function App() {
     return schedule;
   }, [logs, weekDays]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setEditingId(null);
-  };
+  }, []);
 
   const handleInstallApp = async () => {
     if (!installPrompt) {
@@ -501,14 +501,14 @@ export default function App() {
     setIsModalOpen(true);
   };
 
-  const handleOpenRecipe = (recipe) => {
+  const handleOpenRecipe = useCallback((recipe) => {
     if (!isDesktop) {
       setPreviewRecipeId(recipe.id);
       setIsPreviewOpen(true);
       return;
     }
     navigate(`/recipe/${recipe.id}`);
-  };
+  }, [isDesktop, navigate]);
 
   const handleStartLog = (recipeId, { deferNavigation = false } = {}) => {
     setLogRecipeId(recipeId);
@@ -791,10 +791,10 @@ export default function App() {
     return joined;
   };
 
-  const handleOpenAddModal = () => {
+  const handleOpenAddModal = useCallback(() => {
     resetForm();
     setIsModalOpen(true);
-  };
+  }, [resetForm]);
 
   const handleCloseModal = () => {
     resetForm();
@@ -850,7 +850,7 @@ export default function App() {
     setIsModalOpen(false);
   };
 
-  const handleUpdateRecipeRating = (recipeId, value) => {
+  const handleUpdateRecipeRating = useCallback((recipeId, value) => {
     if (!recipeId) {
       return;
     }
@@ -865,7 +865,7 @@ export default function App() {
           : recipe
       )
     );
-  };
+  }, [setRecipes]);
 
   const CatalogDetailLayout = ({ activeRecipeId }) => {
     const activeRecipe = activeRecipeId ? recipeById[activeRecipeId] || null : null;
