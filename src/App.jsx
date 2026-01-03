@@ -946,6 +946,7 @@ export default function App() {
                     hasRecipes={recipes.length > 0}
                     onAddRecipe={handleOpenAddModal}
                     onRatingChange={handleUpdateRecipeRating}
+                    cookbookCovers={cookbookCoverMap}
                   />
                 )
               }
