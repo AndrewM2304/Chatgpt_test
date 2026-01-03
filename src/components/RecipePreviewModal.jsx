@@ -8,6 +8,7 @@ export const RecipePreviewModal = ({
   onEditRecipe,
   onDeleteRecipe,
   onRatingChange,
+  cookbookCovers,
 }) => {
   if (!isOpen || !recipe) {
     return null;
@@ -42,6 +43,7 @@ export const RecipePreviewModal = ({
             onDeleteRecipe={onDeleteRecipe}
             onRatingChange={onRatingChange}
             showTitle={false}
+            cookbookCovers={cookbookCovers}
           />
         </div>
       </div>

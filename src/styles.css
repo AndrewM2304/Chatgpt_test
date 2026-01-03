@@ -600,6 +600,13 @@ button.secondary.icon-button {
   font-weight: 700;
   color: var(--color-text);
   text-transform: uppercase;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.recipe-cover.has-image {
+  color: transparent;
 }
 
 .recipe-details {
@@ -1222,9 +1229,34 @@ button.secondary.icon-button {
   gap: 16px;
 }
 
+.helper-text {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
 .join-group-form {
   display: grid;
   gap: 12px;
+}
+
+.cover-upload-form {
+  display: grid;
+  gap: 12px;
+}
+
+.cover-preview {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.cover-preview img {
+  width: 120px;
+  height: 160px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 8px 18px var(--color-shadow);
 }
 
 .settings {

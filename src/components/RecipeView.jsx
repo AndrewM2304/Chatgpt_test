@@ -6,6 +6,7 @@ export const RecipeView = ({
   onEditRecipe,
   onDeleteRecipe,
   onRatingChange,
+  cookbookCovers,
 }) => {
   if (!activeRecipe) {
     return (
@@ -25,6 +26,7 @@ export const RecipeView = ({
         onEditRecipe={onEditRecipe}
         onDeleteRecipe={onDeleteRecipe}
         onRatingChange={onRatingChange}
+        cookbookCovers={cookbookCovers}
       />
     </section>
   );

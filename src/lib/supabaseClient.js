@@ -1,7 +1,7 @@
-const supabaseUrl =
+export const supabaseUrl =
   import.meta.env?.VITE_SUPABASE_URL ||
   "https://hotpfzvofjarefbivpcs.supabase.co";
-const supabaseAnonKey =
+export const supabaseAnonKey =
   import.meta.env?.VITE_SUPABASE_ANON_KEY ||
   "sb_publishable_anJj683VuXOTiJ0oRhKacQ_t4WcUiQz";
 
