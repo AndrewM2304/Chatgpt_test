@@ -6,78 +6,22 @@ import { ScheduleModal } from "./components/ScheduleModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { ToastStack } from "./components/ToastStack";
+import { useUI } from "./context/UIContext.jsx";
+import { buildCookbookCoverMap, buildCookbookCoverTargets, buildRecipeById } from "./lib/catalogDomain.js";
+import { useLogModalState } from "./hooks/useLogModalState.js";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { CatalogRoute } from "./routes/CatalogRoute";
 import { RandomRoute } from "./routes/RandomRoute";
 import { LogRoute } from "./routes/LogRoute";
 import { SettingsRoute } from "./routes/SettingsRoute";
+import { areCookbookEntriesEqual, mergeCookbookEntries, normalizeCookbookEntries } from "./utils/cookbookUtils.js";
+import { getWeekStart, toDateInputValue } from "./utils/dateUtils.js";
 
 const MEAL_OPTIONS = [
   { value: "breakfast", label: "Breakfast" },
   { value: "lunch", label: "Lunch" },
   { value: "dinner", label: "Dinner" },
 ];
-
-const toDateInputValue = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const getWeekdayIndex = (date) => (date.getDay() + 6) % 7;
-
-const getWeekStart = (dateString) => {
-  const date = new Date(`${dateString}T00:00:00`);
-  const offset = getWeekdayIndex(date);
-  const start = new Date(date);
-  start.setDate(date.getDate() - offset);
-  return start;
-};
-
-const normalizeCookbookEntry = (entry) => {
-  if (!entry) {
-    return null;
-  }
-  if (typeof entry === "string") {
-    return { title: entry, coverUrl: "" };
-  }
-  if (typeof entry === "object") {
-    return {
-      title: entry.title || "",
-      coverUrl: entry.coverUrl || "",
-    };
-  }
-  return null;
-};
-
-const normalizeCookbookEntries = (entries) =>
-  (Array.isArray(entries) ? entries : [])
-    .map(normalizeCookbookEntry)
-    .filter((entry) => entry?.title);
-
-const mergeCookbookEntries = (entries, titles) => {
-  const normalized = normalizeCookbookEntries(entries);
-  const entryMap = new Map(
-    normalized.map((entry) => [entry.title, entry])
-  );
-  return titles.map((title) => entryMap.get(title) || { title, coverUrl: "" });
-};
-
-const areCookbookEntriesEqual = (left, right) => {
-  const leftNormalized = normalizeCookbookEntries(left);
-  const rightNormalized = normalizeCookbookEntries(right);
-  if (leftNormalized.length !== rightNormalized.length) {
-    return false;
-  }
-  return leftNormalized.every((entry, index) => {
-    const compare = rightNormalized[index];
-    return (
-      entry.title === compare.title &&
-      (entry.coverUrl || "") === (compare.coverUrl || "")
-    );
-  });
-};
 
 export default function App() {
   const {
@@ -95,23 +39,32 @@ export default function App() {
   } = useSupabaseCatalog();
   const navigate = useNavigate();
   const { recipes, logs } = catalog;
-  const [logRecipeId, setLogRecipeId] = useState("");
-  const [logRecipeQuery, setLogRecipeQuery] = useState("");
-  const [logWeekDate, setLogWeekDate] = useState(() =>
-    toDateInputValue(new Date())
-  );
-  const [logSelectedDays, setLogSelectedDays] = useState(() => [
-    toDateInputValue(new Date()),
-  ]);
-  const [logSelectedMeals, setLogSelectedMeals] = useState(["dinner"]);
-  const [logNote, setLogNote] = useState("");
-  const [editingLogId, setEditingLogId] = useState(null);
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewRecipeId, setPreviewRecipeId] = useState(null);
-  const [shouldNavigateAfterLog, setShouldNavigateAfterLog] = useState(false);
-  const [toasts, setToasts] = useState([]);
+  const {
+    isLogModalOpen,
+    setIsLogModalOpen,
+    isRecipeModalOpen,
+    setIsRecipeModalOpen,
+    isPreviewOpen,
+    setIsPreviewOpen,
+    previewRecipeId,
+    setPreviewRecipeId,
+    addToast,
+  } = useUI();
+  const {
+    state: logState,
+    setLogWeekDate,
+    setLogRecipeId,
+    setLogRecipeQuery,
+    setLogNote,
+    setEditingLogId,
+    setShouldNavigateAfterLog,
+    toggleLogDay,
+    toggleLogMeal,
+    openForStart,
+    openForEntry,
+    resetForClose,
+    resetAfterSubmit,
+  } = useLogModalState();
   const [openAddRecipeSignal, setOpenAddRecipeSignal] = useState(0);
   const [pendingEditRecipeId, setPendingEditRecipeId] = useState(null);
   const [isDesktop, setIsDesktop] = useState(() => {
@@ -125,14 +78,16 @@ export default function App() {
   const catalogMatch = useMatch("/catalog");
   const homeMatch = useMatch({ path: "/", end: true });
   const isCatalogRoute = Boolean(homeMatch || catalogMatch || recipeMatch);
-
-  const addToast = (message, variant = "info") => {
-    const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, message, variant }]);
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 3200);
-  };
+  const {
+    logRecipeId,
+    logRecipeQuery,
+    logWeekDate,
+    logSelectedDays,
+    logSelectedMeals,
+    logNote,
+    editingLogId,
+    shouldNavigateAfterLog,
+  } = logState;
   const recipeOptions = useMemo(
     () =>
       recipes
@@ -177,33 +132,21 @@ export default function App() {
   }, [recipes]);
 
   const recipeById = useMemo(() => {
-    return recipes.reduce((accumulator, recipe) => {
-      accumulator[recipe.id] = recipe;
-      return accumulator;
-    }, {});
+    return buildRecipeById(recipes);
   }, [recipes]);
 
   const cookbookCoverTargets = useMemo(() => {
-    const targets = new Set(cookbookOptions);
-    cookbookEntries.forEach((entry) => targets.add(entry.title));
-    const hasWebsiteRecipes = recipes.some(
-      (recipe) =>
-        recipe.sourceType === "website" || (!recipe.sourceType && recipe.url)
-    );
-    if (hasWebsiteRecipes || cookbookEntries.some((entry) => entry.title === "Website")) {
-      targets.add("Website");
-    }
-    return Array.from(targets).sort((a, b) => a.localeCompare(b));
+    return buildCookbookCoverTargets({
+      recipes,
+      cookbookEntries,
+      cookbookOptions,
+    });
   }, [cookbookEntries, cookbookOptions, recipes]);
 
-  const cookbookCoverMap = useMemo(() => {
-    return cookbookEntries.reduce((accumulator, entry) => {
-      if (entry.coverUrl) {
-        accumulator[entry.title] = entry.coverUrl;
-      }
-      return accumulator;
-    }, {});
-  }, [cookbookEntries]);
+  const cookbookCoverMap = useMemo(
+    () => buildCookbookCoverMap(cookbookEntries),
+    [cookbookEntries]
+  );
 
   const cuisineOptions = useMemo(() => {
     return Array.from(
@@ -302,19 +245,18 @@ export default function App() {
   }, [setRecipes]);
 
   const handleStartLog = (recipeId, { deferNavigation = false } = {}) => {
-    setLogRecipeId(recipeId);
     const recipeName = recipeById[recipeId]?.name || "";
-    setLogRecipeQuery(recipeName);
     const today = new Date();
-    setLogWeekDate(toDateInputValue(today));
-    setLogSelectedDays([toDateInputValue(today)]);
-    setLogSelectedMeals(["dinner"]);
-    setLogNote("");
-    setShouldNavigateAfterLog(deferNavigation);
+    const todayValue = toDateInputValue(today);
+    openForStart({
+      recipeId,
+      recipeQuery: recipeName,
+      weekDate: todayValue,
+      shouldNavigateAfterLog: deferNavigation,
+    });
     if (!deferNavigation) {
       navigate("/log");
     }
-    setEditingLogId(null);
     setIsLogModalOpen(true);
   };
 
@@ -383,11 +325,7 @@ export default function App() {
         );
       }
     }
-    setLogWeekDate(selectedDay);
-    setLogRecipeId("");
-    setLogRecipeQuery("");
-    setLogNote("");
-    setEditingLogId(null);
+    resetAfterSubmit(selectedDay);
     setIsLogModalOpen(false);
     if (shouldNavigateAfterLog) {
       navigate("/log");
@@ -439,49 +377,24 @@ export default function App() {
           }
         }
       }
-      setEditingLogId(entry.id);
-      setLogRecipeId(entry.recipeId || "");
-      setLogRecipeQuery(entry.name || "");
-      setLogSelectedDays([entry.date]);
-      setLogSelectedMeals([entry.meal || "dinner"]);
-      setLogNote(entry.note || "");
+      openForEntry({ entry, date, meal });
     } else {
-      setEditingLogId(null);
-      setLogRecipeId("");
-      setLogRecipeQuery("");
-      setLogNote("");
-      setLogSelectedDays([date || logWeekDate]);
-      setLogSelectedMeals([meal || "dinner"]);
+      openForEntry({ date, meal });
     }
-    setShouldNavigateAfterLog(false);
     setIsLogModalOpen(true);
   };
 
   const handleCloseLogModal = () => {
-    setEditingLogId(null);
-    setLogRecipeId("");
-    setLogRecipeQuery("");
-    setLogNote("");
-    setLogSelectedDays([logWeekDate]);
-    setLogSelectedMeals(["dinner"]);
+    resetForClose(logWeekDate);
     setIsLogModalOpen(false);
-    setShouldNavigateAfterLog(false);
   };
 
   const handleToggleLogDay = (value) => {
-    setLogSelectedDays((prev) => {
-      return prev.includes(value)
-        ? prev.filter((day) => day !== value)
-        : [...prev, value];
-    });
+    toggleLogDay(value);
   };
 
   const handleToggleLogMeal = (value) => {
-    setLogSelectedMeals((prev) => {
-      return prev.includes(value)
-        ? prev.filter((meal) => meal !== value)
-        : [...prev, value];
-    });
+    toggleLogMeal(value);
   };
 
   const handleClosePreview = () => {
@@ -605,7 +518,7 @@ export default function App() {
         </div>
       </main>
       <MobileTabBar />
-      <ToastStack toasts={toasts} />
+      <ToastStack />
       <RecipePreviewModal
         isOpen={isPreviewOpen}
         recipe={previewRecipeId ? recipeById[previewRecipeId] : null}

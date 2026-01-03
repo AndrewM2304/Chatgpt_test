@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from "../lib/supabaseClient.js";
-import { hashPassword } from "../lib/crypto.js";
+import { useCallback, useMemo, useState } from "react";
 import { useLocalStorage } from "./useLocalStorage.js";
+import { useCatalogSync } from "./useCatalogSync.js";
+import { useGroupManagement } from "./useGroupManagement.js";
+import { useCatalogGroups } from "./useCatalogGroups.js";
 
 const DEFAULT_CATALOG = {
   recipes: [],
@@ -10,48 +11,29 @@ const DEFAULT_CATALOG = {
   logs: [],
 };
 
-const STATUS_MESSAGES = {
-  connecting: "Connecting to Supabase...",
-  ready: "Connected to Supabase.",
-  waiting: "Choose or create a group to start syncing.",
-  error:
-    "Supabase tables are missing or inaccessible. Run the setup SQL in the app.",
-};
-
-const generateGroupCode = () =>
-  `group-${crypto.randomUUID().split("-")[0]}`.toLowerCase();
-
 export const useSupabaseCatalog = () => {
   const [catalog, setCatalog] = useLocalStorage(
     "recipe-catalog-cache",
     DEFAULT_CATALOG
   );
-  const [groupCode, setGroupCode] = useLocalStorage(
-    "recipe-group-code",
-    ""
-  );
   const [catalogId, setCatalogId] = useState(null);
-  const [passwordHash, setPasswordHash] = useState(null);
-  const [status, setStatus] = useState({
-    state: "connecting",
-    message: STATUS_MESSAGES.connecting,
+  const { groupCode, setGroupCode, inviteUrl } = useGroupManagement();
+  const {
+    status,
+    isSaving,
+    passwordHash,
+    setAccessPassword,
+    syncCatalog,
+    markCatalogChange,
+    setStatus,
+  } = useCatalogSync({
+    catalog,
+    catalogId,
+    defaultCatalog: DEFAULT_CATALOG,
+    groupCode,
+    setCatalog,
+    setCatalogId,
   });
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasLoadedCatalog, setHasLoadedCatalog] = useState(false);
-  const pendingChangesRef = useRef(false);
-  const changeIdRef = useRef(0);
-
-  const inviteUrl = useMemo(() => {
-    if (typeof window === "undefined" || !groupCode) {
-      return "";
-    }
-    const baseUrl = new URL(
-      import.meta.env?.BASE_URL || "/",
-      window.location.origin
-    );
-    baseUrl.searchParams.set("invite", groupCode);
-    return baseUrl.toString();
-  }, [groupCode]);
 
   const updateCatalog = useCallback(
     (key, updater) => {
@@ -61,12 +43,11 @@ export const useSupabaseCatalog = () => {
         if (Object.is(nextValue, prev[key])) {
           return prev;
         }
-        changeIdRef.current += 1;
-        pendingChangesRef.current = true;
+        markCatalogChange();
         return { ...prev, [key]: nextValue };
       });
     },
-    [setCatalog]
+    [markCatalogChange, setCatalog]
   );
 
   const setRecipes = useCallback(
@@ -86,262 +67,22 @@ export const useSupabaseCatalog = () => {
     [updateCatalog]
   );
 
-  const loadSettings = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "access_password_hash")
-      .maybeSingle();
-
-    if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return null;
-    }
-
-    setPasswordHash(data?.value || "");
-    return data?.value || "";
-  }, []);
-
-  const ensureCatalog = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("catalogs")
-      .select("id, data, group_code")
-      .eq("group_code", groupCode)
-      .maybeSingle();
-
-    if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return null;
-    }
-
-    if (data) {
-      setCatalogId(data.id);
-      setCatalog(data.data || DEFAULT_CATALOG);
-      pendingChangesRef.current = false;
-      changeIdRef.current = 0;
-      return data.id;
-    }
-
-    const { data: created, error: createError } = await supabase
-      .from("catalogs")
-      .insert({
-        group_code: groupCode,
-        group_name: "Home kitchen",
-        data: DEFAULT_CATALOG,
-      })
-      .select()
-      .single();
-
-    if (createError) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return null;
-    }
-
-    setCatalogId(created.id);
-    setCatalog(created.data || DEFAULT_CATALOG);
-    pendingChangesRef.current = false;
-    changeIdRef.current = 0;
-    return created.id;
-  }, [groupCode, setCatalog, setHasLoadedCatalog]);
-
-  const syncCatalog = useCallback(async () => {
-    if (!groupCode) {
-      return null;
-    }
-    const { data, error } = await supabase
-      .from("catalogs")
-      .select("id, data")
-      .eq("group_code", groupCode)
-      .maybeSingle();
-
-    if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return null;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    setCatalogId(data.id);
-    setCatalog(data.data || DEFAULT_CATALOG);
-    setHasLoadedCatalog(true);
-    pendingChangesRef.current = false;
-    changeIdRef.current = 0;
-    return data.data || DEFAULT_CATALOG;
-  }, [groupCode, setCatalog]);
-
-  useEffect(() => {
-    const inviteCode =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("invite")
-        : null;
-    if (inviteCode && inviteCode !== groupCode) {
-      setGroupCode(inviteCode);
-      if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("invite");
-        window.history.replaceState({}, "", url);
-      }
-    }
-  }, [groupCode, setGroupCode]);
-
-  useEffect(() => {
-    setHasLoadedCatalog(false);
-    pendingChangesRef.current = false;
-    changeIdRef.current = 0;
-  }, [groupCode]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const bootstrap = async () => {
-      if (!groupCode) {
-        setStatus({ state: "waiting", message: STATUS_MESSAGES.waiting });
-        return;
-      }
-      setStatus({ state: "connecting", message: STATUS_MESSAGES.connecting });
-      const settingsResult = await loadSettings();
-      const catalogResult = await ensureCatalog();
-
-      if (isMounted && settingsResult !== null && catalogResult !== null) {
-        setStatus({ state: "ready", message: STATUS_MESSAGES.ready });
-        setHasLoadedCatalog(true);
-      }
-    };
-
-    bootstrap();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [ensureCatalog, groupCode, loadSettings]);
-
-  useEffect(() => {
-    if (!groupCode || typeof window === "undefined") {
-      return undefined;
-    }
-
-    const refreshCatalog = () => {
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-      if (pendingChangesRef.current || isSaving) {
-        return;
-      }
-      syncCatalog();
-    };
-
-    refreshCatalog();
-    window.addEventListener("focus", refreshCatalog);
-    document.addEventListener("visibilitychange", refreshCatalog);
-
-    return () => {
-      window.removeEventListener("focus", refreshCatalog);
-      document.removeEventListener("visibilitychange", refreshCatalog);
-    };
-  }, [groupCode, isSaving, syncCatalog]);
-
-  useEffect(() => {
-    if (!groupCode || !hasLoadedCatalog || !pendingChangesRef.current) {
-      return undefined;
-    }
-
-    const changeId = changeIdRef.current;
-    const timeout = window.setTimeout(async () => {
-      setIsSaving(true);
-      const payload = {
-        group_code: groupCode,
-        data: catalog,
-        updated_at: new Date().toISOString(),
-      };
-      if (catalogId) {
-        payload.id = catalogId;
-      }
-      const { data, error } = await supabase
-        .from("catalogs")
-        .upsert(payload, { onConflict: "group_code" })
-        .select("id")
-        .single();
-
-      if (error) {
-        setStatus((prev) => ({
-          ...prev,
-          state: "error",
-          message: STATUS_MESSAGES.error,
-        }));
-      } else if (!catalogId && data?.id) {
-        setCatalogId(data.id);
-      }
-      if (!error && changeId === changeIdRef.current) {
-        pendingChangesRef.current = false;
-      }
-      setIsSaving(false);
-    }, 600);
-
-    return () => window.clearTimeout(timeout);
-  }, [catalog, catalogId, groupCode, hasLoadedCatalog]);
-
-  const setAccessPassword = useCallback(async (value) => {
-    const hash = await hashPassword(value);
-    const { error } = await supabase.from("site_settings").upsert(
-      {
-        key: "access_password_hash",
-        value: hash,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "key" }
-    );
-
-    if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
-      return false;
-    }
-
-    setPasswordHash(hash);
-    return true;
-  }, []);
-
-
-  const createNewGroup = useCallback(
-    async ({ name, duplicate }) => {
-      const newCode = generateGroupCode();
-      const dataPayload = duplicate ? catalog : DEFAULT_CATALOG;
-      const { data, error } = await supabase
-        .from("catalogs")
-        .insert({
-          group_code: newCode,
-          group_name: name || "Shared kitchen",
-          data: dataPayload,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        setStatus({ state: "error", message: STATUS_MESSAGES.error });
-        return null;
-      }
-
-      setGroupCode(newCode);
-      setCatalogId(data.id);
-      setCatalog(data.data || DEFAULT_CATALOG);
-      return newCode;
-    },
-    [catalog, setCatalog, setGroupCode]
+  const statusMessages = useMemo(
+    () => ({
+      error:
+        "Supabase tables are missing or inaccessible. Run the setup SQL in the app.",
+    }),
+    []
   );
-
-  const joinGroup = useCallback(
-    (code) => {
-      const trimmed = code.trim();
-      if (!trimmed) {
-        return false;
-      }
-      setGroupCode(trimmed);
-      setCatalogId(null);
-      setCatalog(DEFAULT_CATALOG);
-      return true;
-    },
-    [setCatalog, setGroupCode]
-  );
+  const { createNewGroup, joinGroup } = useCatalogGroups({
+    catalog,
+    defaultCatalog: DEFAULT_CATALOG,
+    setCatalog,
+    setCatalogId,
+    setGroupCode,
+    setStatus,
+    statusMessages,
+  });
 
   return {
     catalog,
