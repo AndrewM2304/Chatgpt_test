@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient.js";
 import { hashPassword } from "../lib/crypto.js";
 import { useLocalStorage } from "./useLocalStorage.js";
@@ -38,6 +38,8 @@ export const useSupabaseCatalog = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [hasLoadedCatalog, setHasLoadedCatalog] = useState(false);
+  const pendingChangesRef = useRef(false);
+  const changeIdRef = useRef(0);
 
   const inviteUrl = useMemo(() => {
     if (typeof window === "undefined" || !groupCode) {
@@ -51,13 +53,18 @@ export const useSupabaseCatalog = () => {
     return baseUrl.toString();
   }, [groupCode]);
 
-  const updateCatalog = useCallback((key, updater) => {
-    setCatalog((prev) => {
-      const nextValue =
-        typeof updater === "function" ? updater(prev[key]) : updater;
-      return { ...prev, [key]: nextValue };
-    });
-  }, [setCatalog]);
+  const updateCatalog = useCallback(
+    (key, updater) => {
+      changeIdRef.current += 1;
+      pendingChangesRef.current = true;
+      setCatalog((prev) => {
+        const nextValue =
+          typeof updater === "function" ? updater(prev[key]) : updater;
+        return { ...prev, [key]: nextValue };
+      });
+    },
+    [setCatalog]
+  );
 
   const setRecipes = useCallback(
     (updater) => updateCatalog("recipes", updater),
@@ -107,6 +114,8 @@ export const useSupabaseCatalog = () => {
     if (data) {
       setCatalogId(data.id);
       setCatalog(data.data || DEFAULT_CATALOG);
+      pendingChangesRef.current = false;
+      changeIdRef.current = 0;
       return data.id;
     }
 
@@ -127,6 +136,8 @@ export const useSupabaseCatalog = () => {
 
     setCatalogId(created.id);
     setCatalog(created.data || DEFAULT_CATALOG);
+    pendingChangesRef.current = false;
+    changeIdRef.current = 0;
     return created.id;
   }, [groupCode, setCatalog, setHasLoadedCatalog]);
 
@@ -152,6 +163,8 @@ export const useSupabaseCatalog = () => {
     setCatalogId(data.id);
     setCatalog(data.data || DEFAULT_CATALOG);
     setHasLoadedCatalog(true);
+    pendingChangesRef.current = false;
+    changeIdRef.current = 0;
     return data.data || DEFAULT_CATALOG;
   }, [groupCode, setCatalog]);
 
@@ -172,6 +185,8 @@ export const useSupabaseCatalog = () => {
 
   useEffect(() => {
     setHasLoadedCatalog(false);
+    pendingChangesRef.current = false;
+    changeIdRef.current = 0;
   }, [groupCode]);
 
   useEffect(() => {
@@ -207,6 +222,9 @@ export const useSupabaseCatalog = () => {
       if (document.visibilityState !== "visible") {
         return;
       }
+      if (pendingChangesRef.current || isSaving) {
+        return;
+      }
       syncCatalog();
     };
 
@@ -218,13 +236,14 @@ export const useSupabaseCatalog = () => {
       window.removeEventListener("focus", refreshCatalog);
       document.removeEventListener("visibilitychange", refreshCatalog);
     };
-  }, [groupCode, syncCatalog]);
+  }, [groupCode, isSaving, syncCatalog]);
 
   useEffect(() => {
-    if (!groupCode || !hasLoadedCatalog) {
+    if (!groupCode || !hasLoadedCatalog || !pendingChangesRef.current) {
       return undefined;
     }
 
+    const changeId = changeIdRef.current;
     const timeout = window.setTimeout(async () => {
       setIsSaving(true);
       const payload = {
@@ -249,6 +268,9 @@ export const useSupabaseCatalog = () => {
         }));
       } else if (!catalogId && data?.id) {
         setCatalogId(data.id);
+      }
+      if (!error && changeId === changeIdRef.current) {
+        pendingChangesRef.current = false;
       }
       setIsSaving(false);
     }, 600);
