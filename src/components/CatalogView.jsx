@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   formatDuration,
   getCoverColor,
@@ -6,7 +7,7 @@ import {
 } from "../utils/recipeUtils";
 import { RecipeRating } from "./RecipeRating";
 
-export const CatalogView = ({
+export const CatalogView = memo(({
   groupedRecipes,
   totalRecipes,
   searchTerm,
@@ -137,4 +138,6 @@ export const CatalogView = ({
       </div>
     </section>
   );
-};
+});
+
+CatalogView.displayName = "CatalogView";
