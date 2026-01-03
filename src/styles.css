@@ -333,7 +333,7 @@ h1 {
 .panel-content.is-catalog {
   overflow: hidden;
   grid-template-rows: auto minmax(0, 1fr);
-  background: transparent;
+  background: var(--color-bg);
 }
 
 .control {
