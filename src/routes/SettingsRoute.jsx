@@ -138,7 +138,7 @@ export const SettingsRoute = ({
 
   const handleLogout = () => {
     const confirmed = window.confirm(
-      "Log out of this group and clear local data? Shared data will remain in Supabase."
+      "Log out of this group and clear local data? Shared data stays safe and is not deleted."
     );
     if (!confirmed) {
       return;

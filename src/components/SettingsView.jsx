@@ -81,26 +81,6 @@ export const SettingsView = ({
   return (
     <section className="settings">
       <div className="settings-card">
-        <h2>Install the app</h2>
-        <p>
-          Save Cookbook Keeper to your home screen for offline access and a
-          full-screen experience.
-        </p>
-        {isInstalled && (
-          <p className="status-banner">
-            Cookbook Keeper is already installed on this device.
-          </p>
-        )}
-        {!isInstalled && !canInstallApp && (
-          <p className="status-banner">{installHelp}</p>
-        )}
-        {canInstallApp && (
-          <button type="button" className="primary" onClick={onInstallApp}>
-            Install app
-          </button>
-        )}
-      </div>
-      <div className="settings-card">
         <h2>Invite your group</h2>
         <p>
           Copy an invite link to sync this cookbook across devices or with a
@@ -139,6 +119,49 @@ export const SettingsView = ({
       </div>
 
       <div className="settings-card">
+        <h2>Join an existing group</h2>
+        <p>
+          Paste a group code or invite link to sync with another cookbook.
+        </p>
+        {statusMessage && <p className="status-banner">{statusMessage}</p>}
+        <form className="join-group-form" onSubmit={handleJoin}>
+          <label htmlFor="join-group-code">Group code or invite link</label>
+          <input
+            id="join-group-code"
+            type="text"
+            value={groupInput}
+            onChange={(event) => setGroupInput(event.target.value)}
+            placeholder="group-1234 or https://...invite=group-1234"
+          />
+          {groupError && <p className="error-text">{groupError}</p>}
+          <button className="primary" type="submit">
+            Join group
+          </button>
+        </form>
+      </div>
+
+      <div className="settings-card">
+        <h2>Install the app</h2>
+        <p>
+          Save Cookbook Keeper to your home screen for offline access and a
+          full-screen experience.
+        </p>
+        {isInstalled && (
+          <p className="status-banner">
+            Cookbook Keeper is already installed on this device.
+          </p>
+        )}
+        {!isInstalled && !canInstallApp && (
+          <p className="status-banner">{installHelp}</p>
+        )}
+        {canInstallApp && (
+          <button type="button" className="primary" onClick={onInstallApp}>
+            Install app
+          </button>
+        )}
+      </div>
+
+      <div className="settings-card">
         <h2>Cookbook artwork</h2>
         <p>
           Upload a cover image for a cookbook or website. The artwork will replace
@@ -150,7 +173,7 @@ export const SettingsView = ({
         </p>
         {!hasGroup && (
           <p className="status-banner">
-            Join a shared group to upload artwork to Supabase storage.
+            Join a shared group to upload artwork.
           </p>
         )}
         {hasGroup && cookbookOptions.length === 0 && (
@@ -206,33 +229,11 @@ export const SettingsView = ({
         </form>
       </div>
 
-      <div className="settings-card">
-        <h2>Join an existing group</h2>
-        <p>
-          Paste a group code or invite link to sync with another cookbook.
-        </p>
-        {statusMessage && <p className="status-banner">{statusMessage}</p>}
-        <form className="join-group-form" onSubmit={handleJoin}>
-          <label htmlFor="join-group-code">Group code or invite link</label>
-          <input
-            id="join-group-code"
-            type="text"
-            value={groupInput}
-            onChange={(event) => setGroupInput(event.target.value)}
-            placeholder="group-1234 or https://...invite=group-1234"
-          />
-          {groupError && <p className="error-text">{groupError}</p>}
-          <button className="primary" type="submit">
-            Join group
-          </button>
-        </form>
-      </div>
-
       <div className="settings-card danger-card">
         <h2>Log out</h2>
         <p>
           Log out of this group to clear local recipes, logs, and filters. Your
-          shared data stays safely in Supabase.
+          shared data stays safe and is not deleted.
         </p>
         <button type="button" className="secondary danger" onClick={onLogout}>
           Log out and clear local data
