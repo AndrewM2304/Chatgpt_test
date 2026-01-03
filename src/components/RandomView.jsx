@@ -1,4 +1,9 @@
-import { formatDate, getCoverColor, getInitials } from "../utils/recipeUtils";
+import {
+  formatDate,
+  formatDuration,
+  getCoverColor,
+  getInitials,
+} from "../utils/recipeUtils";
 import { RecipeRating } from "./RecipeRating";
 
 export const RandomView = ({
@@ -22,6 +27,9 @@ export const RandomView = ({
     ? randomPick.cookbookTitle || (isWebsite ? "Website" : "No cookbook")
     : "";
   const coverUrl = sourceTitle ? cookbookCovers?.[sourceTitle] : "";
+  const durationLabel = randomPick
+    ? formatDuration(randomPick.durationMinutes)
+    : "";
 
   return (
     <section className="random">
@@ -79,46 +87,53 @@ export const RandomView = ({
       {randomPick && (
         <div className="random-result">
           <p className="eyebrow">Tonight&apos;s pick</p>
-          <div
-            className={`recipe-cover${coverUrl ? " has-image" : ""}`}
-            role="img"
-            aria-label={`${sourceTitle} cover`}
-            style={{
-              backgroundColor: getCoverColor(sourceTitle),
-              ...(coverUrl ? { backgroundImage: `url(${coverUrl})` } : {}),
-            }}
-          >
-            {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
+          <div className="random-result-content">
+            <div
+              className={`recipe-cover${coverUrl ? " has-image" : ""}`}
+              role="img"
+              aria-label={`${sourceTitle} cover`}
+              style={{
+                backgroundColor: getCoverColor(sourceTitle),
+                ...(coverUrl ? { backgroundImage: `url(${coverUrl})` } : {}),
+              }}
+            >
+              {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
+            </div>
+            <div className="random-result-details">
+              <h3>{randomPick.name}</h3>
+              <p>
+                {sourceTitle}
+                {!isWebsite && randomPick.page ? ` · Page ${randomPick.page}` : ""}
+              </p>
+              {isWebsite && randomPick.url && (
+                <p>
+                  <a href={randomPick.url} target="_blank" rel="noreferrer">
+                    {randomPick.url}
+                  </a>
+                </p>
+              )}
+              <p className="recipe-meta">
+                Cuisine: {randomPick.cuisine || "Uncategorized"}
+              </p>
+              <RecipeRating
+                value={randomPick.rating || 0}
+                label="Recipe rating"
+              />
+              {durationLabel ? (
+                <p className="recipe-meta">{durationLabel}</p>
+              ) : null}
+              <div className="recipe-footer">
+                <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
+              </div>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => onStartLog(randomPick.id)}
+              >
+                Schedule meal
+              </button>
+            </div>
           </div>
-          <h3>{randomPick.name}</h3>
-          <p>
-            {sourceTitle}
-            {!isWebsite && randomPick.page ? ` · Page ${randomPick.page}` : ""}
-          </p>
-          {isWebsite && randomPick.url && (
-            <p>
-              <a href={randomPick.url} target="_blank" rel="noreferrer">
-                {randomPick.url}
-              </a>
-            </p>
-          )}
-          <p className="recipe-meta">
-            Cuisine: {randomPick.cuisine || "Uncategorized"}
-          </p>
-          <RecipeRating
-            value={randomPick.rating || 0}
-            label="Recipe rating"
-          />
-          <div className="recipe-footer">
-            <span>Last cooked: {formatDate(randomPick.lastCooked)}</span>
-          </div>
-          <button
-            type="button"
-            className="primary"
-            onClick={() => onStartLog(randomPick.id)}
-          >
-            Schedule meal
-          </button>
         </div>
       )}
 

@@ -818,6 +818,18 @@ button.secondary.icon-button {
   gap: 8px;
 }
 
+.random-result-content {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.random-result-details {
+  display: grid;
+  gap: 8px;
+}
+
 .log {
   display: grid;
   gap: 24px;
@@ -1666,6 +1678,10 @@ button.secondary.icon-button {
   .catalog,
   .random {
     padding-bottom: calc(var(--tabbar-height) + 120px);
+  }
+
+  .random-result-content {
+    grid-template-columns: 1fr;
   }
 
 }
