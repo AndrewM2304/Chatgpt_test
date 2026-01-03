@@ -27,6 +27,10 @@ export const CatalogRoute = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const lastAddSignal = useRef(0);
 
+  const resetForm = useCallback(() => {
+    setEditingId(null);
+  }, []);
+
   useEffect(() => {
     onRecipeModalOpenChange?.(isModalOpen);
     return () => {
@@ -123,10 +127,6 @@ export const CatalogRoute = ({
   const defaultRecipeId = useMemo(() => {
     return groupedRecipes[0]?.items?.[0]?.id ?? null;
   }, [groupedRecipes]);
-
-  const resetForm = useCallback(() => {
-    setEditingId(null);
-  }, []);
 
   const handleSaveRecipe = async (draft) => {
     const trimmedName = draft.name.trim();
