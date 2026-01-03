@@ -17,6 +17,7 @@ export const CatalogView = ({
   hasRecipes,
   onAddRecipe,
   onRatingChange,
+  cookbookCovers,
 }) => {
   const recipeCountLabel = totalRecipes === 1 ? "recipe" : "recipes";
 
@@ -62,6 +63,7 @@ export const CatalogView = ({
                   (!recipe.sourceType && recipe.url);
                 const sourceTitle =
                   recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+                const coverUrl = cookbookCovers?.[sourceTitle];
 
                 return (
                   <article
@@ -78,12 +80,17 @@ export const CatalogView = ({
                     }}
                   >
                     <div
-                      className="recipe-cover"
+                      className={`recipe-cover${coverUrl ? " has-image" : ""}`}
+                      role="img"
+                      aria-label={`${sourceTitle} cover`}
                       style={{
-                        background: getCoverColor(sourceTitle),
+                        backgroundColor: getCoverColor(sourceTitle),
+                        ...(coverUrl
+                          ? { backgroundImage: `url(${coverUrl})` }
+                          : {}),
                       }}
                     >
-                      <span>{getInitials(sourceTitle)}</span>
+                      {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
                     </div>
                     <div className="recipe-details">
                       <header>

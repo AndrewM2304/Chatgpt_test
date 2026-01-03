@@ -6,6 +6,9 @@ export const SettingsView = ({
   onJoinGroup,
   onCopyGroupCode,
   onInstallApp,
+  cookbookOptions = [],
+  cookbookCovers = {},
+  onUploadCookbookCover,
   inviteUrl,
   groupCode,
   statusMessage,
@@ -16,6 +19,12 @@ export const SettingsView = ({
 }) => {
   const [groupInput, setGroupInput] = useState("");
   const [groupError, setGroupError] = useState("");
+  const [selectedCookbook, setSelectedCookbook] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
   const installHelp =
     "On iPhone or iPad, open the Share menu, tap the three-dot menu, then choose “Add to Home Screen” to save the catalog page. On Android, open the browser menu and tap “Install app.”";
 
@@ -27,6 +36,47 @@ export const SettingsView = ({
       setGroupError("Enter a valid group code or invite link.");
     }
   };
+
+  const handleCoverUpload = async (event) => {
+    event.preventDefault();
+    setUploadError("");
+    setUploadStatus("");
+
+    if (!selectedCookbook) {
+      setUploadError("Select a cookbook or website first.");
+      return;
+    }
+
+    if (!selectedFile) {
+      setUploadError("Choose an image to upload.");
+      return;
+    }
+
+    if (!onUploadCookbookCover) {
+      setUploadError("Upload is unavailable.");
+      return;
+    }
+
+    setIsUploading(true);
+    const result = await onUploadCookbookCover(
+      selectedCookbook,
+      selectedFile
+    );
+    setIsUploading(false);
+
+    if (!result?.ok) {
+      setUploadError(result?.error || "Upload failed. Please try again.");
+      return;
+    }
+
+    setSelectedFile(null);
+    setFileInputKey((prev) => prev + 1);
+    setUploadStatus(`Artwork saved for ${selectedCookbook}.`);
+  };
+
+  const selectedCover = selectedCookbook
+    ? cookbookCovers?.[selectedCookbook]
+    : "";
 
   return (
     <section className="settings">
@@ -86,6 +136,74 @@ export const SettingsView = ({
             you’re ready.
           </p>
         )}
+      </div>
+
+      <div className="settings-card">
+        <h2>Cookbook artwork</h2>
+        <p>
+          Upload a cover image for a cookbook or website. The artwork will replace
+          the initials anywhere that cookbook appears.
+        </p>
+        <p className="helper-text">
+          Recommended ratio: 16:21 (for example 640 × 840 px). Uploading a new
+          image will overwrite the current cover for that cookbook.
+        </p>
+        {!hasGroup && (
+          <p className="status-banner">
+            Join a shared group to upload artwork to Supabase storage.
+          </p>
+        )}
+        {hasGroup && cookbookOptions.length === 0 && (
+          <p className="status-banner">
+            Add a recipe with a cookbook title to enable artwork uploads.
+          </p>
+        )}
+        <form className="cover-upload-form" onSubmit={handleCoverUpload}>
+          <label htmlFor="cookbook-cover-target">Cookbook or website</label>
+          <select
+            id="cookbook-cover-target"
+            value={selectedCookbook}
+            onChange={(event) => setSelectedCookbook(event.target.value)}
+            disabled={!hasGroup || cookbookOptions.length === 0}
+          >
+            <option value="">Select a cookbook</option>
+            {cookbookOptions.map((title) => (
+              <option key={title} value={title}>
+                {title}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="cookbook-cover-file">Cover image</label>
+          <input
+            key={fileInputKey}
+            id="cookbook-cover-file"
+            type="file"
+            accept="image/*"
+            onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+            disabled={!hasGroup || cookbookOptions.length === 0}
+          />
+          {selectedCover && (
+            <div className="cover-preview">
+              <span>Current cover</span>
+              <img src={selectedCover} alt={`${selectedCookbook} cover`} />
+            </div>
+          )}
+          {uploadError && <p className="error-text">{uploadError}</p>}
+          {uploadStatus && <p className="status-banner">{uploadStatus}</p>}
+          <button
+            className="primary"
+            type="submit"
+            disabled={
+              !hasGroup ||
+              cookbookOptions.length === 0 ||
+              isUploading ||
+              !selectedCookbook ||
+              !selectedFile
+            }
+          >
+            {isUploading ? "Uploading..." : "Upload artwork"}
+          </button>
+        </form>
       </div>
 
       <div className="settings-card">

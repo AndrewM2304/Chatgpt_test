@@ -20,6 +20,7 @@ import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { ToastStack } from "./components/ToastStack";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
+import { uploadCookbookCover } from "./lib/supabaseStorage";
 import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
 
 const MEAL_OPTIONS = [
@@ -43,6 +44,50 @@ const getWeekStart = (dateString) => {
   const start = new Date(date);
   start.setDate(date.getDate() - offset);
   return start;
+};
+
+const normalizeCookbookEntry = (entry) => {
+  if (!entry) {
+    return null;
+  }
+  if (typeof entry === "string") {
+    return { title: entry, coverUrl: "" };
+  }
+  if (typeof entry === "object") {
+    return {
+      title: entry.title || "",
+      coverUrl: entry.coverUrl || "",
+    };
+  }
+  return null;
+};
+
+const normalizeCookbookEntries = (entries) =>
+  (Array.isArray(entries) ? entries : [])
+    .map(normalizeCookbookEntry)
+    .filter((entry) => entry?.title);
+
+const mergeCookbookEntries = (entries, titles) => {
+  const normalized = normalizeCookbookEntries(entries);
+  const entryMap = new Map(
+    normalized.map((entry) => [entry.title, entry])
+  );
+  return titles.map((title) => entryMap.get(title) || { title, coverUrl: "" });
+};
+
+const areCookbookEntriesEqual = (left, right) => {
+  const leftNormalized = normalizeCookbookEntries(left);
+  const rightNormalized = normalizeCookbookEntries(right);
+  if (leftNormalized.length !== rightNormalized.length) {
+    return false;
+  }
+  return leftNormalized.every((entry, index) => {
+    const compare = rightNormalized[index];
+    return (
+      entry.title === compare.title &&
+      (entry.coverUrl || "") === (compare.coverUrl || "")
+    );
+  });
 };
 
 export default function App() {
@@ -195,6 +240,33 @@ export default function App() {
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
 
+  const cookbookEntries = useMemo(
+    () => normalizeCookbookEntries(catalog.cookbooks),
+    [catalog.cookbooks]
+  );
+
+  const cookbookCoverTargets = useMemo(() => {
+    const targets = new Set(cookbookOptions);
+    cookbookEntries.forEach((entry) => targets.add(entry.title));
+    const hasWebsiteRecipes = recipes.some(
+      (recipe) =>
+        recipe.sourceType === "website" || (!recipe.sourceType && recipe.url)
+    );
+    if (hasWebsiteRecipes || cookbookEntries.some((entry) => entry.title === "Website")) {
+      targets.add("Website");
+    }
+    return Array.from(targets).sort((a, b) => a.localeCompare(b));
+  }, [cookbookEntries, cookbookOptions, recipes]);
+
+  const cookbookCoverMap = useMemo(() => {
+    return cookbookEntries.reduce((accumulator, entry) => {
+      if (entry.coverUrl) {
+        accumulator[entry.title] = entry.coverUrl;
+      }
+      return accumulator;
+    }, {});
+  }, [cookbookEntries]);
+
   const cuisineOptions = useMemo(() => {
     return Array.from(
       new Set(recipes.map((recipe) => recipe.cuisine).filter(Boolean))
@@ -202,8 +274,11 @@ export default function App() {
   }, [recipes]);
 
   useEffect(() => {
-    setCookbooks(cookbookOptions);
-  }, [cookbookOptions, setCookbooks]);
+    setCookbooks((prev) => {
+      const next = mergeCookbookEntries(prev, cookbookCoverTargets);
+      return areCookbookEntriesEqual(prev, next) ? prev : next;
+    });
+  }, [cookbookCoverTargets, setCookbooks]);
 
   useEffect(() => {
     setCuisines(cuisineOptions);
@@ -740,6 +815,33 @@ export default function App() {
     resetForm();
   };
 
+  const handleUploadCookbookCover = async (title, file) => {
+    if (!groupCode) {
+      addToast("Join a group before uploading artwork.", "error");
+      return { ok: false, error: "No group selected." };
+    }
+
+    const { data, error } = await uploadCookbookCover({
+      title,
+      groupCode,
+      file,
+    });
+
+    if (error) {
+      addToast("Artwork upload failed. Please try again.", "error");
+      return { ok: false, error: error.message || "Upload failed." };
+    }
+
+    setCookbooks((prev) => {
+      const next = mergeCookbookEntries(prev, cookbookCoverTargets).map((entry) =>
+        entry.title === title ? { ...entry, coverUrl: data.publicUrl } : entry
+      );
+      return areCookbookEntriesEqual(prev, next) ? prev : next;
+    });
+    addToast(`Updated artwork for ${title}.`, "success");
+    return { ok: true, url: data.publicUrl };
+  };
+
   const handleDeleteFromModal = (recipeId = editingId) => {
     if (!recipeId) {
       return;
@@ -782,6 +884,7 @@ export default function App() {
             hasRecipes={recipes.length > 0}
             onAddRecipe={handleOpenAddModal}
             onRatingChange={handleUpdateRecipeRating}
+            cookbookCovers={cookbookCoverMap}
           />
         </div>
         <div className="catalog-detail-preview">
@@ -795,6 +898,7 @@ export default function App() {
             onRatingChange={(value) =>
               handleUpdateRecipeRating(activeRecipe?.id, value)
             }
+            cookbookCovers={cookbookCoverMap}
           />
         </div>
       </div>
@@ -884,6 +988,9 @@ export default function App() {
                   onJoinGroup={handleJoinGroup}
                   onCopyGroupCode={handleCopyGroupCode}
                   onInstallApp={handleInstallApp}
+                  cookbookOptions={cookbookCoverTargets}
+                  cookbookCovers={cookbookCoverMap}
+                  onUploadCookbookCover={handleUploadCookbookCover}
                   inviteUrl={showInvite ? inviteUrl : ""}
                   groupCode={groupCode}
                   statusMessage={status.state === "error" ? status.message : ""}
@@ -928,6 +1035,7 @@ export default function App() {
         onRatingChange={(value) =>
           handleUpdateRecipeRating(previewRecipeId, value)
         }
+        cookbookCovers={cookbookCoverMap}
       />
       <ScheduleModal
         isOpen={isLogModalOpen}

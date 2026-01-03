@@ -13,22 +13,27 @@ export const RecipePreviewContent = ({
   onDeleteRecipe,
   onRatingChange,
   showTitle = true,
+  cookbookCovers,
 }) => {
   const isWebsite =
     recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
   const sourceTitle =
     recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
   const durationLabel = formatDuration(recipe.durationMinutes);
+  const coverUrl = cookbookCovers?.[sourceTitle];
 
   return (
     <div className="recipe-view-card">
       <div
-        className="recipe-cover"
+        className={`recipe-cover${coverUrl ? " has-image" : ""}`}
+        role="img"
+        aria-label={`${sourceTitle} cover`}
         style={{
-          background: getCoverColor(sourceTitle),
+          backgroundColor: getCoverColor(sourceTitle),
+          ...(coverUrl ? { backgroundImage: `url(${coverUrl})` } : {}),
         }}
       >
-        <span>{getInitials(sourceTitle)}</span>
+        {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
       </div>
       <div className="recipe-view-details">
         {showTitle && <h2>{recipe.name}</h2>}
