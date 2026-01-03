@@ -55,11 +55,14 @@ export const useSupabaseCatalog = () => {
 
   const updateCatalog = useCallback(
     (key, updater) => {
-      changeIdRef.current += 1;
-      pendingChangesRef.current = true;
       setCatalog((prev) => {
         const nextValue =
           typeof updater === "function" ? updater(prev[key]) : updater;
+        if (Object.is(nextValue, prev[key])) {
+          return prev;
+        }
+        changeIdRef.current += 1;
+        pendingChangesRef.current = true;
         return { ...prev, [key]: nextValue };
       });
     },

@@ -1,27 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Navigate,
-  Route,
-  Routes,
-  useMatch,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-import { CatalogView } from "./components/CatalogView";
+import { Route, Routes, useMatch, useNavigate } from "react-router-dom";
 import { Hero } from "./components/Hero";
-import { LogView } from "./components/LogView";
-import { SettingsView } from "./components/SettingsView";
-import { RandomView } from "./components/RandomView";
-import { RecipeView } from "./components/RecipeView";
-import { RecipeModal } from "./components/RecipeModal";
 import { RecipePreviewModal } from "./components/RecipePreviewModal";
 import { ScheduleModal } from "./components/ScheduleModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { ToastStack } from "./components/ToastStack";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
-import { uploadCookbookCover } from "./lib/supabaseStorage";
-import { durationBuckets, timesBuckets } from "./utils/recipeUtils";
+import { CatalogRoute } from "./routes/CatalogRoute";
+import { RandomRoute } from "./routes/RandomRoute";
+import { LogRoute } from "./routes/LogRoute";
+import { SettingsRoute } from "./routes/SettingsRoute";
 
 const MEAL_OPTIONS = [
   { value: "breakfast", label: "Breakfast" },
@@ -105,13 +94,7 @@ export default function App() {
     syncCatalog,
   } = useSupabaseCatalog();
   const navigate = useNavigate();
-  const recipeMatch = useMatch("/recipe/:recipeId");
-  const catalogMatch = useMatch("/catalog");
   const { recipes, logs } = catalog;
-  const [searchTerm, setSearchTerm] = useState("");
-  const [groupBy, setGroupBy] = useState("none");
-  const [excludedCuisines, setExcludedCuisines] = useState([]);
-  const [randomPick, setRandomPick] = useState(null);
   const [logRecipeId, setLogRecipeId] = useState("");
   const [logRecipeQuery, setLogRecipeQuery] = useState("");
   const [logWeekDate, setLogWeekDate] = useState(() =>
@@ -124,22 +107,22 @@ export default function App() {
   const [logNote, setLogNote] = useState("");
   const [editingLogId, setEditingLogId] = useState(null);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [showInvite, setShowInvite] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewRecipeId, setPreviewRecipeId] = useState(null);
   const [shouldNavigateAfterLog, setShouldNavigateAfterLog] = useState(false);
   const [toasts, setToasts] = useState([]);
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIosDevice, setIsIosDevice] = useState(false);
+  const [openAddRecipeSignal, setOpenAddRecipeSignal] = useState(0);
+  const [pendingEditRecipeId, setPendingEditRecipeId] = useState(null);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") {
       return false;
     }
     return window.matchMedia("(min-width: 900px)").matches;
   });
+
+  const recipeMatch = useMatch("/recipe/:recipeId");
+  const catalogMatch = useMatch("/catalog");
 
   const addToast = (message, variant = "info") => {
     const id = crypto.randomUUID();
@@ -158,66 +141,12 @@ export default function App() {
   );
 
   useEffect(() => {
-    const shouldLock = isModalOpen || isLogModalOpen || isPreviewOpen;
+    const shouldLock = isRecipeModalOpen || isLogModalOpen || isPreviewOpen;
     document.body.classList.toggle("modal-open", shouldLock);
     return () => {
       document.body.classList.remove("modal-open");
     };
-  }, [isModalOpen, isLogModalOpen, isPreviewOpen]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    const checkInstalled = () => {
-      const isStandalone =
-        window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone;
-      setIsInstalled(Boolean(isStandalone));
-    };
-
-    const handleBeforeInstallPrompt = (event) => {
-      event.preventDefault();
-      setInstallPrompt(event);
-    };
-
-    const handleAppInstalled = () => {
-      setInstallPrompt(null);
-      setIsInstalled(true);
-      addToast("Cookbook Keeper is installed.", "success");
-    };
-
-    const displayModeQuery = window.matchMedia("(display-mode: standalone)");
-    const handleDisplayModeChange = () => checkInstalled();
-    if (displayModeQuery.addEventListener) {
-      displayModeQuery.addEventListener("change", handleDisplayModeChange);
-    } else {
-      displayModeQuery.addListener(handleDisplayModeChange);
-    }
-
-    checkInstalled();
-    setIsIosDevice(
-      /iphone|ipad|ipod/i.test(window.navigator.userAgent) &&
-        !window.MSStream
-    );
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("appinstalled", handleAppInstalled);
-
-    return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt
-      );
-      window.removeEventListener("appinstalled", handleAppInstalled);
-      if (displayModeQuery.removeEventListener) {
-        displayModeQuery.removeEventListener("change", handleDisplayModeChange);
-      } else {
-        displayModeQuery.removeListener(handleDisplayModeChange);
-      }
-    };
-  }, []);
+  }, [isRecipeModalOpen, isLogModalOpen, isPreviewOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -234,16 +163,23 @@ export default function App() {
     return () => mediaQuery.removeListener(handleChange);
   }, []);
 
+  const cookbookEntries = useMemo(
+    () => normalizeCookbookEntries(catalog.cookbooks),
+    [catalog.cookbooks]
+  );
+
   const cookbookOptions = useMemo(() => {
     return Array.from(
       new Set(recipes.map((recipe) => recipe.cookbookTitle).filter(Boolean))
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
 
-  const cookbookEntries = useMemo(
-    () => normalizeCookbookEntries(catalog.cookbooks),
-    [catalog.cookbooks]
-  );
+  const recipeById = useMemo(() => {
+    return recipes.reduce((accumulator, recipe) => {
+      accumulator[recipe.id] = recipe;
+      return accumulator;
+    }, {});
+  }, [recipes]);
 
   const cookbookCoverTargets = useMemo(() => {
     const targets = new Set(cookbookOptions);
@@ -281,94 +217,14 @@ export default function App() {
   }, [cookbookCoverTargets, setCookbooks]);
 
   useEffect(() => {
-    setCuisines(cuisineOptions);
+    setCuisines((prev) => {
+      if (prev.length !== cuisineOptions.length) {
+        return cuisineOptions;
+      }
+      const isSame = prev.every((value, index) => value === cuisineOptions[index]);
+      return isSame ? prev : cuisineOptions;
+    });
   }, [cuisineOptions, setCuisines]);
-
-  const recipeById = useMemo(() => {
-    return recipes.reduce((accumulator, recipe) => {
-      accumulator[recipe.id] = recipe;
-      return accumulator;
-    }, {});
-  }, [recipes]);
-
-  const filteredRecipes = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) {
-      return recipes;
-    }
-    return recipes.filter((recipe) => {
-      return [
-        recipe.name,
-        recipe.cookbookTitle,
-        recipe.cuisine,
-        recipe.page,
-        recipe.url,
-      ]
-        .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(term));
-    });
-  }, [recipes, searchTerm]);
-
-  const groupedRecipes = useMemo(() => {
-    const groups = new Map();
-
-    const addToGroup = (key, recipe) => {
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key).push(recipe);
-    };
-
-    filteredRecipes.forEach((recipe) => {
-      if (groupBy === "cookbook") {
-        addToGroup(recipe.cookbookTitle || "No cookbook yet", recipe);
-        return;
-      }
-      if (groupBy === "cuisine") {
-        addToGroup(recipe.cuisine || "Uncategorized", recipe);
-        return;
-      }
-      if (groupBy === "times") {
-        const bucket =
-          timesBuckets.find((item) => item.test(recipe.timesCooked))?.label ||
-          "Never cooked";
-        addToGroup(bucket, recipe);
-        return;
-      }
-      if (groupBy === "duration") {
-        const bucket =
-          durationBuckets.find((item) =>
-            item.test(recipe.durationMinutes)
-          )?.label || "No duration set";
-        addToGroup(bucket, recipe);
-        return;
-      }
-      addToGroup("All recipes", recipe);
-    });
-
-    return Array.from(groups.entries())
-      .map(([label, items]) => ({
-        label,
-        items: items.sort((a, b) => a.name.localeCompare(b.name)),
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [filteredRecipes, groupBy]);
-
-  const defaultRecipeId = useMemo(() => {
-    return groupedRecipes[0]?.items?.[0]?.id ?? null;
-  }, [groupedRecipes]);
-
-  const randomCandidates = useMemo(() => {
-    if (!recipes.length) {
-      return [];
-    }
-    return recipes.filter((recipe) => {
-      if (!recipe.cuisine) {
-        return true;
-      }
-      return !excludedCuisines.includes(recipe.cuisine);
-    });
-  }, [excludedCuisines, recipes]);
 
   const weekDays = useMemo(() => {
     const start = getWeekStart(logWeekDate);
@@ -410,97 +266,6 @@ export default function App() {
     return schedule;
   }, [logs, weekDays]);
 
-  const resetForm = useCallback(() => {
-    setEditingId(null);
-  }, []);
-
-  const handleInstallApp = async () => {
-    if (!installPrompt) {
-      return;
-    }
-    installPrompt.prompt();
-    const outcome = await installPrompt.userChoice;
-    setInstallPrompt(null);
-    if (outcome?.outcome === "accepted") {
-      addToast("Install request sent to your device.", "success");
-    } else {
-      addToast("Install dismissed.", "info");
-    }
-  };
-
-  const handleSaveRecipe = async (draft) => {
-    const trimmedName = draft.name.trim();
-    if (!trimmedName) {
-      return;
-    }
-    const isEditing = Boolean(editingId);
-    const sourceType = draft.sourceType || "cookbook";
-    const trimmedCookbook = draft.cookbookTitle.trim();
-    const trimmedCuisine = draft.cuisine.trim();
-    const trimmedUrl = draft.url.trim();
-    const trimmedNotes = draft.notes.trim();
-    const pageValue = sourceType === "website" ? "" : draft.page.trim();
-    const urlValue = sourceType === "website" ? trimmedUrl : "";
-    const ratingValue = draft.rating
-      ? Number.parseInt(draft.rating, 10)
-      : null;
-    const durationValue = draft.duration
-      ? Number.parseInt(draft.duration, 10)
-      : null;
-
-    if (editingId) {
-      setRecipes((prev) =>
-        prev.map((recipe) =>
-          recipe.id === editingId
-            ? {
-                ...recipe,
-                name: trimmedName,
-                sourceType,
-                cookbookTitle: trimmedCookbook,
-                page: pageValue,
-                url: urlValue,
-                cuisine: trimmedCuisine,
-                rating: Number.isNaN(ratingValue) ? null : ratingValue,
-                durationMinutes: Number.isNaN(durationValue)
-                  ? null
-                  : durationValue,
-                notes: trimmedNotes,
-              }
-            : recipe
-        )
-      );
-    } else {
-      const newRecipe = {
-        id: crypto.randomUUID(),
-        name: trimmedName,
-        sourceType,
-        cookbookTitle: trimmedCookbook,
-        page: pageValue,
-        url: urlValue,
-        cuisine: trimmedCuisine,
-        rating: Number.isNaN(ratingValue) ? null : ratingValue,
-        durationMinutes: Number.isNaN(durationValue) ? null : durationValue,
-        notes: trimmedNotes,
-        timesCooked: 0,
-        lastCooked: null,
-      };
-      const latestCatalog = await syncCatalog();
-      const latestRecipes = Array.isArray(latestCatalog?.recipes)
-        ? latestCatalog.recipes
-        : recipes;
-      setRecipes([newRecipe, ...latestRecipes]);
-    }
-
-    addToast(`${trimmedName} ${isEditing ? "updated" : "created"}.`, "success");
-    resetForm();
-    setIsModalOpen(false);
-  };
-
-  const handleEditRecipe = (recipe) => {
-    setEditingId(recipe.id);
-    setIsModalOpen(true);
-  };
-
   const handleOpenRecipe = useCallback((recipe) => {
     if (!isDesktop) {
       setPreviewRecipeId(recipe.id);
@@ -509,6 +274,30 @@ export default function App() {
     }
     navigate(`/recipe/${recipe.id}`);
   }, [isDesktop, navigate]);
+
+  const handleOpenAddModal = () => {
+    setOpenAddRecipeSignal((prev) => prev + 1);
+    if (!catalogMatch) {
+      navigate("/catalog");
+    }
+  };
+
+  const handleUpdateRecipeRating = useCallback((recipeId, value) => {
+    if (!recipeId) {
+      return;
+    }
+    const nextRating = value ? Number.parseInt(value, 10) : null;
+    setRecipes((prev) =>
+      prev.map((recipe) =>
+        recipe.id === recipeId
+          ? {
+              ...recipe,
+              rating: Number.isNaN(nextRating) ? null : nextRating,
+            }
+          : recipe
+      )
+    );
+  }, [setRecipes]);
 
   const handleStartLog = (recipeId, { deferNavigation = false } = {}) => {
     setLogRecipeId(recipeId);
@@ -525,52 +314,6 @@ export default function App() {
     }
     setEditingLogId(null);
     setIsLogModalOpen(true);
-  };
-
-  const handleDeleteRecipe = (recipeId) => {
-    const recipeName = recipeById[recipeId]?.name || "Recipe";
-    setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
-    setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
-    if (recipeMatch?.params?.recipeId === recipeId) {
-      navigate("/catalog");
-    }
-    if (editingId === recipeId) {
-      resetForm();
-    }
-    if (previewRecipeId === recipeId) {
-      setIsPreviewOpen(false);
-      setPreviewRecipeId(null);
-    }
-    addToast(`${recipeName} deleted.`, "success");
-  };
-
-  const handleDeleteFromView = (recipeId) => {
-    if (!recipeId) {
-      return;
-    }
-    const recipeName = recipeById[recipeId]?.name || "this recipe";
-    const confirmed = window.confirm(`Delete ${recipeName}?`);
-    if (!confirmed) {
-      return;
-    }
-    handleDeleteRecipe(recipeId);
-  };
-
-  const handleToggleCuisine = (cuisine) => {
-    setExcludedCuisines((prev) =>
-      prev.includes(cuisine)
-        ? prev.filter((item) => item !== cuisine)
-        : [...prev, cuisine]
-    );
-  };
-
-  const handlePickRandom = () => {
-    if (!randomCandidates.length) {
-      setRandomPick(null);
-      return;
-    }
-    const index = Math.floor(Math.random() * randomCandidates.length);
-    setRandomPick(randomCandidates[index]);
   };
 
   const handleLogCook = async (event) => {
@@ -687,13 +430,11 @@ export default function App() {
           `Edit "${entry.name}"? Select OK to edit the schedule entry, or Cancel to open the recipe preview.`
         );
         if (!shouldEdit) {
-          if (!isDesktop) {
-            setPreviewRecipeId(entry.recipeId);
-            setIsPreviewOpen(true);
+          const recipe = recipeById[entry.recipeId];
+          if (recipe) {
+            handleOpenRecipe(recipe);
             return;
           }
-          navigate(`/recipe/${entry.recipeId}`);
-          return;
         }
       }
       setEditingLogId(entry.id);
@@ -741,179 +482,54 @@ export default function App() {
     });
   };
 
-  const buildInviteUrl = (code) => {
-    if (!code || typeof window === "undefined") {
-      return "";
-    }
-    const baseUrl = new URL(
-      import.meta.env.BASE_URL || "/",
-      window.location.origin
-    );
-    baseUrl.searchParams.set("invite", code);
-    return baseUrl.toString();
-  };
-
-  const handleGenerateInvite = async () => {
-    setShowInvite(true);
-    let nextInvite = inviteUrl;
-    if (!groupCode) {
-      const newCode = await createNewGroup({
-        name: "Shared kitchen",
-        duplicate: true,
-      });
-      nextInvite = buildInviteUrl(newCode);
-    }
-    if (nextInvite && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(nextInvite);
-      addToast("Invite link copied.", "success");
-    }
-  };
-
-  const handleCopyGroupCode = async () => {
-    if (!groupCode || !navigator.clipboard?.writeText) {
-      return;
-    }
-    await navigator.clipboard.writeText(groupCode);
-    addToast("Group code copied.", "success");
-  };
-
-  const handleJoinGroup = (value) => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return false;
-    }
-    const codeMatch = trimmed.match(/invite=([^&]+)/i);
-    const code = codeMatch ? decodeURIComponent(codeMatch[1]) : trimmed;
-    const joined = joinGroup(code);
-    if (joined) {
-      addToast("Joined group successfully.", "success");
-    }
-    return joined;
-  };
-
-  const handleOpenAddModal = useCallback(() => {
-    resetForm();
-    setIsModalOpen(true);
-  }, [resetForm]);
-
-  const handleCloseModal = () => {
-    resetForm();
-    setIsModalOpen(false);
-  };
-
-  const handleClearData = () => {
-    const confirmed = window.confirm(
-      "Delete all recipes, logs, and saved settings? This cannot be undone."
-    );
-    if (!confirmed) {
-      return;
-    }
-    setRecipes([]);
-    setCookbooks([]);
-    setCuisines([]);
-    setLogs([]);
-    resetForm();
-  };
-
-  const handleUploadCookbookCover = async (title, file) => {
-    if (!groupCode) {
-      addToast("Join a group before uploading artwork.", "error");
-      return { ok: false, error: "No group selected." };
-    }
-
-    const { data, error } = await uploadCookbookCover({
-      title,
-      groupCode,
-      file,
-    });
-
-    if (error) {
-      addToast("Artwork upload failed. Please try again.", "error");
-      return { ok: false, error: error.message || "Upload failed." };
-    }
-
-    setCookbooks((prev) => {
-      const next = mergeCookbookEntries(prev, cookbookCoverTargets).map((entry) =>
-        entry.title === title ? { ...entry, coverUrl: data.publicUrl } : entry
-      );
-      return areCookbookEntriesEqual(prev, next) ? prev : next;
-    });
-    addToast(`Updated artwork for ${title}.`, "success");
-    return { ok: true, url: data.publicUrl };
-  };
-
-  const handleDeleteFromModal = (recipeId = editingId) => {
-    if (!recipeId) {
-      return;
-    }
-    handleDeleteRecipe(recipeId);
-    setIsModalOpen(false);
-  };
-
-  const handleUpdateRecipeRating = useCallback((recipeId, value) => {
-    if (!recipeId) {
-      return;
-    }
-    const nextRating = value ? Number.parseInt(value, 10) : null;
-    setRecipes((prev) =>
-      prev.map((recipe) =>
-        recipe.id === recipeId
-          ? {
-              ...recipe,
-              rating: Number.isNaN(nextRating) ? null : nextRating,
-            }
-          : recipe
-      )
-    );
-  }, [setRecipes]);
-
-  const CatalogDetailLayout = ({ activeRecipeId }) => {
-    const activeRecipe = activeRecipeId ? recipeById[activeRecipeId] || null : null;
-
-    return (
-      <div className="catalog-detail">
-        <div className="catalog-detail-sidebar">
-          <CatalogView
-            groupedRecipes={groupedRecipes}
-            totalRecipes={recipes.length}
-            searchTerm={searchTerm}
-            onSearchTerm={setSearchTerm}
-            groupBy={groupBy}
-            onGroupBy={setGroupBy}
-            onOpenRecipe={handleOpenRecipe}
-            hasRecipes={recipes.length > 0}
-            onAddRecipe={handleOpenAddModal}
-            onRatingChange={handleUpdateRecipeRating}
-            cookbookCovers={cookbookCoverMap}
-          />
-        </div>
-        <div className="catalog-detail-preview">
-          <RecipeView
-            activeRecipe={activeRecipe}
-            onStartLog={(recipeId) =>
-              handleStartLog(recipeId, { deferNavigation: true })
-            }
-            onEditRecipe={handleEditRecipe}
-            onDeleteRecipe={handleDeleteFromView}
-            onRatingChange={(value) =>
-              handleUpdateRecipeRating(activeRecipe?.id, value)
-            }
-            cookbookCovers={cookbookCoverMap}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const RecipeRoute = () => {
-    const { recipeId } = useParams();
-    return <CatalogDetailLayout activeRecipeId={recipeId} />;
-  };
-
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
     setPreviewRecipeId(null);
   };
+
+  const handleDeleteRecipe = useCallback((recipeId) => {
+    const recipeName = recipeById[recipeId]?.name || "Recipe";
+    setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
+    setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
+    if (recipeMatch?.params?.recipeId === recipeId) {
+      navigate("/catalog");
+    }
+    if (previewRecipeId === recipeId) {
+      setIsPreviewOpen(false);
+      setPreviewRecipeId(null);
+    }
+    addToast(`${recipeName} deleted.`, "success");
+  }, [addToast, navigate, previewRecipeId, recipeById, recipeMatch, setLogs, setRecipes]);
+
+  const handleRequestEditRecipe = (recipe) => {
+    if (!recipe?.id) {
+      return;
+    }
+    setPendingEditRecipeId(recipe.id);
+    handleClosePreview();
+    if (!catalogMatch && !recipeMatch) {
+      navigate("/catalog");
+    }
+  };
+
+  const catalogRouteElement = (
+    <CatalogRoute
+      recipes={recipes}
+      setRecipes={setRecipes}
+      syncCatalog={syncCatalog}
+      addToast={addToast}
+      cookbookCoverMap={cookbookCoverMap}
+      cuisineOptions={cuisineOptions}
+      onOpenRecipe={handleOpenRecipe}
+      onDeleteRecipe={handleDeleteRecipe}
+      onStartLog={handleStartLog}
+      isDesktop={isDesktop}
+      openAddRecipeSignal={openAddRecipeSignal}
+      onRecipeModalOpenChange={setIsRecipeModalOpen}
+      pendingEditRecipeId={pendingEditRecipeId}
+      onEditHandled={() => setPendingEditRecipeId(null)}
+    />
+  );
 
   return (
     <div className="app">
@@ -928,49 +544,33 @@ export default function App() {
         >
           <Hero />
           <Routes>
-            <Route path="/" element={<Navigate to="/catalog" replace />} />
+            <Route path="/" element={catalogRouteElement} />
             <Route
               path="/catalog"
               element={
-                isDesktop ? (
-                  <CatalogDetailLayout activeRecipeId={defaultRecipeId} />
-                ) : (
-                  <CatalogView
-                    groupedRecipes={groupedRecipes}
-                    totalRecipes={recipes.length}
-                    searchTerm={searchTerm}
-                    onSearchTerm={setSearchTerm}
-                    groupBy={groupBy}
-                    onGroupBy={setGroupBy}
-                    onOpenRecipe={handleOpenRecipe}
-                    hasRecipes={recipes.length > 0}
-                    onAddRecipe={handleOpenAddModal}
-                    onRatingChange={handleUpdateRecipeRating}
-                    cookbookCovers={cookbookCoverMap}
-                  />
-                )
+                catalogRouteElement
+              }
+            />
+            <Route
+              path="/recipe/:recipeId"
+              element={
+                catalogRouteElement
               }
             />
             <Route
               path="/random"
               element={
-                <RandomView
+                <RandomRoute
+                  recipes={recipes}
                   cuisineOptions={cuisineOptions}
-                  excludedCuisines={excludedCuisines}
-                  onToggleCuisine={handleToggleCuisine}
-                  onPickRandom={handlePickRandom}
-                  randomCandidates={randomCandidates}
-                  randomPick={randomPick}
                   onStartLog={handleStartLog}
-                  hasRecipes={recipes.length > 0}
                 />
               }
             />
-            <Route path="/recipe/:recipeId" element={<RecipeRoute />} />
             <Route
               path="/log"
               element={
-                <LogView
+                <LogRoute
                   logWeekDate={logWeekDate}
                   onLogWeekDate={setLogWeekDate}
                   weekDays={weekDays}
@@ -983,40 +583,27 @@ export default function App() {
             <Route
               path="/settings"
               element={
-                <SettingsView
-                  onGenerateInvite={handleGenerateInvite}
-                  onClearData={handleClearData}
-                  onJoinGroup={handleJoinGroup}
-                  onCopyGroupCode={handleCopyGroupCode}
-                  onInstallApp={handleInstallApp}
-                  cookbookOptions={cookbookCoverTargets}
-                  cookbookCovers={cookbookCoverMap}
-                  onUploadCookbookCover={handleUploadCookbookCover}
-                  inviteUrl={showInvite ? inviteUrl : ""}
+                <SettingsRoute
+                  status={status}
+                  inviteUrl={inviteUrl}
                   groupCode={groupCode}
-                  statusMessage={status.state === "error" ? status.message : ""}
-                  hasGroup={Boolean(groupCode)}
-                  canInstallApp={Boolean(installPrompt) && !isInstalled}
-                  isInstalled={isInstalled}
-                  isIosDevice={isIosDevice}
+                  createNewGroup={createNewGroup}
+                  joinGroup={joinGroup}
+                  addToast={addToast}
+                  setRecipes={setRecipes}
+                  setCookbooks={setCookbooks}
+                  setCuisines={setCuisines}
+                  setLogs={setLogs}
+                  cookbookCoverTargets={cookbookCoverTargets}
+                  cookbookCoverMap={cookbookCoverMap}
                 />
               }
             />
-            <Route path="*" element={<Navigate to="/catalog" replace />} />
           </Routes>
         </div>
       </main>
       <MobileTabBar />
       <ToastStack toasts={toasts} />
-      <RecipeModal
-        isOpen={isModalOpen}
-        editingRecipe={editingId ? recipeById[editingId] : null}
-        onSaveRecipe={handleSaveRecipe}
-        onClose={handleCloseModal}
-        onDeleteRecipe={handleDeleteFromModal}
-        cookbookOptions={cookbookOptions}
-        cuisineOptions={cuisineOptions}
-      />
       <RecipePreviewModal
         isOpen={isPreviewOpen}
         recipe={previewRecipeId ? recipeById[previewRecipeId] : null}
@@ -1025,13 +612,10 @@ export default function App() {
           handleClosePreview();
           handleStartLog(recipeId, { deferNavigation: true });
         }}
-        onEditRecipe={(recipe) => {
-          handleClosePreview();
-          handleEditRecipe(recipe);
-        }}
+        onEditRecipe={handleRequestEditRecipe}
         onDeleteRecipe={(recipeId) => {
           handleClosePreview();
-          handleDeleteFromView(recipeId);
+          handleDeleteRecipe(recipeId);
         }}
         onRatingChange={(value) =>
           handleUpdateRecipeRating(previewRecipeId, value)
