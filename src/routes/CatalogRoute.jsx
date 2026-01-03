@@ -294,6 +294,19 @@ export const CatalogRoute = ({
     return <CatalogDetailLayout activeRecipeId={recipeId} />;
   };
 
+  useEffect(() => {
+    if (!pendingEditRecipeId) {
+      return;
+    }
+    const recipe = recipeById[pendingEditRecipeId];
+    if (!recipe) {
+      return;
+    }
+    setEditingId(recipe.id);
+    setIsModalOpen(true);
+    onEditHandled?.();
+  }, [onEditHandled, pendingEditRecipeId, recipeById]);
+
   return (
     <>
       <Routes>
@@ -335,15 +348,3 @@ export const CatalogRoute = ({
     </>
   );
 };
-  useEffect(() => {
-    if (!pendingEditRecipeId) {
-      return;
-    }
-    const recipe = recipeById[pendingEditRecipeId];
-    if (!recipe) {
-      return;
-    }
-    setEditingId(recipe.id);
-    setIsModalOpen(true);
-    onEditHandled?.();
-  }, [onEditHandled, pendingEditRecipeId, recipeById]);
