@@ -557,10 +557,16 @@ button.secondary.icon-button {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.catalog-search-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .catalog-view-toggle {
-  justify-items: end;
-  justify-self: end;
-  text-align: right;
+  display: inline-flex;
+  align-items: center;
 }
 
 .control-label {
@@ -570,10 +576,10 @@ button.secondary.icon-button {
 
 .view-toggle {
   display: inline-flex;
-  background: var(--color-surface-muted);
-  border-radius: 999px;
-  padding: 4px;
-  gap: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: transparent;
+  overflow: hidden;
 }
 
 .view-toggle-button {
@@ -581,16 +587,25 @@ button.secondary.icon-button {
   background: transparent;
   color: var(--color-text-muted);
   font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 6px 8px;
+  border-radius: 0;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
+.view-toggle-button + .view-toggle-button {
+  border-left: 1px solid var(--color-border);
+}
+
+.view-toggle-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .view-toggle-button.is-active {
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: 0 6px 12px var(--color-shadow);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: none;
 }
 
 .catalog-selection {
@@ -622,20 +637,19 @@ button.secondary.icon-button {
 }
 
 .cookbook-card {
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 0;
   text-align: left;
-  background: var(--color-surface);
+  background: transparent;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .cookbook-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 30px var(--color-shadow);
 }
 
 .cookbook-cover {
@@ -655,23 +669,6 @@ button.secondary.icon-button {
 
 .cookbook-cover.has-image {
   color: transparent;
-}
-
-.cookbook-info {
-  display: grid;
-  gap: 4px;
-}
-
-.cookbook-title {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.cookbook-meta {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
 }
 
 .catalog-add {
@@ -1272,6 +1269,10 @@ button.secondary.icon-button {
 }
 
 @media (min-width: 900px) {
+  .catalog-view-toggle {
+    display: none;
+  }
+
   .catalog-detail {
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     align-items: start;
