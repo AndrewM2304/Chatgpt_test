@@ -35,6 +35,7 @@ export default function App() {
     groupCode,
     createNewGroup,
     joinGroup,
+    clearLocalData,
     syncCatalog,
   } = useSupabaseCatalog();
   const navigate = useNavigate();
@@ -505,10 +506,7 @@ export default function App() {
                   createNewGroup={createNewGroup}
                   joinGroup={joinGroup}
                   addToast={addToast}
-                  setRecipes={setRecipes}
-                  setCookbooks={setCookbooks}
-                  setCuisines={setCuisines}
-                  setLogs={setLogs}
+                  onLogout={clearLocalData}
                   cookbookCoverTargets={cookbookCoverTargets}
                   cookbookCoverMap={cookbookCoverMap}
                 />
