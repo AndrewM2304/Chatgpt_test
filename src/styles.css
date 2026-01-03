@@ -33,10 +33,10 @@
   --color-shadow-strong: rgba(15, 23, 42, 0.2);
   --color-shadow-accent: rgba(14, 165, 233, 0.3);
   --color-overlay: rgba(15, 23, 42, 0.4);
-  --color-button-primary-bg: #ffffff;
-  --color-button-primary-text: #0f172a;
-  --color-button-primary-border: #e2e8f0;
-  --color-button-primary-shadow: rgba(15, 23, 42, 0.2);
+  --color-button-primary-bg: var(--color-accent);
+  --color-button-primary-text: #ffffff;
+  --color-button-primary-border: var(--color-accent);
+  --color-button-primary-shadow: var(--color-shadow-accent);
   --color-button-secondary-text: #1f2937;
   --color-button-secondary-border: #e2e8f0;
   --color-button-secondary-bg: transparent;
@@ -52,9 +52,9 @@
   --color-chip-off-border: #e2e8f0;
   --color-log-entry-hover: #e0f2fe;
   --color-log-empty-icon: #e2e8f0;
-  --color-checkbox-bg: #ffffff;
-  --color-checkbox-border: #cbd5e1;
-  --color-checkbox-checked-bg: #0ea5e9;
+  --color-checkbox-bg: var(--color-input-bg);
+  --color-checkbox-border: var(--color-border);
+  --color-checkbox-checked-bg: var(--color-accent);
   --color-checkbox-check: #ffffff;
 }
 
@@ -396,12 +396,13 @@ input[type="checkbox"] {
   appearance: none;
   width: 18px;
   height: 18px;
-  border-radius: 4px;
+  border-radius: 2px;
   border: 2px solid var(--color-checkbox-border);
   background: var(--color-checkbox-bg);
   display: inline-grid;
   place-content: center;
   cursor: pointer;
+  padding: 0;
 }
 
 input[type="checkbox"]::before {
