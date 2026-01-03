@@ -10,6 +10,7 @@ export const SettingsRoute = ({
   joinGroup,
   addToast,
   onLogout,
+  cookbookOptions,
   cookbookCoverTargets,
   cookbookCoverMap,
 }) => {
@@ -217,7 +218,7 @@ export const SettingsRoute = ({
       onJoinGroup={handleJoinGroup}
       onCopyGroupCode={handleCopyGroupCode}
       onInstallApp={handleInstallApp}
-      cookbookOptions={cookbookCoverTargets}
+      cookbookOptions={cookbookOptions}
       cookbookCovers={cookbookCoverMap}
       onUploadCookbookCover={handleUploadCookbookCover}
       inviteUrl={showInvite ? inviteUrl : ""}

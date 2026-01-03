@@ -132,6 +132,18 @@ export default function App() {
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
 
+  const settingsCookbookOptions = useMemo(() => {
+    const options = new Set(cookbookOptions);
+    const hasWebsiteRecipes = recipes.some(
+      (recipe) =>
+        recipe.sourceType === "website" || (!recipe.sourceType && recipe.url)
+    );
+    if (hasWebsiteRecipes) {
+      options.add("Website");
+    }
+    return Array.from(options).sort((a, b) => a.localeCompare(b));
+  }, [cookbookOptions, recipes]);
+
   const recipeById = useMemo(() => {
     return buildRecipeById(recipes);
   }, [recipes]);
@@ -512,6 +524,7 @@ export default function App() {
                   joinGroup={joinGroup}
                   addToast={addToast}
                   onLogout={clearLocalData}
+                  cookbookOptions={settingsCookbookOptions}
                   cookbookCoverTargets={cookbookCoverTargets}
                   cookbookCoverMap={cookbookCoverMap}
                 />

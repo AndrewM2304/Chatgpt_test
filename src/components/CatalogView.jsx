@@ -33,7 +33,7 @@ export const CatalogView = memo(({
           <input
             id="search"
             type="search"
-            placeholder="Search by name, cookbook, cuisine..."
+            placeholder="Search by name, cuisine, page, URL..."
             value={searchTerm}
             onChange={(event) => onSearchTerm(event.target.value)}
           />

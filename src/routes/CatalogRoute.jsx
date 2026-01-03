@@ -128,7 +128,6 @@ export const CatalogRoute = ({
     return recipes.filter((recipe) => {
       return [
         recipe.name,
-        recipe.cookbookTitle,
         recipe.cuisine,
         recipe.page,
         recipe.url,
