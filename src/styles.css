@@ -557,6 +557,123 @@ button.secondary.icon-button {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.catalog-view-toggle {
+  justify-items: end;
+  justify-self: end;
+  text-align: right;
+}
+
+.control-label {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.view-toggle {
+  display: inline-flex;
+  background: var(--color-surface-muted);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.view-toggle-button {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.view-toggle-button.is-active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 6px 12px var(--color-shadow);
+}
+
+.catalog-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: var(--color-surface-muted);
+  border-radius: 16px;
+}
+
+.catalog-selection-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.catalog-selection-meta {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.cookbook-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cookbook-card {
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  text-align: left;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cookbook-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px var(--color-shadow);
+}
+
+.cookbook-cover {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--color-text);
+  text-transform: uppercase;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.cookbook-cover.has-image {
+  color: transparent;
+}
+
+.cookbook-info {
+  display: grid;
+  gap: 4px;
+}
+
+.cookbook-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.cookbook-meta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
 .catalog-add {
   justify-self: start;
   width: fit-content;
@@ -1168,6 +1285,18 @@ button.secondary.icon-button {
 
   .catalog-detail-preview {
     overflow: hidden;
+  }
+}
+
+@media (min-width: 720px) {
+  .cookbook-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .cookbook-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

@@ -19,17 +19,25 @@ export const CatalogView = memo(({
   onAddRecipe,
   onRatingChange,
   cookbookCovers,
+  cookbookCards,
+  viewMode,
+  onViewModeChange,
+  selectedCookbook,
+  onSelectCookbook,
+  onClearCookbook,
 }) => {
   const recipeCountLabel = totalRecipes === 1 ? "recipe" : "recipes";
   const hasResults = groupedRecipes.length > 0;
+  const isCardView = viewMode === "cards";
+  const activeRecipesLabel = selectedCookbook
+    ? `${selectedCookbook} recipes`
+    : `Search from ${totalRecipes} ${recipeCountLabel}`;
 
   return (
     <section className="catalog">
       <div className="catalog-toolbar">
         <div className="control">
-          <label htmlFor="search">
-            Search from {totalRecipes} {recipeCountLabel}
-          </label>
+          <label htmlFor="search">{activeRecipesLabel}</label>
           <input
             id="search"
             type="search"
@@ -44,6 +52,7 @@ export const CatalogView = memo(({
             id="group"
             value={groupBy}
             onChange={(event) => onGroupBy(event.target.value)}
+            disabled={Boolean(selectedCookbook)}
           >
             {groupOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -52,78 +61,151 @@ export const CatalogView = memo(({
             ))}
           </select>
         </div>
+        <div className="control catalog-view-toggle">
+          <span className="control-label">View</span>
+          <div className="view-toggle" role="group" aria-label="Catalog view">
+            <button
+              type="button"
+              className={`view-toggle-button${!isCardView ? " is-active" : ""}`}
+              aria-pressed={!isCardView}
+              onClick={() => onViewModeChange("list")}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              className={`view-toggle-button${isCardView ? " is-active" : ""}`}
+              aria-pressed={isCardView}
+              onClick={() => onViewModeChange("cards")}
+            >
+              Cards
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="catalog-body">
-        {groupedRecipes.map((group) => (
-          <div key={group.label} className="catalog-group">
-            <h2>{group.label}</h2>
-            <div className="recipe-grid">
-              {group.items.map((recipe) => {
-                const isWebsite =
-                  recipe.sourceType === "website" ||
-                  (!recipe.sourceType && recipe.url);
-                const sourceTitle =
-                  recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
-                const coverUrl = cookbookCovers?.[sourceTitle];
+        {selectedCookbook && (
+          <div className="catalog-selection">
+            <div>
+              <p className="catalog-selection-title">{selectedCookbook}</p>
+              <p className="catalog-selection-meta">Browsing by page number.</p>
+            </div>
+            <button
+              type="button"
+              className="secondary"
+              onClick={onClearCookbook}
+            >
+              Back to all cookbooks
+            </button>
+          </div>
+        )}
 
-                return (
-                  <article
-                    key={recipe.id}
-                    className="recipe-card"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onOpenRecipe(recipe)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        onOpenRecipe(recipe);
-                      }
+        {isCardView ? (
+          <div className="cookbook-grid">
+            {cookbookCards.map((cookbook) => {
+              const coverUrl = cookbookCovers?.[cookbook.title];
+              return (
+                <button
+                  key={cookbook.title}
+                  type="button"
+                  className="cookbook-card"
+                  onClick={() => onSelectCookbook(cookbook.title)}
+                >
+                  <div
+                    className={`cookbook-cover${coverUrl ? " has-image" : ""}`}
+                    aria-hidden="true"
+                    style={{
+                      backgroundColor: getCoverColor(cookbook.title),
+                      ...(coverUrl
+                        ? { backgroundImage: `url(${coverUrl})` }
+                        : {}),
                     }}
                   >
-                    <div
-                      className={`recipe-cover${coverUrl ? " has-image" : ""}`}
-                      role="img"
-                      aria-label={`${sourceTitle} cover`}
-                      style={{
-                        backgroundColor: getCoverColor(sourceTitle),
-                        ...(coverUrl
-                          ? { backgroundImage: `url(${coverUrl})` }
-                          : {}),
+                    {!coverUrl && <span>{getInitials(cookbook.title)}</span>}
+                  </div>
+                  <div className="cookbook-info">
+                    <p className="cookbook-title">{cookbook.title}</p>
+                    <p className="cookbook-meta">
+                      {cookbook.count}{" "}
+                      {cookbook.count === 1 ? "recipe" : "recipes"}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          groupedRecipes.map((group) => (
+            <div key={group.label} className="catalog-group">
+              <h2>{group.label}</h2>
+              <div className="recipe-grid">
+                {group.items.map((recipe) => {
+                  const isWebsite =
+                    recipe.sourceType === "website" ||
+                    (!recipe.sourceType && recipe.url);
+                  const sourceTitle =
+                    recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+                  const coverUrl = cookbookCovers?.[sourceTitle];
+
+                  return (
+                    <article
+                      key={recipe.id}
+                      className="recipe-card"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onOpenRecipe(recipe)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onOpenRecipe(recipe);
+                        }
                       }}
                     >
-                      {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
-                    </div>
-                    <div className="recipe-details">
-                      <header>
-                        <h3>{recipe.name}</h3>
-                      </header>
-                      {recipe.durationMinutes ? (
-                        <p className="recipe-meta">
-                          {formatDuration(recipe.durationMinutes)}
-                        </p>
-                      ) : null}
                       <div
-                        className="recipe-rating-control"
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => event.stopPropagation()}
+                        className={`recipe-cover${coverUrl ? " has-image" : ""}`}
+                        role="img"
+                        aria-label={`${sourceTitle} cover`}
+                        style={{
+                          backgroundColor: getCoverColor(sourceTitle),
+                          ...(coverUrl
+                            ? { backgroundImage: `url(${coverUrl})` }
+                            : {}),
+                        }}
                       >
-                        <RecipeRating
-                          value={recipe.rating || 0}
-                          label="Recipe rating"
-                          isEditable
-                          onChange={(value) => onRatingChange?.(recipe.id, value)}
-                        />
+                        {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
                       </div>
-                    </div>
-                  </article>
-                );
-              })}
+                      <div className="recipe-details">
+                        <header>
+                          <h3>{recipe.name}</h3>
+                        </header>
+                        {recipe.durationMinutes ? (
+                          <p className="recipe-meta">
+                            {formatDuration(recipe.durationMinutes)}
+                          </p>
+                        ) : null}
+                        <div
+                          className="recipe-rating-control"
+                          onClick={(event) => event.stopPropagation()}
+                          onKeyDown={(event) => event.stopPropagation()}
+                        >
+                          <RecipeRating
+                            value={recipe.rating || 0}
+                            label="Recipe rating"
+                            isEditable
+                            onChange={(value) => onRatingChange?.(recipe.id, value)}
+                          />
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
 
-        {hasRecipes && !hasResults && (
+        {hasRecipes && !hasResults && !isCardView && (
           <div className="empty-state">
             <p className="empty">No recipes match your search.</p>
             <button
@@ -136,7 +218,11 @@ export const CatalogView = memo(({
           </div>
         )}
 
-        {!hasRecipes && (
+        {isCardView && cookbookCards.length === 0 && (
+          <p className="empty">No cookbooks yet. Add your first recipe.</p>
+        )}
+
+        {!hasRecipes && !isCardView && (
           <p className="empty">No recipes yet. Add your first cookbook hit.</p>
         )}
       </div>
