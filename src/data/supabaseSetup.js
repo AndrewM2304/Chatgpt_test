@@ -5,6 +5,8 @@ create table if not exists public.site_settings (
   updated_at timestamptz not null default now()
 );
 
+alter table public.site_settings enable row level security;
+
 -- Store each shared cookbook group as a JSON blob
 create table if not exists public.catalogs (
   id uuid primary key default gen_random_uuid(),
@@ -13,6 +15,106 @@ create table if not exists public.catalogs (
   data jsonb not null,
   updated_at timestamptz not null default now()
 );
+
+alter table public.catalogs enable row level security;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'site_settings'
+      and policyname = 'Public site settings read'
+  ) then
+    create policy "Public site settings read"
+      on public.site_settings
+      for select
+      using (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'site_settings'
+      and policyname = 'Public site settings insert'
+  ) then
+    create policy "Public site settings insert"
+      on public.site_settings
+      for insert
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'site_settings'
+      and policyname = 'Public site settings update'
+  ) then
+    create policy "Public site settings update"
+      on public.site_settings
+      for update
+      using (true)
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'catalogs'
+      and policyname = 'Public catalogs read'
+  ) then
+    create policy "Public catalogs read"
+      on public.catalogs
+      for select
+      using (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'catalogs'
+      and policyname = 'Public catalogs insert'
+  ) then
+    create policy "Public catalogs insert"
+      on public.catalogs
+      for insert
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'catalogs'
+      and policyname = 'Public catalogs update'
+  ) then
+    create policy "Public catalogs update"
+      on public.catalogs
+      for update
+      using (true)
+      with check (true);
+  end if;
+end $$;
 
 -- Create a public storage bucket for cookbook cover uploads
 insert into storage.buckets (id, name, public)
