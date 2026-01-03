@@ -524,6 +524,7 @@ export default function App() {
                   joinGroup={joinGroup}
                   addToast={addToast}
                   onLogout={clearLocalData}
+                  setCookbooks={setCookbooks}
                   cookbookOptions={settingsCookbookOptions}
                   cookbookCoverTargets={cookbookCoverTargets}
                   cookbookCoverMap={cookbookCoverMap}

@@ -10,6 +10,7 @@ export const SettingsRoute = ({
   joinGroup,
   addToast,
   onLogout,
+  setCookbooks,
   cookbookOptions,
   cookbookCoverTargets,
   cookbookCoverMap,
