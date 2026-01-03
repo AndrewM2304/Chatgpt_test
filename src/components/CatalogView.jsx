@@ -33,10 +33,7 @@ export const CatalogView = memo(({
   const recipeCountLabel = totalRecipes === 1 ? "recipe" : "recipes";
   const hasResults = groupedRecipes.length > 0;
   const isCardView = viewMode === "cards";
-  const activeRecipesLabel =
-    selectedCookbook && !isCardView
-      ? `${selectedCookbook} recipes`
-      : `Search from ${totalRecipes} ${recipeCountLabel}`;
+  const activeRecipesLabel = `Search from ${totalRecipes} ${recipeCountLabel}`;
 
   return (
     <section className="catalog">
@@ -97,10 +94,6 @@ export const CatalogView = memo(({
       <div className="catalog-body">
         {selectedCookbook && (
           <div className="catalog-selection">
-            <div>
-              <p className="catalog-selection-title">{selectedCookbook}</p>
-              <p className="catalog-selection-meta">Browsing by page number.</p>
-            </div>
             <button
               type="button"
               className="secondary"
