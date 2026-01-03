@@ -130,6 +130,9 @@ body,
 body {
   min-height: 100dvh;
   background: var(--color-bg-gradient);
+  background-color: var(--color-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 body.modal-open {
@@ -184,9 +187,12 @@ h1 {
 }
 
 .header-nav {
+  background-color: var(--color-surface);
   background: color-mix(in srgb, var(--color-surface) 94%, transparent);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
 }
 
 .header-nav-inner {
