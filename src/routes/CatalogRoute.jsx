@@ -3,6 +3,7 @@ import { Route, Routes, useParams } from "react-router-dom";
 import { CatalogView } from "../components/CatalogView";
 import { RecipeModal } from "../components/RecipeModal";
 import { RecipeView } from "../components/RecipeView";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { durationBuckets, timesBuckets } from "../utils/recipeUtils";
 
 const CatalogDetailLayout = ({
@@ -80,6 +81,8 @@ export const CatalogRoute = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
+  const [viewMode, setViewMode] = useLocalStorage("catalog-view-mode", "list");
+  const [selectedCookbook, setSelectedCookbook] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const lastAddSignal = useRef(0);
@@ -113,6 +116,24 @@ export const CatalogRoute = ({
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
 
+  const cookbookCards = useMemo(() => {
+    const cookbookMap = new Map();
+
+    recipes.forEach((recipe) => {
+      const isWebsite =
+        recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+      const title = recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+      if (!cookbookMap.has(title)) {
+        cookbookMap.set(title, 0);
+      }
+      cookbookMap.set(title, cookbookMap.get(title) + 1);
+    });
+
+    return Array.from(cookbookMap.entries())
+      .map(([title, count]) => ({ title, count }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }, [recipes]);
+
   const recipeById = useMemo(() => {
     return recipes.reduce((accumulator, recipe) => {
       accumulator[recipe.id] = recipe;
@@ -123,9 +144,26 @@ export const CatalogRoute = ({
   const filteredRecipes = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) {
-      return recipes;
+      return selectedCookbook
+        ? recipes.filter((recipe) => {
+            const isWebsite =
+              recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+            const title =
+              recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+            return title === selectedCookbook;
+          })
+        : recipes;
     }
     return recipes.filter((recipe) => {
+      if (selectedCookbook) {
+        const isWebsite =
+          recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+        const title =
+          recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
+        if (title !== selectedCookbook) {
+          return false;
+        }
+      }
       return [
         recipe.name,
         recipe.cuisine,
@@ -135,7 +173,7 @@ export const CatalogRoute = ({
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(term));
     });
-  }, [recipes, searchTerm]);
+  }, [recipes, searchTerm, selectedCookbook]);
 
   const groupedRecipes = useMemo(() => {
     const groups = new Map();
@@ -173,13 +211,29 @@ export const CatalogRoute = ({
       addToGroup("All recipes", recipe);
     });
 
+    const getPageValue = (recipe) => {
+      const pageNumber = Number.parseInt(recipe.page, 10);
+      return Number.isNaN(pageNumber) ? Number.POSITIVE_INFINITY : pageNumber;
+    };
+
+    const sortByName = (a, b) => a.name.localeCompare(b.name);
+    const sortByPage = (a, b) => {
+      const pageDelta = getPageValue(a) - getPageValue(b);
+      if (pageDelta !== 0) {
+        return pageDelta;
+      }
+      return sortByName(a, b);
+    };
+
+    const sortRecipes = selectedCookbook ? sortByPage : sortByName;
+
     return Array.from(groups.entries())
       .map(([label, items]) => ({
         label,
-        items: items.sort((a, b) => a.name.localeCompare(b.name)),
+        items: items.sort(sortRecipes),
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [filteredRecipes, groupBy]);
+  }, [filteredRecipes, groupBy, selectedCookbook]);
 
   const defaultRecipeId = useMemo(() => {
     return groupedRecipes[0]?.items?.[0]?.id ?? null;
@@ -258,6 +312,27 @@ export const CatalogRoute = ({
     setIsModalOpen(true);
   };
 
+  const handleSelectCookbook = useCallback(
+    (title) => {
+      setSelectedCookbook(title);
+      setSearchTerm("");
+      setGroupBy("none");
+      setViewMode("list");
+    },
+    [setViewMode]
+  );
+
+  const handleViewModeChange = useCallback((nextMode) => {
+    setViewMode(nextMode);
+    if (nextMode === "cards") {
+      setSelectedCookbook("");
+    }
+  }, [setSelectedCookbook, setViewMode]);
+
+  const handleClearCookbook = useCallback(() => {
+    setSelectedCookbook("");
+  }, []);
+
   const handleDeleteFromView = (recipeId) => {
     if (!recipeId) {
       return;
@@ -320,6 +395,12 @@ export const CatalogRoute = ({
     onAddRecipe: handleOpenAddModal,
     onRatingChange: handleUpdateRecipeRating,
     cookbookCovers: cookbookCoverMap,
+    cookbookCards,
+    viewMode,
+    onViewModeChange: handleViewModeChange,
+    selectedCookbook,
+    onSelectCookbook: handleSelectCookbook,
+    onClearCookbook: handleClearCookbook,
     onStartLog,
     onEditRecipe: handleEditRecipe,
     onDeleteRecipe: handleDeleteFromView,
@@ -341,6 +422,12 @@ export const CatalogRoute = ({
       onAddRecipe={handleOpenAddModal}
       onRatingChange={handleUpdateRecipeRating}
       cookbookCovers={cookbookCoverMap}
+      cookbookCards={cookbookCards}
+      viewMode={viewMode}
+      onViewModeChange={handleViewModeChange}
+      selectedCookbook={selectedCookbook}
+      onSelectCookbook={handleSelectCookbook}
+      onClearCookbook={handleClearCookbook}
     />
   );
 
