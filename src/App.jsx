@@ -123,6 +123,8 @@ export default function App() {
 
   const recipeMatch = useMatch("/recipe/:recipeId");
   const catalogMatch = useMatch("/catalog");
+  const homeMatch = useMatch({ path: "/", end: true });
+  const isCatalogRoute = Boolean(homeMatch || catalogMatch || recipeMatch);
 
   const addToast = (message, variant = "info") => {
     const id = crypto.randomUUID();
@@ -277,7 +279,7 @@ export default function App() {
 
   const handleOpenAddModal = () => {
     setOpenAddRecipeSignal((prev) => prev + 1);
-    if (!catalogMatch) {
+    if (!isCatalogRoute) {
       navigate("/catalog");
     }
   };
@@ -507,7 +509,7 @@ export default function App() {
     }
     setPendingEditRecipeId(recipe.id);
     handleClosePreview();
-    if (!catalogMatch && !recipeMatch) {
+    if (!isCatalogRoute) {
       navigate("/catalog");
     }
   };
@@ -539,7 +541,7 @@ export default function App() {
       <main className="panel">
         <div
           className={`panel-content${
-            catalogMatch || recipeMatch ? " is-catalog" : ""
+            isCatalogRoute ? " is-catalog" : ""
           }`}
         >
           <Hero />
