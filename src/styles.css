@@ -1227,11 +1227,18 @@ button.secondary.icon-button {
   background: var(--color-surface-soft);
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .helper-text {
   color: var(--color-text-muted);
   font-size: 0.9rem;
+}
+
+.settings-card input,
+.settings-card select {
+  width: 100%;
+  max-width: 100%;
 }
 
 .join-group-form {
@@ -1262,6 +1269,7 @@ button.secondary.icon-button {
 .settings {
   display: grid;
   gap: 20px;
+  min-width: 0;
 }
 
 .danger-card {
