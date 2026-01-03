@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 import { CatalogView } from "../components/CatalogView";
 import { RecipeModal } from "../components/RecipeModal";
 import { RecipeView } from "../components/RecipeView";
@@ -289,6 +289,24 @@ export const CatalogRoute = ({
     );
   };
 
+  const catalogContent = isDesktop ? (
+    <CatalogDetailLayout activeRecipeId={defaultRecipeId} />
+  ) : (
+    <CatalogView
+      groupedRecipes={groupedRecipes}
+      totalRecipes={recipes.length}
+      searchTerm={searchTerm}
+      onSearchTerm={setSearchTerm}
+      groupBy={groupBy}
+      onGroupBy={setGroupBy}
+      onOpenRecipe={onOpenRecipe}
+      hasRecipes={recipes.length > 0}
+      onAddRecipe={handleOpenAddModal}
+      onRatingChange={handleUpdateRecipeRating}
+      cookbookCovers={cookbookCoverMap}
+    />
+  );
+
   const RecipeRoute = () => {
     const { recipeId } = useParams();
     return <CatalogDetailLayout activeRecipeId={recipeId} />;
@@ -310,31 +328,10 @@ export const CatalogRoute = ({
   return (
     <>
       <Routes>
-        <Route path="/" element={<Navigate to="/catalog" replace />} />
-        <Route
-          path="/catalog"
-          element={
-            isDesktop ? (
-              <CatalogDetailLayout activeRecipeId={defaultRecipeId} />
-            ) : (
-              <CatalogView
-                groupedRecipes={groupedRecipes}
-                totalRecipes={recipes.length}
-                searchTerm={searchTerm}
-                onSearchTerm={setSearchTerm}
-                groupBy={groupBy}
-                onGroupBy={setGroupBy}
-                onOpenRecipe={onOpenRecipe}
-                hasRecipes={recipes.length > 0}
-                onAddRecipe={handleOpenAddModal}
-                onRatingChange={handleUpdateRecipeRating}
-                cookbookCovers={cookbookCoverMap}
-              />
-            )
-          }
-        />
+        <Route path="/" element={catalogContent} />
+        <Route path="/catalog" element={catalogContent} />
         <Route path="/recipe/:recipeId" element={<RecipeRoute />} />
-        <Route path="*" element={<Navigate to="/catalog" replace />} />
+        <Route path="*" element={catalogContent} />
       </Routes>
       <RecipeModal
         isOpen={isModalOpen}
