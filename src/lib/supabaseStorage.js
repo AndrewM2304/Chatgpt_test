@@ -1,7 +1,7 @@
 import { supabaseAnonKey, supabaseUrl } from "./supabaseClient.js";
 
 const STORAGE_BUCKET =
-  import.meta.env?.VITE_SUPABASE_STORAGE_BUCKET || "cookbook-covers";
+  import.meta.env?.VITE_SUPABASE_STORAGE_BUCKET || "cookbook_storage";
 
 const slugify = (value) =>
   value
