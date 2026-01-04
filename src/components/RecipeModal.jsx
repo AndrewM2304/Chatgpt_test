@@ -33,14 +33,15 @@ export const RecipeModal = ({
       return;
     }
     const nextEditingId = editingRecipe?.id ?? null;
+    if (!editingRecipe) {
+      lastEditingId.current = nextEditingId;
+      setFormData(emptyForm);
+      return;
+    }
     if (nextEditingId === lastEditingId.current) {
       return;
     }
     lastEditingId.current = nextEditingId;
-    if (!editingRecipe) {
-      setFormData(emptyForm);
-      return;
-    }
     setFormData({
       name: editingRecipe.name,
       sourceType:
