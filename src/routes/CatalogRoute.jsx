@@ -4,6 +4,7 @@ import { CatalogView } from "../components/CatalogView";
 import { RecipeModal } from "../components/RecipeModal";
 import { RecipeView } from "../components/RecipeView";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { createId } from "../utils/idUtils";
 import { durationBuckets, timesBuckets } from "../utils/recipeUtils";
 
 const CatalogDetailLayout = ({
@@ -282,7 +283,7 @@ export const CatalogRoute = ({
       );
     } else {
       const newRecipe = {
-        id: crypto.randomUUID(),
+        id: createId(),
         name: trimmedName,
         sourceType,
         cookbookTitle: trimmedCookbook,
