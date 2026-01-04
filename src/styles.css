@@ -590,7 +590,7 @@ button.secondary.icon-button {
   color: var(--color-text-muted);
   font-weight: 600;
   padding: 4px 12px;
-  border-radius: 11px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
   display: inline-flex;
@@ -1338,6 +1338,10 @@ button.secondary.icon-button {
     padding-bottom: 0;
   }
 
+  .catalog {
+    gap: 12px;
+  }
+
   .catalog-view-toggle {
     display: none;
   }
@@ -1367,7 +1371,7 @@ button.secondary.icon-button {
     top: var(--header-height);
     z-index: 2;
     background: var(--color-bg);
-    padding-bottom: 12px;
+    padding-bottom: 0;
   }
 
   .catalog-body {

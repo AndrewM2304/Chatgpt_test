@@ -18,17 +18,17 @@ export const RecipePreviewActions = ({
       className="primary"
       onClick={() => onStartLog(recipe.id)}
     >
-      Schedule meal
+      Schedule
     </button>
     <button type="button" className="secondary" onClick={() => onEditRecipe(recipe)}>
-      Edit recipe
+      Edit
     </button>
     <button
       type="button"
       className="secondary danger"
       onClick={() => onDeleteRecipe?.(recipe.id)}
     >
-      Delete recipe
+      Delete
     </button>
   </div>
 );
