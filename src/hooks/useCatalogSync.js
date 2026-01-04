@@ -143,6 +143,21 @@ export const useCatalogSync = ({
         if (legacyGroupId) {
           return legacyGroupId;
         }
+        if (hasCatalogContent(catalog)) {
+          const { error: seedError } = await upsertCatalogData({
+            groupId: data.id,
+            data: catalog,
+          });
+          if (seedError) {
+            setStatus({ state: "error", message: STATUS_MESSAGES.error });
+            return null;
+          }
+          setGroupId(data.id);
+          setCatalog(catalog);
+          pendingChangesRef.current = false;
+          changeIdRef.current = 0;
+          return data.id;
+        }
       }
       setGroupId(data.id);
       setCatalog(catalogData || defaultCatalog);
@@ -181,6 +196,7 @@ export const useCatalogSync = ({
     changeIdRef.current = 0;
     return created.id;
   }, [
+    catalog,
     defaultCatalog,
     groupCode,
     hasCatalogContent,
@@ -219,6 +235,22 @@ export const useCatalogSync = ({
         setHasLoadedCatalog(true);
         return legacyGroupId;
       }
+      if (hasCatalogContent(catalog)) {
+        const { error: seedError } = await upsertCatalogData({
+          groupId: data.id,
+          data: catalog,
+        });
+        if (seedError) {
+          setStatus({ state: "error", message: STATUS_MESSAGES.error });
+          return null;
+        }
+        setGroupId(data.id);
+        setCatalog(catalog);
+        setHasLoadedCatalog(true);
+        pendingChangesRef.current = false;
+        changeIdRef.current = 0;
+        return catalog;
+      }
     }
     setGroupId(data.id);
     setCatalog(catalogData || defaultCatalog);
@@ -227,6 +259,7 @@ export const useCatalogSync = ({
     changeIdRef.current = 0;
     return catalogData || defaultCatalog;
   }, [
+    catalog,
     defaultCatalog,
     groupCode,
     hasCatalogContent,
