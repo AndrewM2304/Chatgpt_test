@@ -297,17 +297,16 @@ export const checkSupabaseAccess = async ({ groupCode, groupId } = {}) => {
         .from("catalog_groups")
         .select("id, group_code")
         .eq("group_code", groupCode)
-        .limit(1)
-    : supabase.from("catalog_groups").select("id, group_code").limit(1);
+    : supabase.from("catalog_groups").select("id, group_code");
   const groupScopedQuery = (table, columns) =>
     groupId
-      ? supabase.from(table).select(columns).eq("group_id", groupId).limit(1)
-      : supabase.from(table).select(columns).limit(1);
+      ? supabase.from(table).select(columns).eq("group_id", groupId)
+      : supabase.from(table).select(columns);
 
   const checks = [
     {
       label: "site_settings (read)",
-      request: supabase.from("site_settings").select("key").limit(1),
+      request: supabase.from("site_settings").select("key"),
     },
     { label: "catalog_groups (read)", request: catalogGroupQuery },
     { label: "recipes (read)", request: groupScopedQuery("recipes", "id") },
