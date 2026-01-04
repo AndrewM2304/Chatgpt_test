@@ -134,6 +134,11 @@ class QueryBuilder {
     return this;
   }
 
+  delete() {
+    this.action = "delete";
+    return this;
+  }
+
   eq(column, value) {
     this.filters.push({ column, value, operator: "eq" });
     return this;
@@ -141,6 +146,11 @@ class QueryBuilder {
 
   ilike(column, value) {
     this.filters.push({ column, value, operator: "ilike" });
+    return this;
+  }
+
+  not(column, operator, value) {
+    this.filters.push({ column, value, operator: `not.${operator}` });
     return this;
   }
 
@@ -238,6 +248,21 @@ class QueryBuilder {
             body: JSON.stringify(this.payload),
           }
         );
+        if (error) {
+          return { data: null, error };
+        }
+        if (!response.ok) {
+          return { data: null, error: await parseResponseData(response) };
+        }
+        const data = await parseResponseData(response);
+        return { data, error: null };
+      }
+
+      if (this.action === "delete") {
+        const { response, error } = await fetchWithTimeout(`${url}${query}`, {
+          method: "DELETE",
+          headers: buildHeaders({ Prefer: "return=representation" }),
+        });
         if (error) {
           return { data: null, error };
         }
