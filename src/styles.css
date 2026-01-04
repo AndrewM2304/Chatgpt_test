@@ -774,11 +774,13 @@ button.secondary.icon-button {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: start;
 }
 
 .random-controls {
   display: grid;
   gap: 16px;
+  align-content: start;
 }
 
 .random-controls .primary {
@@ -789,6 +791,7 @@ button.secondary.icon-button {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: start;
 }
 
 .chip-grid {
@@ -1339,10 +1342,27 @@ button.secondary.icon-button {
   .catalog-detail-sidebar {
     display: block;
     overflow: hidden;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
   }
 
   .catalog-detail-preview {
     overflow: hidden;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+
+  .catalog-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-bg);
+    padding-bottom: 12px;
   }
 }
 
@@ -1395,7 +1415,7 @@ button.secondary.icon-button {
 .error-text {
   color: var(--color-danger);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   padding-top: 2px;
   padding-bottom: 4px;
   margin: 0;
