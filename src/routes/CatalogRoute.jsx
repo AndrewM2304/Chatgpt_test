@@ -261,8 +261,13 @@ export const CatalogRoute = ({
       : null;
 
     if (editingId) {
-      setRecipes((prev) =>
-        prev.map((recipe) =>
+      const latestCatalog = await syncCatalog();
+      const latestRecipes = Array.isArray(latestCatalog?.recipes)
+        ? latestCatalog.recipes
+        : recipes;
+
+      setRecipes(
+        latestRecipes.map((recipe) =>
           recipe.id === editingId
             ? {
                 ...recipe,
