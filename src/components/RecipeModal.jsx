@@ -284,7 +284,7 @@ export const RecipeModal = ({
 
           <div className="form-actions">
             <button className="primary" type="submit">
-              {editingRecipe ? "Save changes" : "Add recipe"}
+              Save
             </button>
             <button type="button" className="secondary" onClick={onClose}>
               Cancel
@@ -295,7 +295,7 @@ export const RecipeModal = ({
                 className="secondary danger"
                 onClick={() => onDeleteRecipe(editingRecipe.id)}
               >
-                Delete recipe
+                Delete
               </button>
             )}
           </div>

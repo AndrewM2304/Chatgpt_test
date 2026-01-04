@@ -121,7 +121,7 @@ export const ScheduleModal = ({
                 !selectedMeals.length
               }
             >
-              {editingLogId ? "Save changes" : "Add to schedule"}
+              Save
             </button>
             <button type="button" className="secondary" onClick={onClose}>
               Cancel
@@ -132,7 +132,7 @@ export const ScheduleModal = ({
                 className="secondary danger"
                 onClick={() => onDelete(editingLogId)}
               >
-                Remove meal
+                Delete
               </button>
             )}
           </div>
