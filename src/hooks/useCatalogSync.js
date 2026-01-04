@@ -4,6 +4,7 @@ import {
   fetchAccessPasswordHash,
   fetchCatalogDataByGroupId,
   fetchCatalogGroupByCode,
+  fetchLegacyCatalogByGroupCode,
   upsertAccessPasswordHash,
   upsertCatalogData,
 } from "../lib/catalogService.js";
@@ -35,6 +36,14 @@ export const useCatalogSync = ({
   const pendingChangesRef = useRef(false);
   const changeIdRef = useRef(0);
 
+  const hasCatalogContent = useCallback(
+    (data) =>
+      ["recipes", "cookbooks", "cuisines", "logs"].some(
+        (key) => Array.isArray(data?.[key]) && data[key].length > 0
+      ),
+    []
+  );
+
   const markCatalogChange = useCallback(() => {
     changeIdRef.current += 1;
     pendingChangesRef.current = true;
@@ -52,6 +61,65 @@ export const useCatalogSync = ({
     return data?.value || "";
   }, []);
 
+  const loadLegacyCatalog = useCallback(
+    async ({ groupCode, groupId }) => {
+      const { data: legacyData, error: legacyError } =
+        await fetchLegacyCatalogByGroupCode(groupCode);
+
+      if (legacyError) {
+        setStatus({ state: "error", message: STATUS_MESSAGES.error });
+        return null;
+      }
+
+      if (!legacyData?.data || !hasCatalogContent(legacyData.data)) {
+        return null;
+      }
+
+      if (!groupId) {
+        const { data: created, error: createError } = await createCatalogGroup({
+          groupCode,
+          groupName: legacyData.group_name || "Home kitchen",
+        });
+
+        if (createError) {
+          setStatus({ state: "error", message: STATUS_MESSAGES.error });
+          return null;
+        }
+
+        const { error: seedError } = await upsertCatalogData({
+          groupId: created.id,
+          data: legacyData.data,
+        });
+        if (seedError) {
+          setStatus({ state: "error", message: STATUS_MESSAGES.error });
+          return null;
+        }
+
+        setGroupId(created.id);
+        setCatalog(legacyData.data);
+        pendingChangesRef.current = false;
+        changeIdRef.current = 0;
+        return created.id;
+      }
+
+      const { error: seedError } = await upsertCatalogData({
+        groupId,
+        data: legacyData.data,
+      });
+      if (seedError) {
+        setStatus({ state: "error", message: STATUS_MESSAGES.error });
+        return null;
+      }
+
+      setGroupId(groupId);
+      setCatalog(legacyData.data);
+      pendingChangesRef.current = false;
+      changeIdRef.current = 0;
+      return groupId;
+    },
+    [hasCatalogContent, setCatalog, setGroupId, setStatus]
+  );
+
   const ensureCatalog = useCallback(async () => {
     const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
@@ -67,11 +135,25 @@ export const useCatalogSync = ({
         setStatus({ state: "error", message: STATUS_MESSAGES.error });
         return null;
       }
+      if (!hasCatalogContent(catalogData)) {
+        const legacyGroupId = await loadLegacyCatalog({
+          groupCode,
+          groupId: data.id,
+        });
+        if (legacyGroupId) {
+          return legacyGroupId;
+        }
+      }
       setGroupId(data.id);
       setCatalog(catalogData || defaultCatalog);
       pendingChangesRef.current = false;
       changeIdRef.current = 0;
       return data.id;
+    }
+
+    const legacyGroupId = await loadLegacyCatalog({ groupCode, groupId: null });
+    if (legacyGroupId) {
+      return legacyGroupId;
     }
 
     const { data: created, error: createError } = await createCatalogGroup({
@@ -98,7 +180,14 @@ export const useCatalogSync = ({
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
     return created.id;
-  }, [defaultCatalog, groupCode, setCatalog, setGroupId]);
+  }, [
+    defaultCatalog,
+    groupCode,
+    hasCatalogContent,
+    loadLegacyCatalog,
+    setCatalog,
+    setGroupId,
+  ]);
 
   const syncCatalog = useCallback(async () => {
     if (!groupCode) {
@@ -120,13 +209,31 @@ export const useCatalogSync = ({
       setStatus({ state: "error", message: STATUS_MESSAGES.error });
       return null;
     }
+    if (!hasCatalogContent(catalogData)) {
+      const legacyGroupId = await loadLegacyCatalog({
+        groupCode,
+        groupId: data.id,
+      });
+      if (legacyGroupId) {
+        setGroupId(data.id);
+        setHasLoadedCatalog(true);
+        return legacyGroupId;
+      }
+    }
     setGroupId(data.id);
     setCatalog(catalogData || defaultCatalog);
     setHasLoadedCatalog(true);
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
     return catalogData || defaultCatalog;
-  }, [defaultCatalog, groupCode, setCatalog, setGroupId]);
+  }, [
+    defaultCatalog,
+    groupCode,
+    hasCatalogContent,
+    loadLegacyCatalog,
+    setCatalog,
+    setGroupId,
+  ]);
 
   useEffect(() => {
     setHasLoadedCatalog(false);

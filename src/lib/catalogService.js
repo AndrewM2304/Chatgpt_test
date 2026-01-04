@@ -7,10 +7,33 @@ export const fetchAccessPasswordHash = async () =>
     .eq("key", "access_password_hash")
     .maybeSingle();
 
-export const fetchCatalogGroupByCode = async (groupCode) =>
-  supabase
+export const fetchCatalogGroupByCode = async (groupCode) => {
+  const trimmedCode = String(groupCode || "").trim();
+  if (!trimmedCode) {
+    return { data: null, error: null };
+  }
+
+  const exactMatch = await supabase
     .from("catalog_groups")
     .select("id, group_code, group_name")
+    .eq("group_code", trimmedCode)
+    .maybeSingle();
+
+  if (exactMatch.error || exactMatch.data) {
+    return exactMatch;
+  }
+
+  return supabase
+    .from("catalog_groups")
+    .select("id, group_code, group_name")
+    .ilike("group_code", trimmedCode)
+    .maybeSingle();
+};
+
+export const fetchLegacyCatalogByGroupCode = async (groupCode) =>
+  supabase
+    .from("catalogs")
+    .select("group_code, group_name, data, updated_at")
     .eq("group_code", groupCode)
     .maybeSingle();
 
