@@ -1191,6 +1191,17 @@ button.secondary.icon-button {
   font-weight: 600;
 }
 
+.sync-diagnostics {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.sync-diagnostics li {
+  margin-bottom: 6px;
+}
+
 .share-actions {
   display: flex;
   gap: 12px;

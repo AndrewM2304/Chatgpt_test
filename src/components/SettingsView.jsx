@@ -17,6 +17,9 @@ export const SettingsView = ({
   pendingChanges,
   lastSyncAt,
   lastSaveAt,
+  diagnostics,
+  isDiagnosticsRunning,
+  onRunDiagnostics,
   statusMessage,
   hasGroup,
   canInstallApp,
@@ -98,6 +101,7 @@ export const SettingsView = ({
   const selectedCover = selectedCookbook
     ? cookbookCovers?.[selectedCookbook]
     : "";
+  const errorDetails = status?.details;
 
   return (
     <section className="settings">
@@ -152,6 +156,20 @@ export const SettingsView = ({
               {status?.message || "Sync status unavailable."}
             </dd>
           </div>
+          {errorDetails && (
+            <div>
+              <dt>Last error details</dt>
+              <dd>
+                <ul className="sync-diagnostics">
+                  {errorDetails.name && <li>Name: {errorDetails.name}</li>}
+                  {errorDetails.code && <li>Code: {errorDetails.code}</li>}
+                  {errorDetails.message && <li>Message: {errorDetails.message}</li>}
+                  {errorDetails.details && <li>Details: {errorDetails.details}</li>}
+                  {errorDetails.hint && <li>Hint: {errorDetails.hint}</li>}
+                </ul>
+              </dd>
+            </div>
+          )}
           <div>
             <dt>Group code</dt>
             <dd>{groupCode || "Not connected"}</dd>
@@ -177,6 +195,46 @@ export const SettingsView = ({
           <div>
             <dt>Last save</dt>
             <dd>{formatTimestamp(lastSaveAt)}</dd>
+          </div>
+          <div>
+            <dt>RLS check</dt>
+            <dd>
+              <button
+                type="button"
+                className="secondary"
+                onClick={onRunDiagnostics}
+                disabled={isDiagnosticsRunning}
+              >
+                {isDiagnosticsRunning ? "Checking access..." : "Run access check"}
+              </button>
+              <p className="sync-status">
+                {diagnostics?.lastCheckedAt
+                  ? `Last checked: ${formatTimestamp(diagnostics.lastCheckedAt)}`
+                  : "Not yet checked."}
+              </p>
+              {diagnostics?.error && (
+                <p className="status-banner">
+                  Diagnostics failed: {diagnostics.error.message || "Unknown error"}
+                </p>
+              )}
+              {diagnostics?.checks?.length > 0 && (
+                <ul className="sync-diagnostics">
+                  {diagnostics.checks.map((check) => (
+                    <li key={check.label}>
+                      {check.ok ? "✅" : "⚠️"} {check.label}
+                      {check.ok ? (
+                        <span> — ok ({check.rows} rows)</span>
+                      ) : (
+                        <span>
+                          {" "}
+                          — {check.error?.message || "access denied"}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </dd>
           </div>
         </dl>
       </div>

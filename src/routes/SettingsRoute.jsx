@@ -8,6 +8,9 @@ export const SettingsRoute = ({
   pendingChanges,
   lastSyncAt,
   lastSaveAt,
+  diagnostics,
+  isDiagnosticsRunning,
+  runDiagnostics,
   inviteUrl,
   groupCode,
   groupId,
@@ -235,6 +238,9 @@ export const SettingsRoute = ({
       pendingChanges={pendingChanges}
       lastSyncAt={lastSyncAt}
       lastSaveAt={lastSaveAt}
+      diagnostics={diagnostics}
+      isDiagnosticsRunning={isDiagnosticsRunning}
+      onRunDiagnostics={runDiagnostics}
       statusMessage={status.state === "error" ? status.message : ""}
       hasGroup={Boolean(groupCode)}
       canInstallApp={Boolean(installPrompt) && !isInstalled}
