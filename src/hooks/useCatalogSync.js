@@ -401,16 +401,27 @@ export const useCatalogSync = ({
         message: STATUS_MESSAGES.connecting,
         details: null,
       });
-      const settingsResult = await loadSettings();
-      const catalogResult = await ensureCatalog();
+      try {
+        const settingsResult = await loadSettings();
+        const catalogResult = await ensureCatalog();
 
-      if (isMounted && settingsResult !== null && catalogResult !== null) {
+        if (isMounted && settingsResult !== null && catalogResult !== null) {
+          setStatus({
+            state: "ready",
+            message: STATUS_MESSAGES.ready,
+            details: null,
+          });
+          setHasLoadedCatalog(true);
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
         setStatus({
-          state: "ready",
-          message: STATUS_MESSAGES.ready,
-          details: null,
+          state: "error",
+          message: resolveStatusMessage(error),
+          details: buildErrorDetails(error),
         });
-        setHasLoadedCatalog(true);
       }
     };
 

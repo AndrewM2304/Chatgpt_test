@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { SettingsView } from "../components/SettingsView";
+import { supabaseUrl } from "../lib/supabaseClient";
 import { uploadCookbookCover } from "../lib/supabaseStorage";
 
 export const SettingsRoute = ({
@@ -242,6 +243,7 @@ export const SettingsRoute = ({
       isDiagnosticsRunning={isDiagnosticsRunning}
       onRunDiagnostics={runDiagnostics}
       statusMessage={status.state === "error" ? status.message : ""}
+      supabaseUrl={supabaseUrl}
       hasGroup={Boolean(groupCode)}
       canInstallApp={Boolean(installPrompt) && !isInstalled}
       isInstalled={isInstalled}
