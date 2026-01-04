@@ -1,5 +1,8 @@
 import { useCallback } from "react";
-import { createCatalog } from "../lib/catalogService.js";
+import {
+  createCatalogGroup,
+  upsertCatalogData,
+} from "../lib/catalogService.js";
 
 const generateGroupCode = () =>
   `group-${crypto.randomUUID().split("-")[0]}`.toLowerCase();
@@ -8,7 +11,7 @@ export const useCatalogGroups = ({
   catalog,
   defaultCatalog,
   setCatalog,
-  setCatalogId,
+  setGroupId,
   setGroupCode,
   setStatus,
   statusMessages,
@@ -17,10 +20,9 @@ export const useCatalogGroups = ({
     async ({ name, duplicate }) => {
       const newCode = generateGroupCode();
       const dataPayload = duplicate ? catalog : defaultCatalog;
-      const { data, error } = await createCatalog({
+      const { data, error } = await createCatalogGroup({
         groupCode: newCode,
         groupName: name || "Shared kitchen",
-        data: dataPayload,
       });
 
       if (error) {
@@ -28,16 +30,25 @@ export const useCatalogGroups = ({
         return null;
       }
 
+      const { error: seedError } = await upsertCatalogData({
+        groupId: data.id,
+        data: dataPayload,
+      });
+      if (seedError) {
+        setStatus({ state: "error", message: statusMessages.error });
+        return null;
+      }
+
       setGroupCode(newCode);
-      setCatalogId(data.id);
-      setCatalog(data.data || defaultCatalog);
+      setGroupId(data.id);
+      setCatalog(dataPayload || defaultCatalog);
       return newCode;
     },
     [
       catalog,
       defaultCatalog,
       setCatalog,
-      setCatalogId,
+      setGroupId,
       setGroupCode,
       setStatus,
       statusMessages,
@@ -51,11 +62,11 @@ export const useCatalogGroups = ({
         return false;
       }
       setGroupCode(trimmed);
-      setCatalogId(null);
+      setGroupId(null);
       setCatalog(defaultCatalog);
       return true;
     },
-    [defaultCatalog, setCatalog, setCatalogId, setGroupCode]
+    [defaultCatalog, setCatalog, setGroupCode, setGroupId]
   );
 
   return { createNewGroup, joinGroup };
