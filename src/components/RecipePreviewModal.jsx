@@ -1,4 +1,7 @@
-import { RecipePreviewContent } from "./RecipePreviewContent";
+import {
+  RecipePreviewActions,
+  RecipePreviewContent,
+} from "./RecipePreviewContent";
 
 export const RecipePreviewModal = ({
   isOpen,
@@ -43,9 +46,16 @@ export const RecipePreviewModal = ({
             onDeleteRecipe={onDeleteRecipe}
             onRatingChange={onRatingChange}
             showTitle={false}
+            showActions={false}
             cookbookCovers={cookbookCovers}
           />
         </div>
+        <RecipePreviewActions
+          recipe={recipe}
+          onStartLog={onStartLog}
+          onEditRecipe={onEditRecipe}
+          onDeleteRecipe={onDeleteRecipe}
+        />
       </div>
     </div>
   );
