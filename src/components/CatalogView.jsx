@@ -163,22 +163,16 @@ export const CatalogView = memo(({
                     >
                       <div
                         className={`recipe-cover${coverUrl ? " has-image" : ""}`}
+                        role="img"
+                        aria-label={`${sourceTitle} cover`}
                         style={{
                           backgroundColor: getCoverColor(sourceTitle),
+                          ...(coverUrl
+                            ? { backgroundImage: `url(${coverUrl})` }
+                            : {}),
                         }}
-                        {...(!coverUrl
-                          ? { role: "img", "aria-label": `${sourceTitle} cover` }
-                          : {})}
                       >
-                        {coverUrl ? (
-                          <img
-                            src={coverUrl}
-                            alt={`${sourceTitle} cover`}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span>{getInitials(sourceTitle)}</span>
-                        )}
+                        {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
                       </div>
                       <div className="recipe-details">
                         <header>
