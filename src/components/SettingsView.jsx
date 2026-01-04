@@ -145,106 +145,6 @@ export const SettingsView = ({
       </div>
 
       <div className="settings-card">
-        <h2>Sync diagnostics</h2>
-        <p>
-          Share this status between devices to compare Supabase connectivity and
-          group details.
-        </p>
-        <dl className="sync-details">
-          <div>
-            <dt>Connection</dt>
-            <dd className="sync-status">
-              {status?.message || "Sync status unavailable."}
-            </dd>
-          </div>
-          <div>
-            <dt>Supabase project</dt>
-            <dd>{supabaseUrl || "Not configured"}</dd>
-          </div>
-          {errorDetails && (
-            <div>
-              <dt>Last error details</dt>
-              <dd>
-                <ul className="sync-diagnostics">
-                  {errorDetails.name && <li>Name: {errorDetails.name}</li>}
-                  {errorDetails.code && <li>Code: {errorDetails.code}</li>}
-                  {errorDetails.message && <li>Message: {errorDetails.message}</li>}
-                  {errorDetails.details && <li>Details: {errorDetails.details}</li>}
-                  {errorDetails.hint && <li>Hint: {errorDetails.hint}</li>}
-                </ul>
-              </dd>
-            </div>
-          )}
-          <div>
-            <dt>Group code</dt>
-            <dd>{groupCode || "Not connected"}</dd>
-          </div>
-          <div>
-            <dt>Group id</dt>
-            <dd>{groupId || "Not connected"}</dd>
-          </div>
-          <div>
-            <dt>Pending changes</dt>
-            <dd>
-              {pendingChanges ? "Waiting to save changes" : "No pending changes"}
-            </dd>
-          </div>
-          <div>
-            <dt>Save in progress</dt>
-            <dd>{isSaving ? "Saving to Supabase" : "Idle"}</dd>
-          </div>
-          <div>
-            <dt>Last sync</dt>
-            <dd>{formatTimestamp(lastSyncAt)}</dd>
-          </div>
-          <div>
-            <dt>Last save</dt>
-            <dd>{formatTimestamp(lastSaveAt)}</dd>
-          </div>
-          <div>
-            <dt>RLS check</dt>
-            <dd>
-              <button
-                type="button"
-                className="secondary"
-                onClick={onRunDiagnostics}
-                disabled={isDiagnosticsRunning}
-              >
-                {isDiagnosticsRunning ? "Checking access..." : "Run access check"}
-              </button>
-              <p className="sync-status">
-                {diagnostics?.lastCheckedAt
-                  ? `Last checked: ${formatTimestamp(diagnostics.lastCheckedAt)}`
-                  : "Not yet checked."}
-              </p>
-              {diagnostics?.error && (
-                <p className="status-banner">
-                  Diagnostics failed: {diagnostics.error.message || "Unknown error"}
-                </p>
-              )}
-              {diagnostics?.checks?.length > 0 && (
-                <ul className="sync-diagnostics">
-                  {diagnostics.checks.map((check) => (
-                    <li key={check.label}>
-                      {check.ok ? "✅" : "⚠️"} {check.label}
-                      {check.ok ? (
-                        <span> — ok ({check.rows} rows)</span>
-                      ) : (
-                        <span>
-                          {" "}
-                          — {check.error?.message || "access denied"}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      <div className="settings-card">
         <h2>Join an existing group</h2>
         <p>
           Paste a group code or invite link to sync with another cookbook.
@@ -353,6 +253,106 @@ export const SettingsView = ({
             {isUploading ? "Uploading..." : "Upload artwork"}
           </button>
         </form>
+      </div>
+
+      <div className="settings-card">
+        <h2>Sync diagnostics</h2>
+        <p>
+          Share this status between devices to compare Supabase connectivity and
+          group details.
+        </p>
+        <dl className="sync-details">
+          <div>
+            <dt>Connection</dt>
+            <dd className="sync-status">
+              {status?.message || "Sync status unavailable."}
+            </dd>
+          </div>
+          <div>
+            <dt>Supabase project</dt>
+            <dd>{supabaseUrl || "Not configured"}</dd>
+          </div>
+          {errorDetails && (
+            <div>
+              <dt>Last error details</dt>
+              <dd>
+                <ul className="sync-diagnostics">
+                  {errorDetails.name && <li>Name: {errorDetails.name}</li>}
+                  {errorDetails.code && <li>Code: {errorDetails.code}</li>}
+                  {errorDetails.message && <li>Message: {errorDetails.message}</li>}
+                  {errorDetails.details && <li>Details: {errorDetails.details}</li>}
+                  {errorDetails.hint && <li>Hint: {errorDetails.hint}</li>}
+                </ul>
+              </dd>
+            </div>
+          )}
+          <div>
+            <dt>Group code</dt>
+            <dd>{groupCode || "Not connected"}</dd>
+          </div>
+          <div>
+            <dt>Group id</dt>
+            <dd>{groupId || "Not connected"}</dd>
+          </div>
+          <div>
+            <dt>Pending changes</dt>
+            <dd>
+              {pendingChanges ? "Waiting to save changes" : "No pending changes"}
+            </dd>
+          </div>
+          <div>
+            <dt>Save in progress</dt>
+            <dd>{isSaving ? "Saving to Supabase" : "Idle"}</dd>
+          </div>
+          <div>
+            <dt>Last sync</dt>
+            <dd>{formatTimestamp(lastSyncAt)}</dd>
+          </div>
+          <div>
+            <dt>Last save</dt>
+            <dd>{formatTimestamp(lastSaveAt)}</dd>
+          </div>
+          <div>
+            <dt>RLS check</dt>
+            <dd>
+              <button
+                type="button"
+                className="secondary"
+                onClick={onRunDiagnostics}
+                disabled={isDiagnosticsRunning}
+              >
+                {isDiagnosticsRunning ? "Checking access..." : "Run access check"}
+              </button>
+              <p className="sync-status">
+                {diagnostics?.lastCheckedAt
+                  ? `Last checked: ${formatTimestamp(diagnostics.lastCheckedAt)}`
+                  : "Not yet checked."}
+              </p>
+              {diagnostics?.error && (
+                <p className="status-banner">
+                  Diagnostics failed: {diagnostics.error.message || "Unknown error"}
+                </p>
+              )}
+              {diagnostics?.checks?.length > 0 && (
+                <ul className="sync-diagnostics">
+                  {diagnostics.checks.map((check) => (
+                    <li key={check.label}>
+                      {check.ok ? "✅" : "⚠️"} {check.label}
+                      {check.ok ? (
+                        <span> — ok ({check.rows} rows)</span>
+                      ) : (
+                        <span>
+                          {" "}
+                          — {check.error?.message || "access denied"}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </dd>
+          </div>
+        </dl>
       </div>
 
       <div className="settings-card danger-card">
