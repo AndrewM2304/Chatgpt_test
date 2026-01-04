@@ -4,8 +4,13 @@ import { uploadCookbookCover } from "../lib/supabaseStorage";
 
 export const SettingsRoute = ({
   status,
+  isSaving,
+  pendingChanges,
+  lastSyncAt,
+  lastSaveAt,
   inviteUrl,
   groupCode,
+  groupId,
   createNewGroup,
   joinGroup,
   addToast,
@@ -224,6 +229,12 @@ export const SettingsRoute = ({
       onUploadCookbookCover={handleUploadCookbookCover}
       inviteUrl={showInvite ? inviteUrl : ""}
       groupCode={groupCode}
+      groupId={groupId}
+      status={status}
+      isSaving={isSaving}
+      pendingChanges={pendingChanges}
+      lastSyncAt={lastSyncAt}
+      lastSaveAt={lastSaveAt}
       statusMessage={status.state === "error" ? status.message : ""}
       hasGroup={Boolean(groupCode)}
       canInstallApp={Boolean(installPrompt) && !isInstalled}

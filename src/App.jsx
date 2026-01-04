@@ -32,8 +32,13 @@ export default function App() {
     setCuisines,
     setLogs,
     status,
+    isSaving,
+    pendingChanges,
+    lastSyncAt,
+    lastSaveAt,
     inviteUrl,
     groupCode,
+    groupId,
     createNewGroup,
     joinGroup,
     clearLocalData,
@@ -520,8 +525,13 @@ export default function App() {
               element={
                 <SettingsRoute
                   status={status}
+                  isSaving={isSaving}
+                  pendingChanges={pendingChanges}
+                  lastSyncAt={lastSyncAt}
+                  lastSaveAt={lastSaveAt}
                   inviteUrl={inviteUrl}
                   groupCode={groupCode}
+                  groupId={groupId}
                   createNewGroup={createNewGroup}
                   joinGroup={joinGroup}
                   addToast={addToast}
