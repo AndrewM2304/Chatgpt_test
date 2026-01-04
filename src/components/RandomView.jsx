@@ -90,14 +90,18 @@ export const RandomView = ({
           <div className="random-result-content">
             <div
               className={`recipe-cover${coverUrl ? " has-image" : ""}`}
-              role="img"
-              aria-label={`${sourceTitle} cover`}
               style={{
                 backgroundColor: getCoverColor(sourceTitle),
-                ...(coverUrl ? { backgroundImage: `url(${coverUrl})` } : {}),
               }}
+              {...(!coverUrl
+                ? { role: "img", "aria-label": `${sourceTitle} cover` }
+                : {})}
             >
-              {!coverUrl && <span>{getInitials(sourceTitle)}</span>}
+              {coverUrl ? (
+                <img src={coverUrl} alt={`${sourceTitle} cover`} loading="lazy" />
+              ) : (
+                <span>{getInitials(sourceTitle)}</span>
+              )}
             </div>
             <div className="random-result-details">
               <h3>{randomPick.name}</h3>
