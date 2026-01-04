@@ -369,7 +369,7 @@ h1 {
   border: none;
   background: transparent;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
   color: var(--color-text);
   font-size: 0.95rem;
@@ -1334,7 +1334,7 @@ button.secondary.icon-button {
     grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
     height: 100%;
-    padding-top: 12px;
+    padding-top: calc(var(--header-height) + 24px + env(safe-area-inset-top));
     padding-bottom: 0;
   }
 
