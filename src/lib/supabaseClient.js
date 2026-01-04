@@ -278,6 +278,10 @@ class QueryBuilder {
       return { data: null, error: normalizeFetchError(error) };
     }
   }
+
+  then(onFulfilled, onRejected) {
+    return this.execute().then(onFulfilled, onRejected);
+  }
 }
 
 export const supabase = {
