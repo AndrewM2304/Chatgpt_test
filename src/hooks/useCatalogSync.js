@@ -47,10 +47,15 @@ export const useCatalogSync = ({
   const pendingChangesRef = useRef(false);
   const changeIdRef = useRef(0);
   const catalogRef = useRef(catalog);
+  const isSavingRef = useRef(isSaving);
 
   useEffect(() => {
     catalogRef.current = catalog;
   }, [catalog]);
+
+  useEffect(() => {
+    isSavingRef.current = isSaving;
+  }, [isSaving]);
 
   const hasCatalogContent = useCallback(
     (data) =>
@@ -446,7 +451,7 @@ export const useCatalogSync = ({
       if (document.visibilityState !== "visible") {
         return;
       }
-      if (pendingChangesRef.current || isSaving) {
+      if (pendingChangesRef.current || isSavingRef.current) {
         return;
       }
       syncCatalog();
@@ -460,7 +465,7 @@ export const useCatalogSync = ({
       window.removeEventListener("focus", refreshCatalog);
       document.removeEventListener("visibilitychange", refreshCatalog);
     };
-  }, [groupCode, isSaving, syncCatalog]);
+  }, [groupCode, syncCatalog]);
 
   useEffect(() => {
     if (!groupCode || !groupId || !hasLoadedCatalog || !pendingChangesRef.current) {
