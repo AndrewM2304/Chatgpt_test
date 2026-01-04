@@ -84,6 +84,7 @@ export const CatalogRoute = ({
   const [groupBy, setGroupBy] = useState("none");
   const [viewMode, setViewMode] = useLocalStorage("catalog-view-mode", "list");
   const [selectedCookbook, setSelectedCookbook] = useState("");
+  const [previousViewMode, setPreviousViewMode] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const lastAddSignal = useRef(0);
@@ -111,9 +112,28 @@ export const CatalogRoute = ({
     }
   }, [onAddRecipeSignalHandled, openAddRecipeSignal, resetForm]);
 
+  const isWebsiteRecipe = (recipe) =>
+    recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+
   const cookbookOptions = useMemo(() => {
     return Array.from(
-      new Set(recipes.map((recipe) => recipe.cookbookTitle).filter(Boolean))
+      new Set(
+        recipes
+          .filter((recipe) => !isWebsiteRecipe(recipe))
+          .map((recipe) => recipe.cookbookTitle)
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [recipes]);
+
+  const websiteOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        recipes
+          .filter((recipe) => isWebsiteRecipe(recipe))
+          .map((recipe) => recipe.cookbookTitle)
+          .filter(Boolean)
+      )
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
 
@@ -121,8 +141,7 @@ export const CatalogRoute = ({
     const cookbookMap = new Map();
 
     recipes.forEach((recipe) => {
-      const isWebsite =
-        recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+      const isWebsite = isWebsiteRecipe(recipe);
       const title = recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
       if (!cookbookMap.has(title)) {
         cookbookMap.set(title, 0);
@@ -147,8 +166,7 @@ export const CatalogRoute = ({
     if (!term) {
       return selectedCookbook
         ? recipes.filter((recipe) => {
-            const isWebsite =
-              recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+            const isWebsite = isWebsiteRecipe(recipe);
             const title =
               recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
             return title === selectedCookbook;
@@ -157,8 +175,7 @@ export const CatalogRoute = ({
     }
     return recipes.filter((recipe) => {
       if (selectedCookbook) {
-        const isWebsite =
-          recipe.sourceType === "website" || (!recipe.sourceType && recipe.url);
+        const isWebsite = isWebsiteRecipe(recipe);
         const title =
           recipe.cookbookTitle || (isWebsite ? "Website" : "No cookbook");
         if (title !== selectedCookbook) {
@@ -320,12 +337,13 @@ export const CatalogRoute = ({
 
   const handleSelectCookbook = useCallback(
     (title) => {
+      setPreviousViewMode(viewMode);
       setSelectedCookbook(title);
       setSearchTerm("");
       setGroupBy("none");
       setViewMode("list");
     },
-    [setViewMode]
+    [setViewMode, viewMode]
   );
 
   const handleViewModeChange = useCallback((nextMode) => {
@@ -337,7 +355,8 @@ export const CatalogRoute = ({
 
   const handleClearCookbook = useCallback(() => {
     setSelectedCookbook("");
-  }, []);
+    setViewMode(previousViewMode);
+  }, [previousViewMode, setViewMode]);
 
   const handleDeleteFromView = (recipeId) => {
     if (!recipeId) {
@@ -465,6 +484,7 @@ export const CatalogRoute = ({
         onClose={handleCloseModal}
         onDeleteRecipe={handleDeleteFromModal}
         cookbookOptions={cookbookOptions}
+        websiteOptions={websiteOptions}
         cuisineOptions={cuisineOptions}
       />
     </>
