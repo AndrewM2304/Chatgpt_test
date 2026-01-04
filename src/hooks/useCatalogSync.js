@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  createCatalog,
+  createCatalogGroup,
   fetchAccessPasswordHash,
-  fetchCatalogByGroupCode,
+  fetchCatalogDataByGroupId,
+  fetchCatalogGroupByCode,
   upsertAccessPasswordHash,
-  upsertCatalog,
+  upsertCatalogData,
 } from "../lib/catalogService.js";
 import { hashPassword } from "../lib/crypto.js";
 
@@ -18,11 +19,11 @@ const STATUS_MESSAGES = {
 
 export const useCatalogSync = ({
   catalog,
-  catalogId,
+  groupId,
   defaultCatalog,
   groupCode,
   setCatalog,
-  setCatalogId,
+  setGroupId,
 }) => {
   const [status, setStatus] = useState({
     state: "connecting",
@@ -52,7 +53,7 @@ export const useCatalogSync = ({
   }, []);
 
   const ensureCatalog = useCallback(async () => {
-    const { data, error } = await fetchCatalogByGroupCode(groupCode);
+    const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
       setStatus({ state: "error", message: STATUS_MESSAGES.error });
@@ -60,17 +61,22 @@ export const useCatalogSync = ({
     }
 
     if (data) {
-      setCatalogId(data.id);
-      setCatalog(data.data || defaultCatalog);
+      const { data: catalogData, error: catalogError } =
+        await fetchCatalogDataByGroupId(data.id);
+      if (catalogError) {
+        setStatus({ state: "error", message: STATUS_MESSAGES.error });
+        return null;
+      }
+      setGroupId(data.id);
+      setCatalog(catalogData || defaultCatalog);
       pendingChangesRef.current = false;
       changeIdRef.current = 0;
       return data.id;
     }
 
-    const { data: created, error: createError } = await createCatalog({
+    const { data: created, error: createError } = await createCatalogGroup({
       groupCode,
       groupName: "Home kitchen",
-      data: defaultCatalog,
     });
 
     if (createError) {
@@ -78,18 +84,27 @@ export const useCatalogSync = ({
       return null;
     }
 
-    setCatalogId(created.id);
-    setCatalog(created.data || defaultCatalog);
+    const { error: seedError } = await upsertCatalogData({
+      groupId: created.id,
+      data: defaultCatalog,
+    });
+    if (seedError) {
+      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      return null;
+    }
+
+    setGroupId(created.id);
+    setCatalog(defaultCatalog);
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
     return created.id;
-  }, [defaultCatalog, groupCode, setCatalog, setCatalogId]);
+  }, [defaultCatalog, groupCode, setCatalog, setGroupId]);
 
   const syncCatalog = useCallback(async () => {
     if (!groupCode) {
       return null;
     }
-    const { data, error } = await fetchCatalogByGroupCode(groupCode);
+    const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
       setStatus({ state: "error", message: STATUS_MESSAGES.error });
@@ -99,14 +114,19 @@ export const useCatalogSync = ({
     if (!data) {
       return null;
     }
-
-    setCatalogId(data.id);
-    setCatalog(data.data || defaultCatalog);
+    const { data: catalogData, error: catalogError } =
+      await fetchCatalogDataByGroupId(data.id);
+    if (catalogError) {
+      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      return null;
+    }
+    setGroupId(data.id);
+    setCatalog(catalogData || defaultCatalog);
     setHasLoadedCatalog(true);
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
-    return data.data || defaultCatalog;
-  }, [defaultCatalog, groupCode, setCatalog, setCatalogId]);
+    return catalogData || defaultCatalog;
+  }, [defaultCatalog, groupCode, setCatalog, setGroupId]);
 
   useEffect(() => {
     setHasLoadedCatalog(false);
@@ -171,9 +191,8 @@ export const useCatalogSync = ({
     const changeId = changeIdRef.current;
     const timeout = window.setTimeout(async () => {
       setIsSaving(true);
-      const { data, error } = await upsertCatalog({
-        catalogId,
-        groupCode,
+      const { error } = await upsertCatalogData({
+        groupId,
         data: catalog,
       });
 
@@ -183,8 +202,6 @@ export const useCatalogSync = ({
           state: "error",
           message: STATUS_MESSAGES.error,
         }));
-      } else if (!catalogId && data?.id) {
-        setCatalogId(data.id);
       }
       if (!error && changeId === changeIdRef.current) {
         pendingChangesRef.current = false;
@@ -193,7 +210,7 @@ export const useCatalogSync = ({
     }, 600);
 
     return () => window.clearTimeout(timeout);
-  }, [catalog, catalogId, groupCode, hasLoadedCatalog, setCatalogId]);
+  }, [catalog, groupCode, groupId, hasLoadedCatalog]);
 
   const setAccessPassword = useCallback(async (value) => {
     const hash = await hashPassword(value);
@@ -216,6 +233,6 @@ export const useCatalogSync = ({
     syncCatalog,
     markCatalogChange,
     setStatus,
-    setCatalogId,
+    setGroupId,
   };
 };

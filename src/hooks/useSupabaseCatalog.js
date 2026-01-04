@@ -16,7 +16,7 @@ export const useSupabaseCatalog = () => {
     "recipe-catalog-cache",
     DEFAULT_CATALOG
   );
-  const [catalogId, setCatalogId] = useState(null);
+  const [groupId, setGroupId] = useState(null);
   const { groupCode, setGroupCode, inviteUrl } = useGroupManagement();
   const {
     status,
@@ -28,11 +28,11 @@ export const useSupabaseCatalog = () => {
     setStatus,
   } = useCatalogSync({
     catalog,
-    catalogId,
+    groupId,
     defaultCatalog: DEFAULT_CATALOG,
     groupCode,
     setCatalog,
-    setCatalogId,
+    setGroupId,
   });
 
   const updateCatalog = useCallback(
@@ -78,7 +78,7 @@ export const useSupabaseCatalog = () => {
     catalog,
     defaultCatalog: DEFAULT_CATALOG,
     setCatalog,
-    setCatalogId,
+    setGroupId,
     setGroupCode,
     setStatus,
     statusMessages,
@@ -86,9 +86,9 @@ export const useSupabaseCatalog = () => {
 
   const clearLocalData = useCallback(() => {
     setGroupCode("");
-    setCatalogId(null);
+    setGroupId(null);
     setCatalog(DEFAULT_CATALOG);
-  }, [setCatalog, setCatalogId, setGroupCode]);
+  }, [setCatalog, setGroupCode, setGroupId]);
 
   return {
     catalog,
