@@ -17,6 +17,14 @@ export const useCatalogGroups = ({
   setStatus,
   statusMessages,
 }) => {
+  const resolveStatusMessage = useCallback(
+    (error) =>
+      error?.isNetworkError
+        ? statusMessages.networkError
+        : statusMessages.error,
+    [statusMessages]
+  );
+
   const createNewGroup = useCallback(
     async ({ name, duplicate }) => {
       const newCode = generateGroupCode();
@@ -27,7 +35,7 @@ export const useCatalogGroups = ({
       });
 
       if (error) {
-        setStatus({ state: "error", message: statusMessages.error });
+        setStatus({ state: "error", message: resolveStatusMessage(error) });
         return null;
       }
 
@@ -36,7 +44,7 @@ export const useCatalogGroups = ({
         data: dataPayload,
       });
       if (seedError) {
-        setStatus({ state: "error", message: statusMessages.error });
+        setStatus({ state: "error", message: resolveStatusMessage(seedError) });
         return null;
       }
 
@@ -48,11 +56,11 @@ export const useCatalogGroups = ({
     [
       catalog,
       defaultCatalog,
+      resolveStatusMessage,
       setCatalog,
       setGroupId,
       setGroupCode,
       setStatus,
-      statusMessages,
     ]
   );
 

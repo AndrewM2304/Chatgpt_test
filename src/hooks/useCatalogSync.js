@@ -14,6 +14,7 @@ const STATUS_MESSAGES = {
   connecting: "Connecting to Supabase...",
   ready: "Connected to Supabase.",
   waiting: "Choose or create a group to start syncing.",
+  networkError: "Unable to reach Supabase. Check your connection and try again.",
   error:
     "Supabase tables are missing or inaccessible. Run the setup SQL in the app.",
 };
@@ -47,6 +48,12 @@ export const useCatalogSync = ({
     []
   );
 
+  const resolveStatusMessage = useCallback(
+    (error) =>
+      error?.isNetworkError ? STATUS_MESSAGES.networkError : STATUS_MESSAGES.error,
+    []
+  );
+
   const markCatalogChange = useCallback(() => {
     changeIdRef.current += 1;
     pendingChangesRef.current = true;
@@ -57,7 +64,7 @@ export const useCatalogSync = ({
     const { data, error } = await fetchAccessPasswordHash();
 
     if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({ state: "error", message: resolveStatusMessage(error) });
       return null;
     }
 
@@ -71,7 +78,7 @@ export const useCatalogSync = ({
         await fetchLegacyCatalogByGroupCode(groupCode);
 
       if (legacyError) {
-        setStatus({ state: "error", message: STATUS_MESSAGES.error });
+        setStatus({ state: "error", message: resolveStatusMessage(legacyError) });
         return null;
       }
 
@@ -86,7 +93,7 @@ export const useCatalogSync = ({
         });
 
         if (createError) {
-          setStatus({ state: "error", message: STATUS_MESSAGES.error });
+          setStatus({ state: "error", message: resolveStatusMessage(createError) });
           return null;
         }
 
@@ -95,7 +102,7 @@ export const useCatalogSync = ({
           data: legacyData.data,
         });
         if (seedError) {
-          setStatus({ state: "error", message: STATUS_MESSAGES.error });
+          setStatus({ state: "error", message: resolveStatusMessage(seedError) });
           return null;
         }
 
@@ -113,7 +120,7 @@ export const useCatalogSync = ({
         data: legacyData.data,
       });
       if (seedError) {
-        setStatus({ state: "error", message: STATUS_MESSAGES.error });
+        setStatus({ state: "error", message: resolveStatusMessage(seedError) });
         return null;
       }
 
@@ -125,14 +132,14 @@ export const useCatalogSync = ({
       setLastSyncAt(new Date().toISOString());
       return groupId;
     },
-    [hasCatalogContent, setCatalog, setGroupId, setStatus]
+    [hasCatalogContent, resolveStatusMessage, setCatalog, setGroupId, setStatus]
   );
 
   const ensureCatalog = useCallback(async () => {
     const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({ state: "error", message: resolveStatusMessage(error) });
       return null;
     }
 
@@ -140,7 +147,7 @@ export const useCatalogSync = ({
       const { data: catalogData, error: catalogError } =
         await fetchCatalogDataByGroupId(data.id);
       if (catalogError) {
-        setStatus({ state: "error", message: STATUS_MESSAGES.error });
+        setStatus({ state: "error", message: resolveStatusMessage(catalogError) });
         return null;
       }
       if (!hasCatalogContent(catalogData)) {
@@ -157,7 +164,7 @@ export const useCatalogSync = ({
             data: catalog,
           });
           if (seedError) {
-            setStatus({ state: "error", message: STATUS_MESSAGES.error });
+            setStatus({ state: "error", message: resolveStatusMessage(seedError) });
             return null;
           }
           setGroupId(data.id);
@@ -189,7 +196,7 @@ export const useCatalogSync = ({
     });
 
     if (createError) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({ state: "error", message: resolveStatusMessage(createError) });
       return null;
     }
 
@@ -198,7 +205,7 @@ export const useCatalogSync = ({
       data: defaultCatalog,
     });
     if (seedError) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({ state: "error", message: resolveStatusMessage(seedError) });
       return null;
     }
 
@@ -215,6 +222,7 @@ export const useCatalogSync = ({
     groupCode,
     hasCatalogContent,
     loadLegacyCatalog,
+    resolveStatusMessage,
     setCatalog,
     setGroupId,
   ]);
@@ -226,7 +234,7 @@ export const useCatalogSync = ({
     const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({ state: "error", message: resolveStatusMessage(error) });
       return null;
     }
 
@@ -236,7 +244,7 @@ export const useCatalogSync = ({
     const { data: catalogData, error: catalogError } =
       await fetchCatalogDataByGroupId(data.id);
     if (catalogError) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({ state: "error", message: resolveStatusMessage(catalogError) });
       return null;
     }
     if (!hasCatalogContent(catalogData)) {
@@ -256,7 +264,7 @@ export const useCatalogSync = ({
           data: catalog,
         });
         if (seedError) {
-          setStatus({ state: "error", message: STATUS_MESSAGES.error });
+          setStatus({ state: "error", message: resolveStatusMessage(seedError) });
           return null;
         }
         setGroupId(data.id);
@@ -283,6 +291,7 @@ export const useCatalogSync = ({
     groupCode,
     hasCatalogContent,
     loadLegacyCatalog,
+    resolveStatusMessage,
     setCatalog,
     setGroupId,
   ]);
@@ -360,7 +369,7 @@ export const useCatalogSync = ({
         setStatus((prev) => ({
           ...prev,
           state: "error",
-          message: STATUS_MESSAGES.error,
+          message: resolveStatusMessage(error),
         }));
       }
       if (!error && changeId === changeIdRef.current) {
