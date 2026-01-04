@@ -158,8 +158,9 @@ export const SettingsView = ({
             value={groupInput}
             onChange={(event) => setGroupInput(event.target.value)}
             placeholder="group-1234 or https://...invite=group-1234"
+            className={groupError ? "input-error" : ""}
           />
-          {groupError && <p className="error-text">{groupError}</p>}
+          {groupError && <div className="error-text">{groupError}</div>}
           <button className="primary" type="submit">
             Join group
           </button>
@@ -237,7 +238,7 @@ export const SettingsView = ({
               <img src={selectedCover} alt={`${selectedCookbook} cover`} />
             </div>
           )}
-          {uploadError && <p className="error-text">{uploadError}</p>}
+          {uploadError && <div className="error-text">{uploadError}</div>}
           {uploadStatus && <p className="status-banner">{uploadStatus}</p>}
           <button
             className="primary"
