@@ -1167,6 +1167,30 @@ button.secondary.icon-button {
   font-weight: 600;
 }
 
+.sync-details {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.sync-details > div {
+  display: grid;
+  gap: 4px;
+}
+
+.sync-details dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sync-details dd {
+  margin: 0;
+  font-weight: 600;
+}
+
 .share-actions {
   display: flex;
   gap: 12px;

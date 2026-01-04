@@ -31,6 +31,9 @@ export const useCatalogSync = ({
     message: STATUS_MESSAGES.connecting,
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState(false);
+  const [lastSyncAt, setLastSyncAt] = useState(null);
+  const [lastSaveAt, setLastSaveAt] = useState(null);
   const [passwordHash, setPasswordHash] = useState(null);
   const [hasLoadedCatalog, setHasLoadedCatalog] = useState(false);
   const pendingChangesRef = useRef(false);
@@ -47,6 +50,7 @@ export const useCatalogSync = ({
   const markCatalogChange = useCallback(() => {
     changeIdRef.current += 1;
     pendingChangesRef.current = true;
+    setPendingChanges(true);
   }, []);
 
   const loadSettings = useCallback(async () => {
@@ -99,6 +103,8 @@ export const useCatalogSync = ({
         setCatalog(legacyData.data);
         pendingChangesRef.current = false;
         changeIdRef.current = 0;
+        setPendingChanges(false);
+        setLastSyncAt(new Date().toISOString());
         return created.id;
       }
 
@@ -115,6 +121,8 @@ export const useCatalogSync = ({
       setCatalog(legacyData.data);
       pendingChangesRef.current = false;
       changeIdRef.current = 0;
+      setPendingChanges(false);
+      setLastSyncAt(new Date().toISOString());
       return groupId;
     },
     [hasCatalogContent, setCatalog, setGroupId, setStatus]
@@ -156,6 +164,8 @@ export const useCatalogSync = ({
           setCatalog(catalog);
           pendingChangesRef.current = false;
           changeIdRef.current = 0;
+          setPendingChanges(false);
+          setLastSyncAt(new Date().toISOString());
           return data.id;
         }
       }
@@ -163,6 +173,8 @@ export const useCatalogSync = ({
       setCatalog(catalogData || defaultCatalog);
       pendingChangesRef.current = false;
       changeIdRef.current = 0;
+      setPendingChanges(false);
+      setLastSyncAt(new Date().toISOString());
       return data.id;
     }
 
@@ -194,6 +206,8 @@ export const useCatalogSync = ({
     setCatalog(defaultCatalog);
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
+    setPendingChanges(false);
+    setLastSyncAt(new Date().toISOString());
     return created.id;
   }, [
     catalog,
@@ -233,6 +247,7 @@ export const useCatalogSync = ({
       if (legacyGroupId) {
         setGroupId(data.id);
         setHasLoadedCatalog(true);
+        setLastSyncAt(new Date().toISOString());
         return legacyGroupId;
       }
       if (hasCatalogContent(catalog)) {
@@ -249,6 +264,8 @@ export const useCatalogSync = ({
         setHasLoadedCatalog(true);
         pendingChangesRef.current = false;
         changeIdRef.current = 0;
+        setPendingChanges(false);
+        setLastSyncAt(new Date().toISOString());
         return catalog;
       }
     }
@@ -257,6 +274,8 @@ export const useCatalogSync = ({
     setHasLoadedCatalog(true);
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
+    setPendingChanges(false);
+    setLastSyncAt(new Date().toISOString());
     return catalogData || defaultCatalog;
   }, [
     catalog,
@@ -272,6 +291,7 @@ export const useCatalogSync = ({
     setHasLoadedCatalog(false);
     pendingChangesRef.current = false;
     changeIdRef.current = 0;
+    setPendingChanges(false);
   }, [groupCode]);
 
   useEffect(() => {
@@ -345,6 +365,8 @@ export const useCatalogSync = ({
       }
       if (!error && changeId === changeIdRef.current) {
         pendingChangesRef.current = false;
+        setPendingChanges(false);
+        setLastSaveAt(new Date().toISOString());
       }
       setIsSaving(false);
     }, 600);
@@ -368,6 +390,9 @@ export const useCatalogSync = ({
   return {
     status,
     isSaving,
+    pendingChanges,
+    lastSyncAt,
+    lastSaveAt,
     passwordHash,
     setAccessPassword,
     syncCatalog,

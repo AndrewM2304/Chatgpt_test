@@ -11,6 +11,12 @@ export const SettingsView = ({
   onUploadCookbookCover,
   inviteUrl,
   groupCode,
+  groupId,
+  status,
+  isSaving,
+  pendingChanges,
+  lastSyncAt,
+  lastSaveAt,
   statusMessage,
   hasGroup,
   canInstallApp,
@@ -27,6 +33,16 @@ export const SettingsView = ({
   const [fileInputKey, setFileInputKey] = useState(0);
   const installHelp =
     "On iPhone or iPad, open the Share menu, tap the three-dot menu, then choose “Add to Home Screen” to save the catalog page. On Android, open the browser menu and tap “Install app.”";
+  const formatTimestamp = (value) => {
+    if (!value) {
+      return "Not yet";
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return "Not yet";
+    }
+    return parsed.toLocaleString();
+  };
 
   const handleJoin = (event) => {
     event.preventDefault();
@@ -121,6 +137,48 @@ export const SettingsView = ({
             you’re ready.
           </p>
         )}
+      </div>
+
+      <div className="settings-card">
+        <h2>Sync diagnostics</h2>
+        <p>
+          Share this status between devices to compare Supabase connectivity and
+          group details.
+        </p>
+        <dl className="sync-details">
+          <div>
+            <dt>Connection</dt>
+            <dd className="sync-status">
+              {status?.message || "Sync status unavailable."}
+            </dd>
+          </div>
+          <div>
+            <dt>Group code</dt>
+            <dd>{groupCode || "Not connected"}</dd>
+          </div>
+          <div>
+            <dt>Group id</dt>
+            <dd>{groupId || "Not connected"}</dd>
+          </div>
+          <div>
+            <dt>Pending changes</dt>
+            <dd>
+              {pendingChanges ? "Waiting to save changes" : "No pending changes"}
+            </dd>
+          </div>
+          <div>
+            <dt>Save in progress</dt>
+            <dd>{isSaving ? "Saving to Supabase" : "Idle"}</dd>
+          </div>
+          <div>
+            <dt>Last sync</dt>
+            <dd>{formatTimestamp(lastSyncAt)}</dd>
+          </div>
+          <div>
+            <dt>Last save</dt>
+            <dd>{formatTimestamp(lastSaveAt)}</dd>
+          </div>
+        </dl>
       </div>
 
       <div className="settings-card">
