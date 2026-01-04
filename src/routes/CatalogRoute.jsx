@@ -362,13 +362,8 @@ export const CatalogRoute = ({
     if (!recipeId) {
       return;
     }
-    const recipeName = recipeById[recipeId]?.name || "this recipe";
-    const confirmed = window.confirm(`Delete ${recipeName}?`);
-    if (!confirmed) {
-      return;
-    }
-    onDeleteRecipe(recipeId);
-    if (editingId === recipeId) {
+    const deleted = onDeleteRecipe(recipeId);
+    if (deleted && editingId === recipeId) {
       resetForm();
     }
   };
@@ -387,8 +382,10 @@ export const CatalogRoute = ({
     if (!recipeId) {
       return;
     }
-    onDeleteRecipe(recipeId);
-    setIsModalOpen(false);
+    const deleted = onDeleteRecipe(recipeId);
+    if (deleted) {
+      setIsModalOpen(false);
+    }
   };
 
   const handleUpdateRecipeRating = useCallback((recipeId, value) => {

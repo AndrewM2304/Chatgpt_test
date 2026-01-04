@@ -145,9 +145,10 @@ export const RecipeModal = ({
             value={formData.name}
             onChange={handleFormChange("name")}
             placeholder="Creamy lemon pasta"
+            className={submitAttempted && errors.name ? "input-error" : ""}
           />
           {submitAttempted && errors.name && (
-            <p className="error-text">{errors.name}</p>
+            <div className="error-text">{errors.name}</div>
           )}
 
           <div className="control">
@@ -186,9 +187,10 @@ export const RecipeModal = ({
             onChange={handleFormValueChange("cookbookTitle")}
             options={typeaheadOptions}
             placeholder={isWebsite ? "NYT Cooking" : "Sunday Suppers"}
+            hasError={submitAttempted && Boolean(errors.cookbookTitle)}
           />
           {submitAttempted && errors.cookbookTitle && (
-            <p className="error-text">{errors.cookbookTitle}</p>
+            <div className="error-text">{errors.cookbookTitle}</div>
           )}
 
           {isWebsite ? (
@@ -200,9 +202,10 @@ export const RecipeModal = ({
                 value={formData.url}
                 onChange={handleFormChange("url")}
                 placeholder="https://example.com/recipe"
+                className={submitAttempted && errors.url ? "input-error" : ""}
               />
               {submitAttempted && errors.url && (
-                <p className="error-text">{errors.url}</p>
+                <div className="error-text">{errors.url}</div>
               )}
             </>
           ) : (
@@ -216,9 +219,10 @@ export const RecipeModal = ({
                 value={formData.page}
                 onChange={handleFormChange("page")}
                 placeholder="112"
+                className={submitAttempted && errors.page ? "input-error" : ""}
               />
               {submitAttempted && errors.page && (
-                <p className="error-text">{errors.page}</p>
+                <div className="error-text">{errors.page}</div>
               )}
             </>
           )}
@@ -231,9 +235,10 @@ export const RecipeModal = ({
             onChange={handleFormValueChange("cuisine")}
             options={cuisineOptions}
             placeholder="Italian"
+            hasError={submitAttempted && Boolean(errors.cuisine)}
           />
           {submitAttempted && errors.cuisine && (
-            <p className="error-text">{errors.cuisine}</p>
+            <div className="error-text">{errors.cuisine}</div>
           )}
 
           <div className="modal-grid">
@@ -260,9 +265,10 @@ export const RecipeModal = ({
                 value={formData.duration}
                 onChange={handleFormChange("duration")}
                 placeholder="45"
+                className={submitAttempted && errors.duration ? "input-error" : ""}
               />
               {submitAttempted && errors.duration && (
-                <p className="error-text">{errors.duration}</p>
+                <div className="error-text">{errors.duration}</div>
               )}
             </div>
           </div>

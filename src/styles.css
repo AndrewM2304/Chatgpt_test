@@ -1392,6 +1392,16 @@ button.secondary.icon-button {
 .error-text {
   color: var(--color-danger);
   font-weight: 600;
+  font-size: 0.85rem;
+  padding-top: 4px;
+  padding-bottom: 8px;
+  margin: 0;
+}
+
+input.input-error,
+select.input-error,
+textarea.input-error {
+  border-color: var(--color-danger-border);
 }
 
 .success-text {

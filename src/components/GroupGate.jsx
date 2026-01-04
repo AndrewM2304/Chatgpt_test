@@ -47,8 +47,9 @@ export const GroupGate = ({ onJoinGroup, onCreateGroup, statusMessage }) => {
             value={groupInput}
             onChange={(event) => setGroupInput(event.target.value)}
             placeholder="group-1234 or https://...invite=group-1234"
+            className={error ? "input-error" : ""}
           />
-          {error && <p className="error-text">{error}</p>}
+          {error && <div className="error-text">{error}</div>}
           <button className="primary" type="submit" disabled={isWorking}>
             Join group
           </button>

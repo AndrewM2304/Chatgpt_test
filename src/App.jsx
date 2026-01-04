@@ -429,7 +429,14 @@ export default function App() {
   };
 
   const handleDeleteRecipe = useCallback((recipeId) => {
+    if (!recipeId) {
+      return false;
+    }
     const recipeName = recipeById[recipeId]?.name || "Recipe";
+    const confirmed = window.confirm(`Delete ${recipeName}?`);
+    if (!confirmed) {
+      return false;
+    }
     setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
     setLogs((prev) => prev.filter((entry) => entry.recipeId !== recipeId));
     if (recipeMatch?.params?.recipeId === recipeId) {
@@ -440,6 +447,7 @@ export default function App() {
       setPreviewRecipeId(null);
     }
     addToast(`${recipeName} deleted.`, "success");
+    return true;
   }, [addToast, navigate, previewRecipeId, recipeById, recipeMatch, setLogs, setRecipes]);
 
   const handleRequestEditRecipe = (recipe) => {
