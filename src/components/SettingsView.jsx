@@ -5,7 +5,6 @@ export const SettingsView = ({
   onLogout,
   onJoinGroup,
   onCopyGroupCode,
-  onInstallApp,
   cookbookOptions = [],
   cookbookCovers = {},
   onUploadCookbookCover,
@@ -22,9 +21,6 @@ export const SettingsView = ({
   onRunDiagnostics,
   statusMessage,
   hasGroup,
-  canInstallApp,
-  isInstalled,
-  isIosDevice,
   supabaseUrl,
 }) => {
   const [groupInput, setGroupInput] = useState("");
@@ -35,8 +31,6 @@ export const SettingsView = ({
   const [uploadStatus, setUploadStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [fileInputKey, setFileInputKey] = useState(0);
-  const installHelp =
-    "On iPhone or iPad, open the Share menu, tap the three-dot menu, then choose “Add to Home Screen” to save the catalog page. On Android, open the browser menu and tap “Install app.”";
   const formatTimestamp = (value) => {
     if (!value) {
       return "Not yet";
@@ -165,27 +159,6 @@ export const SettingsView = ({
             Join group
           </button>
         </form>
-      </div>
-
-      <div className="settings-card">
-        <h2>Install the app</h2>
-        <p>
-          Save Cookbook Keeper to your home screen for offline access and a
-          full-screen experience.
-        </p>
-        {isInstalled && (
-          <p className="status-banner">
-            Cookbook Keeper is already installed on this device.
-          </p>
-        )}
-        {!isInstalled && !canInstallApp && (
-          <p className="status-banner">{installHelp}</p>
-        )}
-        {canInstallApp && (
-          <button type="button" className="primary" onClick={onInstallApp}>
-            Install app
-          </button>
-        )}
       </div>
 
       <div className="settings-card">
