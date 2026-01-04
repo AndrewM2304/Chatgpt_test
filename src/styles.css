@@ -1246,7 +1246,6 @@ button.secondary.icon-button {
   gap: 20px;
   min-height: 0;
   overflow-y: auto;
-  background: var(--color-surface-muted);
   padding-bottom: 20px;
 }
 
@@ -1354,7 +1353,6 @@ button.secondary.icon-button {
 
   .catalog-detail-sidebar {
     display: block;
-    overflow: hidden;
     position: sticky;
     top: calc(var(--header-height) + 24px);
     align-self: start;
@@ -1371,7 +1369,7 @@ button.secondary.icon-button {
     top: var(--header-height);
     z-index: 2;
     background: var(--color-bg);
-    padding-bottom: 0;
+    padding-bottom: 20px;
   }
 
   .catalog-body {
