@@ -577,7 +577,7 @@ button.secondary.icon-button {
 .view-toggle {
   display: inline-flex;
   border: 2px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 12px;
   background: transparent;
   overflow: hidden;
   padding: 3px;
@@ -588,10 +588,13 @@ button.secondary.icon-button {
   background: transparent;
   color: var(--color-text-muted);
   font-weight: 600;
-  padding: 6px 8px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .view-toggle-button + .view-toggle-button {
@@ -1393,15 +1396,15 @@ button.secondary.icon-button {
   color: var(--color-danger);
   font-weight: 600;
   font-size: 0.85rem;
-  padding-top: 4px;
-  padding-bottom: 8px;
+  padding-top: 2px;
+  padding-bottom: 4px;
   margin: 0;
 }
 
 input.input-error,
 select.input-error,
 textarea.input-error {
-  border-color: var(--color-danger-border);
+  border: 2px solid var(--color-danger-border);
 }
 
 .success-text {
@@ -1590,6 +1593,14 @@ textarea.input-error {
 .modal-form {
   display: grid;
   gap: 12px;
+}
+
+.modal-card .form-actions {
+  position: sticky;
+  bottom: 0;
+  padding: 4px 0;
+  background: var(--color-surface);
+  z-index: 1;
 }
 
 .radio-group-label {
