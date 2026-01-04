@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Route, Routes, useParams } from "react-router-dom";
+import { Route, Routes, useMatch, useParams } from "react-router-dom";
 import { CatalogView } from "../components/CatalogView";
 import { RecipeModal } from "../components/RecipeModal";
 import { RecipeView } from "../components/RecipeView";
@@ -80,6 +80,7 @@ export const CatalogRoute = ({
   onEditHandled,
   onAddRecipeSignalHandled,
 }) => {
+  const recipeMatch = useMatch("/recipe/:recipeId");
   const [searchTerm, setSearchTerm] = useState("");
   const [groupBy, setGroupBy] = useState("none");
   const [viewMode, setViewMode] = useLocalStorage("catalog-view-mode", "list");
@@ -87,6 +88,9 @@ export const CatalogRoute = ({
   const [previousViewMode, setPreviousViewMode] = useState("list");
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeRecipeId, setActiveRecipeId] = useState(
+    recipeMatch?.params?.recipeId ?? null
+  );
   const lastAddSignal = useRef(0);
 
   const resetForm = useCallback(() => {
@@ -257,6 +261,14 @@ export const CatalogRoute = ({
     return groupedRecipes[0]?.items?.[0]?.id ?? null;
   }, [groupedRecipes]);
 
+  useEffect(() => {
+    if (recipeMatch?.params?.recipeId) {
+      setActiveRecipeId(recipeMatch.params.recipeId);
+      return;
+    }
+    setActiveRecipeId(defaultRecipeId);
+  }, [defaultRecipeId, recipeMatch]);
+
   const handleSaveRecipe = async (draft) => {
     const trimmedName = draft.name.trim();
     if (!trimmedName) {
@@ -412,7 +424,10 @@ export const CatalogRoute = ({
     onSearchTerm: setSearchTerm,
     groupBy,
     onGroupBy: setGroupBy,
-    onOpenRecipe,
+    onOpenRecipe: (recipe) => {
+      setActiveRecipeId(recipe.id);
+      onOpenRecipe(recipe);
+    },
     hasRecipes: recipes.length > 0,
     onAddRecipe: handleOpenAddModal,
     onRatingChange: handleUpdateRecipeRating,
@@ -430,7 +445,7 @@ export const CatalogRoute = ({
   };
 
   const catalogContent = isDesktop ? (
-    <CatalogDetailLayout activeRecipeId={defaultRecipeId} {...detailLayoutProps} />
+    <CatalogDetailLayout activeRecipeId={activeRecipeId} {...detailLayoutProps} />
   ) : (
     <CatalogView
       groupedRecipes={groupedRecipes}

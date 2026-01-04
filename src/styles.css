@@ -166,7 +166,7 @@ body.modal-open .panel-content {
 .hero {
   text-align: left;
   display: grid;
-  gap: 12px;
+  gap: 20px;
 }
 
 .eyebrow {
@@ -332,7 +332,7 @@ h1 {
 
 .panel-content.is-catalog {
   overflow: hidden;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   background: var(--color-bg);
 }
 
@@ -1253,7 +1253,7 @@ button.secondary.icon-button {
   display: grid;
   gap: 24px;
   min-height: 0;
-  height: 100%;
+  height: fit-content;
 }
 
 .catalog-detail-sidebar {
@@ -1336,7 +1336,6 @@ button.secondary.icon-button {
   .catalog-detail {
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     align-items: start;
-    height: 100%;
   }
 
   .catalog-detail-sidebar {
@@ -1346,17 +1345,10 @@ button.secondary.icon-button {
     top: calc(var(--header-height) + 24px);
     align-self: start;
     max-height: calc(100vh - var(--header-height) - 48px);
-    height: calc(100vh - var(--header-height) - 48px);
   }
 
   .catalog-detail-preview {
-    overflow: hidden;
-    position: sticky;
-    top: calc(var(--header-height) + 24px);
     align-self: start;
-    max-height: calc(100vh - var(--header-height) - 48px);
-    height: calc(100vh - var(--header-height) - 48px);
-    overflow-y: auto;
   }
 
   .catalog-toolbar {
