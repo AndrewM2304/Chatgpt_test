@@ -6,6 +6,33 @@ import {
 } from "../utils/recipeUtils";
 import { RecipeRating } from "./RecipeRating";
 
+export const RecipePreviewActions = ({
+  recipe,
+  onStartLog,
+  onEditRecipe,
+  onDeleteRecipe,
+}) => (
+  <div className="form-actions">
+    <button
+      type="button"
+      className="primary"
+      onClick={() => onStartLog(recipe.id)}
+    >
+      Schedule meal
+    </button>
+    <button type="button" className="secondary" onClick={() => onEditRecipe(recipe)}>
+      Edit recipe
+    </button>
+    <button
+      type="button"
+      className="secondary danger"
+      onClick={() => onDeleteRecipe?.(recipe.id)}
+    >
+      Delete recipe
+    </button>
+  </div>
+);
+
 export const RecipePreviewContent = ({
   recipe,
   onStartLog,
@@ -13,6 +40,7 @@ export const RecipePreviewContent = ({
   onDeleteRecipe,
   onRatingChange,
   showTitle = true,
+  showActions = true,
   cookbookCovers,
 }) => {
   const isWebsite =
@@ -64,29 +92,14 @@ export const RecipePreviewContent = ({
         <div className="recipe-footer">
           <span>Last cooked: {formatDate(recipe.lastCooked)}</span>
         </div>
-        <div className="form-actions">
-          <button
-            type="button"
-            className="primary"
-            onClick={() => onStartLog(recipe.id)}
-          >
-            Schedule meal
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => onEditRecipe(recipe)}
-          >
-            Edit recipe
-          </button>
-          <button
-            type="button"
-            className="secondary danger"
-            onClick={() => onDeleteRecipe?.(recipe.id)}
-          >
-            Delete recipe
-          </button>
-        </div>
+        {showActions && (
+          <RecipePreviewActions
+            recipe={recipe}
+            onStartLog={onStartLog}
+            onEditRecipe={onEditRecipe}
+            onDeleteRecipe={onDeleteRecipe}
+          />
+        )}
       </div>
     </div>
   );
