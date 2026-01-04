@@ -25,6 +25,7 @@ export const SettingsView = ({
   canInstallApp,
   isInstalled,
   isIosDevice,
+  supabaseUrl,
 }) => {
   const [groupInput, setGroupInput] = useState("");
   const [groupError, setGroupError] = useState("");
@@ -155,6 +156,10 @@ export const SettingsView = ({
             <dd className="sync-status">
               {status?.message || "Sync status unavailable."}
             </dd>
+          </div>
+          <div>
+            <dt>Supabase project</dt>
+            <dd>{supabaseUrl || "Not configured"}</dd>
           </div>
           {errorDetails && (
             <div>
