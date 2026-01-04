@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StarRating } from "./StarRating";
 import { TypeaheadInput } from "./TypeaheadInput";
 
@@ -11,10 +11,6 @@ export const RecipeModal = ({
   cookbookOptions,
   cuisineOptions,
 }) => {
-  if (!isOpen) {
-    return null;
-  }
-
   const emptyForm = useMemo(
     () => ({
       name: "",
@@ -30,11 +26,17 @@ export const RecipeModal = ({
     []
   );
   const [formData, setFormData] = useState(emptyForm);
+  const lastEditingId = useRef(null);
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
+    const nextEditingId = editingRecipe?.id ?? null;
+    if (nextEditingId === lastEditingId.current) {
+      return;
+    }
+    lastEditingId.current = nextEditingId;
     if (!editingRecipe) {
       setFormData(emptyForm);
       return;
@@ -73,6 +75,10 @@ export const RecipeModal = ({
     event.preventDefault();
     onSaveRecipe(formData);
   };
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">

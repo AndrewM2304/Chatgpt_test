@@ -187,6 +187,7 @@ export const CatalogView = memo(({
                           className="recipe-rating-control"
                           onClick={(event) => event.stopPropagation()}
                           onKeyDown={(event) => event.stopPropagation()}
+                          onPointerDown={(event) => event.stopPropagation()}
                         >
                           <RecipeRating
                             value={recipe.rating || 0}
