@@ -5,6 +5,7 @@ import { NAV_TABS } from "./navTabs";
 export const LandscapeHeaderNav = ({ onAddRecipe }) => {
   const location = useLocation();
   const isCatalogRoute =
+    location.pathname === "/" ||
     location.pathname.startsWith("/catalog") ||
     location.pathname.startsWith("/recipe/");
 
@@ -18,7 +19,9 @@ export const LandscapeHeaderNav = ({ onAddRecipe }) => {
         <nav className="header-tabs">
           {NAV_TABS.map(({ id, label, path, Icon }) => {
             const isCatalogTab =
-              id === "catalog" && location.pathname.startsWith("/recipe/");
+              id === "catalog" &&
+              (location.pathname === "/" ||
+                location.pathname.startsWith("/recipe/"));
             return (
               <NavLink
                 key={id}

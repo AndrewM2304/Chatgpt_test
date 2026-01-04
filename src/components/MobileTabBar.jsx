@@ -10,7 +10,9 @@ export const MobileTabBar = () => {
       <div className="mobile-tab-bar-inner">
         {NAV_TABS.map(({ id, label, path, Icon }) => {
           const isCatalogRoute =
-            id === "catalog" && location.pathname.startsWith("/recipe/");
+            id === "catalog" &&
+            (location.pathname === "/" ||
+              location.pathname.startsWith("/recipe/"));
           return (
             <NavLink
               key={id}
