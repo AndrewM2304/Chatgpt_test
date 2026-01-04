@@ -46,6 +46,11 @@ export const useCatalogSync = ({
   const [hasLoadedCatalog, setHasLoadedCatalog] = useState(false);
   const pendingChangesRef = useRef(false);
   const changeIdRef = useRef(0);
+  const catalogRef = useRef(catalog);
+
+  useEffect(() => {
+    catalogRef.current = catalog;
+  }, [catalog]);
 
   const hasCatalogContent = useCallback(
     (data) =>
@@ -184,6 +189,7 @@ export const useCatalogSync = ({
   );
 
   const ensureCatalog = useCallback(async () => {
+    const currentCatalog = catalogRef.current;
     const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
@@ -214,10 +220,10 @@ export const useCatalogSync = ({
         if (legacyGroupId) {
           return legacyGroupId;
         }
-        if (hasCatalogContent(catalog)) {
+        if (hasCatalogContent(currentCatalog)) {
           const { error: seedError } = await upsertCatalogData({
             groupId: data.id,
-            data: catalog,
+            data: currentCatalog,
           });
           if (seedError) {
             setStatus({
@@ -228,7 +234,7 @@ export const useCatalogSync = ({
             return null;
           }
           setGroupId(data.id);
-          setCatalog(catalog);
+          setCatalog(currentCatalog);
           pendingChangesRef.current = false;
           changeIdRef.current = 0;
           setPendingChanges(false);
@@ -286,7 +292,6 @@ export const useCatalogSync = ({
     return created.id;
   }, [
     buildErrorDetails,
-    catalog,
     defaultCatalog,
     groupCode,
     hasCatalogContent,
@@ -297,6 +302,7 @@ export const useCatalogSync = ({
   ]);
 
   const syncCatalog = useCallback(async () => {
+    const currentCatalog = catalogRef.current;
     if (!groupCode) {
       return null;
     }
@@ -335,10 +341,10 @@ export const useCatalogSync = ({
         setLastSyncAt(new Date().toISOString());
         return legacyGroupId;
       }
-      if (hasCatalogContent(catalog)) {
+      if (hasCatalogContent(currentCatalog)) {
         const { error: seedError } = await upsertCatalogData({
           groupId: data.id,
-          data: catalog,
+          data: currentCatalog,
         });
         if (seedError) {
           setStatus({
@@ -349,7 +355,7 @@ export const useCatalogSync = ({
           return null;
         }
         setGroupId(data.id);
-        setCatalog(catalog);
+        setCatalog(currentCatalog);
         setHasLoadedCatalog(true);
         pendingChangesRef.current = false;
         changeIdRef.current = 0;
@@ -368,7 +374,6 @@ export const useCatalogSync = ({
     return catalogData || defaultCatalog;
   }, [
     buildErrorDetails,
-    catalog,
     defaultCatalog,
     groupCode,
     hasCatalogContent,
