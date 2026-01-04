@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createId } from "../utils/idUtils.js";
 
 const UIContext = createContext(null);
 
@@ -10,7 +11,7 @@ export const UIProvider = ({ children }) => {
   const [previewRecipeId, setPreviewRecipeId] = useState(null);
 
   const addToast = useCallback((message, variant = "info") => {
-    const id = crypto.randomUUID();
+    const id = createId();
     setToasts((prev) => [...prev, { id, message, variant }]);
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));

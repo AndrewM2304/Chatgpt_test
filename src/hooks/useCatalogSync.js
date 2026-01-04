@@ -324,7 +324,7 @@ export const useCatalogSync = ({
   }, [groupCode, isSaving, syncCatalog]);
 
   useEffect(() => {
-    if (!groupCode || !hasLoadedCatalog || !pendingChangesRef.current) {
+    if (!groupCode || !groupId || !hasLoadedCatalog || !pendingChangesRef.current) {
       return undefined;
     }
 

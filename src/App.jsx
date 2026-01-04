@@ -16,6 +16,7 @@ import { LogRoute } from "./routes/LogRoute";
 import { SettingsRoute } from "./routes/SettingsRoute";
 import { areCookbookEntriesEqual, mergeCookbookEntries, normalizeCookbookEntries } from "./utils/cookbookUtils.js";
 import { getWeekStart, toDateInputValue } from "./utils/dateUtils.js";
+import { createId } from "./utils/idUtils.js";
 
 const MEAL_OPTIONS = [
   { value: "breakfast", label: "Breakfast" },
@@ -299,7 +300,7 @@ export default function App() {
     const entries = logSelectedDays.flatMap((day) =>
       logSelectedMeals.map((meal) => {
         const id =
-          editingLogId && entryIndex === 0 ? editingLogId : crypto.randomUUID();
+          editingLogId && entryIndex === 0 ? editingLogId : createId();
         entryIndex += 1;
         return {
           id,

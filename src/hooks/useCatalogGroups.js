@@ -1,11 +1,12 @@
 import { useCallback } from "react";
+import { createId } from "../utils/idUtils.js";
 import {
   createCatalogGroup,
   upsertCatalogData,
 } from "../lib/catalogService.js";
 
 const generateGroupCode = () =>
-  `group-${crypto.randomUUID().split("-")[0]}`.toLowerCase();
+  `group-${createId().split("-")[0]}`.toLowerCase();
 
 export const useCatalogGroups = ({
   catalog,
