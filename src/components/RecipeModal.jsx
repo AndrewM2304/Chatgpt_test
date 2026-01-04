@@ -9,6 +9,7 @@ export const RecipeModal = ({
   onClose,
   onDeleteRecipe,
   cookbookOptions,
+  websiteOptions = [],
   cuisineOptions,
 }) => {
   const emptyForm = useMemo(
@@ -26,6 +27,8 @@ export const RecipeModal = ({
     []
   );
   const [formData, setFormData] = useState(emptyForm);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [errors, setErrors] = useState({});
   const lastEditingId = useRef(null);
 
   useEffect(() => {
@@ -36,6 +39,8 @@ export const RecipeModal = ({
     if (!editingRecipe) {
       lastEditingId.current = nextEditingId;
       setFormData(emptyForm);
+      setSubmitAttempted(false);
+      setErrors({});
       return;
     }
     if (nextEditingId === lastEditingId.current) {
@@ -56,9 +61,12 @@ export const RecipeModal = ({
         : "",
       notes: editingRecipe.notes || "",
     });
+    setSubmitAttempted(false);
+    setErrors({});
   }, [editingRecipe, emptyForm, isOpen]);
 
   const isWebsite = formData.sourceType === "website";
+  const typeaheadOptions = isWebsite ? websiteOptions : cookbookOptions;
 
   const handleFormChange = (field) => (event) => {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
@@ -72,8 +80,38 @@ export const RecipeModal = ({
     setFormData((prev) => ({ ...prev, rating: value }));
   };
 
+  const validateForm = (draft) => {
+    const nextErrors = {};
+    if (!draft.name.trim()) {
+      nextErrors.name = "Required";
+    }
+    if (!draft.cookbookTitle.trim()) {
+      nextErrors.cookbookTitle = "Required";
+    }
+    if (!draft.cuisine.trim()) {
+      nextErrors.cuisine = "Required";
+    }
+    if (draft.sourceType === "website") {
+      if (!draft.url.trim()) {
+        nextErrors.url = "Required";
+      }
+    } else if (!draft.page.trim()) {
+      nextErrors.page = "Required";
+    }
+    if (draft.sourceType !== "website" && !draft.duration.trim()) {
+      nextErrors.duration = "Required";
+    }
+    return nextErrors;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    const nextErrors = validateForm(formData);
+    setSubmitAttempted(true);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
     onSaveRecipe(formData);
   };
 
@@ -108,6 +146,9 @@ export const RecipeModal = ({
             onChange={handleFormChange("name")}
             placeholder="Creamy lemon pasta"
           />
+          {submitAttempted && errors.name && (
+            <p className="error-text">{errors.name}</p>
+          )}
 
           <div className="control">
             <span className="radio-group-label">Entry type</span>
@@ -143,9 +184,12 @@ export const RecipeModal = ({
             label={isWebsite ? "Website name" : "Cookbook title"}
             value={formData.cookbookTitle}
             onChange={handleFormValueChange("cookbookTitle")}
-            options={cookbookOptions}
+            options={typeaheadOptions}
             placeholder={isWebsite ? "NYT Cooking" : "Sunday Suppers"}
           />
+          {submitAttempted && errors.cookbookTitle && (
+            <p className="error-text">{errors.cookbookTitle}</p>
+          )}
 
           {isWebsite ? (
             <>
@@ -157,6 +201,9 @@ export const RecipeModal = ({
                 onChange={handleFormChange("url")}
                 placeholder="https://example.com/recipe"
               />
+              {submitAttempted && errors.url && (
+                <p className="error-text">{errors.url}</p>
+              )}
             </>
           ) : (
             <>
@@ -170,6 +217,9 @@ export const RecipeModal = ({
                 onChange={handleFormChange("page")}
                 placeholder="112"
               />
+              {submitAttempted && errors.page && (
+                <p className="error-text">{errors.page}</p>
+              )}
             </>
           )}
 
@@ -182,6 +232,9 @@ export const RecipeModal = ({
             options={cuisineOptions}
             placeholder="Italian"
           />
+          {submitAttempted && errors.cuisine && (
+            <p className="error-text">{errors.cuisine}</p>
+          )}
 
           <div className="modal-grid">
             {editingRecipe && (
@@ -208,6 +261,9 @@ export const RecipeModal = ({
                 onChange={handleFormChange("duration")}
                 placeholder="45"
               />
+              {submitAttempted && errors.duration && (
+                <p className="error-text">{errors.duration}</p>
+              )}
             </div>
           </div>
 
