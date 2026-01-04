@@ -73,7 +73,7 @@ export const useCatalogSync = ({
       hint: error.hint || null,
       isNetworkError: Boolean(error.isNetworkError),
     };
-  }, [buildErrorDetails, resolveStatusMessage]);
+  }, []);
 
   const markCatalogChange = useCallback(() => {
     changeIdRef.current += 1;
