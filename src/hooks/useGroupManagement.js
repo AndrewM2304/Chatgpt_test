@@ -1,8 +1,26 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useLocalStorage } from "./useLocalStorage.js";
 
 export const useGroupManagement = () => {
-  const [groupCode, setGroupCode] = useLocalStorage("recipe-group-code", "");
+  const [storedGroupCode, setStoredGroupCode] = useLocalStorage(
+    "recipe-group-code",
+    ""
+  );
+
+  const normalizeGroupCode = useCallback(
+    (value) => String(value || "").trim().toLowerCase(),
+    []
+  );
+
+  const groupCode = useMemo(
+    () => normalizeGroupCode(storedGroupCode),
+    [normalizeGroupCode, storedGroupCode]
+  );
+
+  const setGroupCode = useCallback(
+    (value) => setStoredGroupCode(normalizeGroupCode(value)),
+    [normalizeGroupCode, setStoredGroupCode]
+  );
 
   const inviteUrl = useMemo(() => {
     if (typeof window === "undefined" || !groupCode) {
@@ -28,6 +46,12 @@ export const useGroupManagement = () => {
       window.history.replaceState({}, "", url);
     }
   }, [groupCode, setGroupCode]);
+
+  useEffect(() => {
+    if (storedGroupCode && storedGroupCode !== groupCode) {
+      setStoredGroupCode(groupCode);
+    }
+  }, [groupCode, setStoredGroupCode, storedGroupCode]);
 
   return {
     groupCode,

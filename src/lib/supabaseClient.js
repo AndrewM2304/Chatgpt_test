@@ -14,11 +14,12 @@ const buildHeaders = (extra = {}) => ({
 
 const buildFilters = (filters) =>
   filters
-    .map((filter) =>
-      `${encodeURIComponent(filter.column)}=eq.${encodeURIComponent(
+    .map((filter) => {
+      const operator = filter.operator || "eq";
+      return `${encodeURIComponent(filter.column)}=${operator}.${encodeURIComponent(
         filter.value
-      )}`
-    )
+      )}`;
+    })
     .join("&");
 
 const buildQueryString = (filters, columns) => {
@@ -94,7 +95,12 @@ class QueryBuilder {
   }
 
   eq(column, value) {
-    this.filters.push({ column, value });
+    this.filters.push({ column, value, operator: "eq" });
+    return this;
+  }
+
+  ilike(column, value) {
+    this.filters.push({ column, value, operator: "ilike" });
     return this;
   }
 
