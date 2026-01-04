@@ -74,6 +74,8 @@ export const useSupabaseCatalog = () => {
     () => ({
       error:
         "Supabase tables are missing or inaccessible. Run the setup SQL in the app.",
+      networkError:
+        "Unable to reach Supabase. Check your connection and try again.",
     }),
     []
   );
