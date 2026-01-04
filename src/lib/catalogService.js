@@ -7,6 +7,19 @@ export const fetchAccessPasswordHash = async () =>
     .eq("key", "access_password_hash")
     .maybeSingle();
 
+const summarizeSupabaseError = (error) => {
+  if (!error) {
+    return null;
+  }
+  return {
+    message: error.message || "Unknown error",
+    code: error.code || error.statusCode || error.status || null,
+    details: error.details || null,
+    hint: error.hint || null,
+    isNetworkError: Boolean(error.isNetworkError),
+  };
+};
+
 export const fetchCatalogGroupByCode = async (groupCode) => {
   const trimmedCode = String(groupCode || "").trim();
   if (!trimmedCode) {
@@ -277,3 +290,50 @@ export const upsertAccessPasswordHash = async (hash) =>
     },
     { onConflict: "key" }
   );
+
+export const checkSupabaseAccess = async ({ groupCode, groupId } = {}) => {
+  const catalogGroupQuery = groupCode
+    ? supabase
+        .from("catalog_groups")
+        .select("id, group_code")
+        .eq("group_code", groupCode)
+        .limit(1)
+    : supabase.from("catalog_groups").select("id, group_code").limit(1);
+  const groupScopedQuery = (table, columns) =>
+    groupId
+      ? supabase.from(table).select(columns).eq("group_id", groupId).limit(1)
+      : supabase.from(table).select(columns).limit(1);
+
+  const checks = [
+    {
+      label: "site_settings (read)",
+      request: supabase.from("site_settings").select("key").limit(1),
+    },
+    { label: "catalog_groups (read)", request: catalogGroupQuery },
+    { label: "recipes (read)", request: groupScopedQuery("recipes", "id") },
+    {
+      label: "cookbooks (read)",
+      request: groupScopedQuery("cookbooks", "title"),
+    },
+    {
+      label: "cuisines (read)",
+      request: groupScopedQuery("cuisines", "name"),
+    },
+    { label: "logs (read)", request: groupScopedQuery("logs", "id") },
+  ];
+
+  const results = await Promise.all(
+    checks.map(async ({ label, request }) => {
+      const { data, error } = await request;
+      const rows = Array.isArray(data) ? data.length : data ? 1 : 0;
+      return {
+        label,
+        ok: !error,
+        rows,
+        error: summarizeSupabaseError(error),
+      };
+    })
+  );
+
+  return { data: results, error: null };
+};

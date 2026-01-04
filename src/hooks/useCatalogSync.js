@@ -5,6 +5,7 @@ import {
   fetchCatalogDataByGroupId,
   fetchCatalogGroupByCode,
   fetchLegacyCatalogByGroupCode,
+  checkSupabaseAccess,
   upsertAccessPasswordHash,
   upsertCatalogData,
 } from "../lib/catalogService.js";
@@ -35,6 +36,12 @@ export const useCatalogSync = ({
   const [pendingChanges, setPendingChanges] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState(null);
   const [lastSaveAt, setLastSaveAt] = useState(null);
+  const [diagnostics, setDiagnostics] = useState({
+    checks: [],
+    lastCheckedAt: null,
+    error: null,
+  });
+  const [isDiagnosticsRunning, setIsDiagnosticsRunning] = useState(false);
   const [passwordHash, setPasswordHash] = useState(null);
   const [hasLoadedCatalog, setHasLoadedCatalog] = useState(false);
   const pendingChangesRef = useRef(false);
@@ -54,6 +61,20 @@ export const useCatalogSync = ({
     []
   );
 
+  const buildErrorDetails = useCallback((error) => {
+    if (!error) {
+      return null;
+    }
+    return {
+      name: error.name || null,
+      message: error.message || null,
+      code: error.code || error.status || error.statusCode || null,
+      details: error.details || null,
+      hint: error.hint || null,
+      isNetworkError: Boolean(error.isNetworkError),
+    };
+  }, [buildErrorDetails, resolveStatusMessage]);
+
   const markCatalogChange = useCallback(() => {
     changeIdRef.current += 1;
     pendingChangesRef.current = true;
@@ -64,7 +85,11 @@ export const useCatalogSync = ({
     const { data, error } = await fetchAccessPasswordHash();
 
     if (error) {
-      setStatus({ state: "error", message: resolveStatusMessage(error) });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(error),
+        details: buildErrorDetails(error),
+      });
       return null;
     }
 
@@ -78,7 +103,11 @@ export const useCatalogSync = ({
         await fetchLegacyCatalogByGroupCode(groupCode);
 
       if (legacyError) {
-        setStatus({ state: "error", message: resolveStatusMessage(legacyError) });
+        setStatus({
+          state: "error",
+          message: resolveStatusMessage(legacyError),
+          details: buildErrorDetails(legacyError),
+        });
         return null;
       }
 
@@ -93,7 +122,11 @@ export const useCatalogSync = ({
         });
 
         if (createError) {
-          setStatus({ state: "error", message: resolveStatusMessage(createError) });
+          setStatus({
+            state: "error",
+            message: resolveStatusMessage(createError),
+            details: buildErrorDetails(createError),
+          });
           return null;
         }
 
@@ -102,7 +135,11 @@ export const useCatalogSync = ({
           data: legacyData.data,
         });
         if (seedError) {
-          setStatus({ state: "error", message: resolveStatusMessage(seedError) });
+          setStatus({
+            state: "error",
+            message: resolveStatusMessage(seedError),
+            details: buildErrorDetails(seedError),
+          });
           return null;
         }
 
@@ -120,7 +157,11 @@ export const useCatalogSync = ({
         data: legacyData.data,
       });
       if (seedError) {
-        setStatus({ state: "error", message: resolveStatusMessage(seedError) });
+        setStatus({
+          state: "error",
+          message: resolveStatusMessage(seedError),
+          details: buildErrorDetails(seedError),
+        });
         return null;
       }
 
@@ -132,14 +173,25 @@ export const useCatalogSync = ({
       setLastSyncAt(new Date().toISOString());
       return groupId;
     },
-    [hasCatalogContent, resolveStatusMessage, setCatalog, setGroupId, setStatus]
+    [
+      buildErrorDetails,
+      hasCatalogContent,
+      resolveStatusMessage,
+      setCatalog,
+      setGroupId,
+      setStatus,
+    ]
   );
 
   const ensureCatalog = useCallback(async () => {
     const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
-      setStatus({ state: "error", message: resolveStatusMessage(error) });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(error),
+        details: buildErrorDetails(error),
+      });
       return null;
     }
 
@@ -147,7 +199,11 @@ export const useCatalogSync = ({
       const { data: catalogData, error: catalogError } =
         await fetchCatalogDataByGroupId(data.id);
       if (catalogError) {
-        setStatus({ state: "error", message: resolveStatusMessage(catalogError) });
+        setStatus({
+          state: "error",
+          message: resolveStatusMessage(catalogError),
+          details: buildErrorDetails(catalogError),
+        });
         return null;
       }
       if (!hasCatalogContent(catalogData)) {
@@ -164,7 +220,11 @@ export const useCatalogSync = ({
             data: catalog,
           });
           if (seedError) {
-            setStatus({ state: "error", message: resolveStatusMessage(seedError) });
+            setStatus({
+              state: "error",
+              message: resolveStatusMessage(seedError),
+              details: buildErrorDetails(seedError),
+            });
             return null;
           }
           setGroupId(data.id);
@@ -196,7 +256,11 @@ export const useCatalogSync = ({
     });
 
     if (createError) {
-      setStatus({ state: "error", message: resolveStatusMessage(createError) });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(createError),
+        details: buildErrorDetails(createError),
+      });
       return null;
     }
 
@@ -205,7 +269,11 @@ export const useCatalogSync = ({
       data: defaultCatalog,
     });
     if (seedError) {
-      setStatus({ state: "error", message: resolveStatusMessage(seedError) });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(seedError),
+        details: buildErrorDetails(seedError),
+      });
       return null;
     }
 
@@ -217,6 +285,7 @@ export const useCatalogSync = ({
     setLastSyncAt(new Date().toISOString());
     return created.id;
   }, [
+    buildErrorDetails,
     catalog,
     defaultCatalog,
     groupCode,
@@ -234,7 +303,11 @@ export const useCatalogSync = ({
     const { data, error } = await fetchCatalogGroupByCode(groupCode);
 
     if (error) {
-      setStatus({ state: "error", message: resolveStatusMessage(error) });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(error),
+        details: buildErrorDetails(error),
+      });
       return null;
     }
 
@@ -244,7 +317,11 @@ export const useCatalogSync = ({
     const { data: catalogData, error: catalogError } =
       await fetchCatalogDataByGroupId(data.id);
     if (catalogError) {
-      setStatus({ state: "error", message: resolveStatusMessage(catalogError) });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(catalogError),
+        details: buildErrorDetails(catalogError),
+      });
       return null;
     }
     if (!hasCatalogContent(catalogData)) {
@@ -264,7 +341,11 @@ export const useCatalogSync = ({
           data: catalog,
         });
         if (seedError) {
-          setStatus({ state: "error", message: resolveStatusMessage(seedError) });
+          setStatus({
+            state: "error",
+            message: resolveStatusMessage(seedError),
+            details: buildErrorDetails(seedError),
+          });
           return null;
         }
         setGroupId(data.id);
@@ -286,6 +367,7 @@ export const useCatalogSync = ({
     setLastSyncAt(new Date().toISOString());
     return catalogData || defaultCatalog;
   }, [
+    buildErrorDetails,
     catalog,
     defaultCatalog,
     groupCode,
@@ -307,15 +389,27 @@ export const useCatalogSync = ({
     let isMounted = true;
     const bootstrap = async () => {
       if (!groupCode) {
-        setStatus({ state: "waiting", message: STATUS_MESSAGES.waiting });
+        setStatus({
+          state: "waiting",
+          message: STATUS_MESSAGES.waiting,
+          details: null,
+        });
         return;
       }
-      setStatus({ state: "connecting", message: STATUS_MESSAGES.connecting });
+      setStatus({
+        state: "connecting",
+        message: STATUS_MESSAGES.connecting,
+        details: null,
+      });
       const settingsResult = await loadSettings();
       const catalogResult = await ensureCatalog();
 
       if (isMounted && settingsResult !== null && catalogResult !== null) {
-        setStatus({ state: "ready", message: STATUS_MESSAGES.ready });
+        setStatus({
+          state: "ready",
+          message: STATUS_MESSAGES.ready,
+          details: null,
+        });
         setHasLoadedCatalog(true);
       }
     };
@@ -370,6 +464,7 @@ export const useCatalogSync = ({
           ...prev,
           state: "error",
           message: resolveStatusMessage(error),
+          details: buildErrorDetails(error),
         }));
       }
       if (!error && changeId === changeIdRef.current) {
@@ -381,20 +476,35 @@ export const useCatalogSync = ({
     }, 600);
 
     return () => window.clearTimeout(timeout);
-  }, [catalog, groupCode, groupId, hasLoadedCatalog]);
+  }, [buildErrorDetails, catalog, groupCode, groupId, hasLoadedCatalog]);
 
   const setAccessPassword = useCallback(async (value) => {
     const hash = await hashPassword(value);
     const { error } = await upsertAccessPasswordHash(hash);
 
     if (error) {
-      setStatus({ state: "error", message: STATUS_MESSAGES.error });
+      setStatus({
+        state: "error",
+        message: resolveStatusMessage(error),
+        details: buildErrorDetails(error),
+      });
       return false;
     }
 
     setPasswordHash(hash);
     return true;
-  }, []);
+  }, [buildErrorDetails, resolveStatusMessage]);
+
+  const runDiagnostics = useCallback(async () => {
+    setIsDiagnosticsRunning(true);
+    const { data, error } = await checkSupabaseAccess({ groupCode, groupId });
+    setDiagnostics({
+      checks: data || [],
+      lastCheckedAt: new Date().toISOString(),
+      error: buildErrorDetails(error),
+    });
+    setIsDiagnosticsRunning(false);
+  }, [buildErrorDetails, groupCode, groupId]);
 
   return {
     status,
@@ -402,11 +512,14 @@ export const useCatalogSync = ({
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
+    diagnostics,
+    isDiagnosticsRunning,
     passwordHash,
     setAccessPassword,
     syncCatalog,
     markCatalogChange,
     setStatus,
     setGroupId,
+    runDiagnostics,
   };
 };

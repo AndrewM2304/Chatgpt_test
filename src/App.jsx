@@ -36,6 +36,8 @@ export default function App() {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
+    diagnostics,
+    isDiagnosticsRunning,
     inviteUrl,
     groupCode,
     groupId,
@@ -43,6 +45,7 @@ export default function App() {
     joinGroup,
     clearLocalData,
     syncCatalog,
+    runDiagnostics,
   } = useSupabaseCatalog();
   const navigate = useNavigate();
   const { recipes, logs } = catalog;
@@ -526,12 +529,15 @@ export default function App() {
                 <SettingsRoute
                   status={status}
                   isSaving={isSaving}
-                  pendingChanges={pendingChanges}
-                  lastSyncAt={lastSyncAt}
-                  lastSaveAt={lastSaveAt}
-                  inviteUrl={inviteUrl}
-                  groupCode={groupCode}
-                  groupId={groupId}
+        pendingChanges={pendingChanges}
+        lastSyncAt={lastSyncAt}
+        lastSaveAt={lastSaveAt}
+        diagnostics={diagnostics}
+        isDiagnosticsRunning={isDiagnosticsRunning}
+        runDiagnostics={runDiagnostics}
+        inviteUrl={inviteUrl}
+        groupCode={groupCode}
+        groupId={groupId}
                   createNewGroup={createNewGroup}
                   joinGroup={joinGroup}
                   addToast={addToast}

@@ -24,11 +24,14 @@ export const useSupabaseCatalog = () => {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
+    diagnostics,
+    isDiagnosticsRunning,
     passwordHash,
     setAccessPassword,
     syncCatalog,
     markCatalogChange,
     setStatus,
+    runDiagnostics,
   } = useCatalogSync({
     catalog,
     groupId,
@@ -106,6 +109,8 @@ export const useSupabaseCatalog = () => {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
+    diagnostics,
+    isDiagnosticsRunning,
     passwordHash,
     setAccessPassword,
     inviteUrl,
@@ -115,5 +120,6 @@ export const useSupabaseCatalog = () => {
     joinGroup,
     clearLocalData,
     syncCatalog,
+    runDiagnostics,
   };
 };

@@ -24,13 +24,19 @@ const buildFilters = (filters) =>
     })
     .join("&");
 
-const buildQueryString = (filters, columns) => {
+const buildQueryString = (filters, columns, limit) => {
   const filterString = buildFilters(filters);
-  let query = filterString ? `?${filterString}` : "";
-  if (columns) {
-    query = `${query ? `${query}&` : "?"}select=${encodeURIComponent(columns)}`;
+  const params = [];
+  if (filterString) {
+    params.push(filterString);
   }
-  return query;
+  if (columns) {
+    params.push(`select=${encodeURIComponent(columns)}`);
+  }
+  if (Number.isFinite(limit)) {
+    params.push(`limit=${limit}`);
+  }
+  return params.length ? `?${params.join("&")}` : "";
 };
 
 const appendQueryParam = (query, key, value) => {
@@ -97,6 +103,7 @@ class QueryBuilder {
     this.columns = "*";
     this.returning = null;
     this.onConflict = null;
+    this.limitValue = null;
   }
 
   select(columns = "*") {
@@ -137,6 +144,11 @@ class QueryBuilder {
     return this;
   }
 
+  limit(count) {
+    this.limitValue = count;
+    return this;
+  }
+
   async maybeSingle() {
     const result = await this.execute();
     if (result.error) {
@@ -156,12 +168,16 @@ class QueryBuilder {
   }
 
   async execute() {
-    const query = buildQueryString(this.filters, this.returning);
+    const query = buildQueryString(this.filters, this.returning, this.limitValue);
     const url = `${supabaseUrl}/rest/v1/${this.table}`;
 
     try {
       if (this.action === "select") {
-        const selectQuery = buildQueryString(this.filters, this.columns);
+        const selectQuery = buildQueryString(
+          this.filters,
+          this.columns,
+          this.limitValue
+        );
         const { response, error } = await fetchWithTimeout(
           `${url}${selectQuery}`,
           {

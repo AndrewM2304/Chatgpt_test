@@ -25,6 +25,20 @@ export const useCatalogGroups = ({
     [statusMessages]
   );
 
+  const buildErrorDetails = useCallback((error) => {
+    if (!error) {
+      return null;
+    }
+    return {
+      name: error.name || null,
+      message: error.message || null,
+      code: error.code || error.status || error.statusCode || null,
+      details: error.details || null,
+      hint: error.hint || null,
+      isNetworkError: Boolean(error.isNetworkError),
+    };
+  }, []);
+
   const createNewGroup = useCallback(
     async ({ name, duplicate }) => {
       const newCode = generateGroupCode();
@@ -35,7 +49,11 @@ export const useCatalogGroups = ({
       });
 
       if (error) {
-        setStatus({ state: "error", message: resolveStatusMessage(error) });
+        setStatus({
+          state: "error",
+          message: resolveStatusMessage(error),
+          details: buildErrorDetails(error),
+        });
         return null;
       }
 
@@ -44,7 +62,11 @@ export const useCatalogGroups = ({
         data: dataPayload,
       });
       if (seedError) {
-        setStatus({ state: "error", message: resolveStatusMessage(seedError) });
+        setStatus({
+          state: "error",
+          message: resolveStatusMessage(seedError),
+          details: buildErrorDetails(seedError),
+        });
         return null;
       }
 
@@ -55,6 +77,7 @@ export const useCatalogGroups = ({
     },
     [
       catalog,
+      buildErrorDetails,
       defaultCatalog,
       resolveStatusMessage,
       setCatalog,
