@@ -1343,23 +1343,25 @@ button.secondary.icon-button {
     display: block;
     overflow: hidden;
     position: sticky;
-    top: 24px;
+    top: calc(var(--header-height) + 24px);
     align-self: start;
-    max-height: calc(100vh - 48px);
+    max-height: calc(100vh - var(--header-height) - 48px);
+    height: calc(100vh - var(--header-height) - 48px);
   }
 
   .catalog-detail-preview {
     overflow: hidden;
     position: sticky;
-    top: 24px;
+    top: calc(var(--header-height) + 24px);
     align-self: start;
-    max-height: calc(100vh - 48px);
+    max-height: calc(100vh - var(--header-height) - 48px);
+    height: calc(100vh - var(--header-height) - 48px);
     overflow-y: auto;
   }
 
   .catalog-toolbar {
     position: sticky;
-    top: 0;
+    top: var(--header-height);
     z-index: 2;
     background: var(--color-bg);
     padding-bottom: 12px;
@@ -1416,7 +1418,7 @@ button.secondary.icon-button {
   color: var(--color-danger);
   font-weight: 600;
   font-size: 0.8rem;
-  padding-top: 2px;
+  padding-top: 0;
   padding-bottom: 4px;
   margin: 0;
 }
