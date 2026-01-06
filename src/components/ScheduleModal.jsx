@@ -51,7 +51,6 @@ export const ScheduleModal = ({
             value={logRecipeQuery}
             onChange={onLogRecipeQuery}
             options={recipeOptions}
-            placeholder="Search recipes or type a note"
           />
           <button
             type="button"
@@ -106,7 +105,6 @@ export const ScheduleModal = ({
           <input
             id="log-note"
             type="text"
-            placeholder="Added extra basil"
             value={logNote}
             onChange={(event) => onLogNote(event.target.value)}
           />
