@@ -1,3 +1,4 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   RecipePreviewActions,
   RecipePreviewContent,
@@ -35,7 +36,7 @@ export const RecipePreviewModal = ({
             onClick={onClose}
             aria-label="Close"
           >
-            <span aria-hidden="true">×</span>
+            <XMarkIcon className="close-icon" aria-hidden="true" />
           </button>
         </header>
         <div className="recipe-preview-body">

@@ -346,6 +346,39 @@ h1 {
   position: relative;
 }
 
+.typeahead-field {
+  position: relative;
+}
+
+.typeahead input.has-clear {
+  padding-right: 40px;
+}
+
+.typeahead-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 999px;
+  color: var(--color-text);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.typeahead-clear:hover,
+.typeahead-clear:focus {
+  background: var(--color-surface-soft);
+  outline: none;
+}
+
+.close-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .typeahead-list {
   position: absolute;
   top: calc(100% + 6px);
@@ -387,13 +420,19 @@ label {
 }
 
 select,
-input {
+input,
+textarea {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   padding: 10px 12px;
   font-size: 1rem;
   background: var(--color-input-bg);
   color: var(--color-input-text);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
 }
 
 input[type="checkbox"],
