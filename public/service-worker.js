@@ -1,5 +1,5 @@
 const CACHE_NAME = "cookbook-keeper-v1";
-const CORE_ASSETS = ["/", "/index.html", "/manifest.webmanifest", "/pwa.png"];
+const CORE_ASSETS = ["/", "/index.html", "/manifest.webmanifest", "/pwa.PNG"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
