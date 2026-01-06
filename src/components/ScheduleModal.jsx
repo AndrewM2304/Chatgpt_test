@@ -1,3 +1,4 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { TypeaheadInput } from "./TypeaheadInput";
 
 export const ScheduleModal = ({
@@ -40,7 +41,7 @@ export const ScheduleModal = ({
             onClick={onClose}
             aria-label="Close"
           >
-            <span aria-hidden="true">×</span>
+            <XMarkIcon className="close-icon" aria-hidden="true" />
           </button>
         </header>
         <form onSubmit={onSubmit} className="modal-form">
@@ -102,11 +103,11 @@ export const ScheduleModal = ({
           </fieldset>
 
           <label htmlFor="log-note">Notes (optional)</label>
-          <input
+          <textarea
             id="log-note"
-            type="text"
             value={logNote}
             onChange={(event) => onLogNote(event.target.value)}
+            rows={3}
           />
 
           <div className="form-actions">

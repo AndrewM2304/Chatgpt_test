@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export const TypeaheadInput = ({
   id,
@@ -38,22 +39,35 @@ export const TypeaheadInput = ({
   return (
     <div className="control typeahead">
       <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        name={name}
-        type="text"
-        autoComplete="off"
-        value={value}
-        onChange={handleInputChange}
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setIsOpen(false)}
-        placeholder={placeholder}
-        role="combobox"
-        aria-autocomplete="list"
-        aria-expanded={shouldShowList}
-        aria-controls={listId}
-        className={hasError ? "input-error" : ""}
-      />
+      <div className="typeahead-field">
+        <input
+          id={id}
+          name={name}
+          type="text"
+          autoComplete="off"
+          value={value}
+          onChange={handleInputChange}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setIsOpen(false)}
+          placeholder={placeholder}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={shouldShowList}
+          aria-controls={listId}
+          className={`${value ? "has-clear" : ""}${hasError ? " input-error" : ""}`}
+        />
+        {value && (
+          <button
+            type="button"
+            className="typeahead-clear"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onChange("")}
+            aria-label="Clear search"
+          >
+            <XMarkIcon className="close-icon" aria-hidden="true" />
+          </button>
+        )}
+      </div>
       {shouldShowList && (
         <ul className="typeahead-list" role="listbox" id={listId}>
           {filteredOptions.map((option) => (

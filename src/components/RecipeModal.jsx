@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { StarRating } from "./StarRating";
 import { TypeaheadInput } from "./TypeaheadInput";
 
@@ -134,7 +135,7 @@ export const RecipeModal = ({
             onClick={onClose}
             aria-label="Close"
           >
-            <span aria-hidden="true">×</span>
+            <XMarkIcon className="close-icon" aria-hidden="true" />
           </button>
         </header>
         <form onSubmit={handleSubmit} className="modal-form">
