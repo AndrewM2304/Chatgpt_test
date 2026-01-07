@@ -2,6 +2,7 @@ import { memo } from "react";
 import {
   QueueListIcon,
   Squares2X2Icon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
   formatDuration,
@@ -66,13 +67,27 @@ export const CatalogView = memo(({
               </div>
             </div>
           </div>
-          <input
-            id="search"
-            type="search"
-            placeholder="Search by name, cuisine, page, URL..."
-            value={searchTerm}
-            onChange={(event) => onSearchTerm(event.target.value)}
-          />
+          <div className="clearable-field">
+            <input
+              id="search"
+              type="search"
+              placeholder="Search by name, cuisine, page, URL..."
+              value={searchTerm}
+              onChange={(event) => onSearchTerm(event.target.value)}
+              className={searchTerm ? "has-clear" : ""}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="typeahead-clear"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => onSearchTerm("")}
+                aria-label="Clear search"
+              >
+                <XMarkIcon className="close-icon" aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="control">
           <label htmlFor="group">Group by</label>
