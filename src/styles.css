@@ -350,8 +350,18 @@ h1 {
   position: relative;
 }
 
-.typeahead input.has-clear {
+.typeahead-field input,
+.clearable-field input {
+  width: 100%;
+}
+
+.typeahead input.has-clear,
+.clearable-field input.has-clear {
   padding-right: 40px;
+}
+
+.clearable-field {
+  position: relative;
 }
 
 .typeahead-clear {
