@@ -77,6 +77,7 @@ export default function App() {
   } = useLogModalState();
   const [openAddRecipeSignal, setOpenAddRecipeSignal] = useState(0);
   const [pendingEditRecipeId, setPendingEditRecipeId] = useState(null);
+  const [isLogWeekCustomized, setIsLogWeekCustomized] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -87,6 +88,7 @@ export default function App() {
   const recipeMatch = useMatch("/recipe/:recipeId");
   const catalogMatch = useMatch("/catalog");
   const homeMatch = useMatch({ path: "/", end: true });
+  const logMatch = useMatch({ path: "/log", end: true });
   const isCatalogRoute = Boolean(homeMatch || catalogMatch || recipeMatch);
   const {
     logRecipeId,
@@ -129,6 +131,16 @@ export default function App() {
     mediaQuery.addListener(handleChange);
     return () => mediaQuery.removeListener(handleChange);
   }, []);
+
+  useEffect(() => {
+    if (!logMatch || isLogWeekCustomized) {
+      return;
+    }
+    const todayValue = toDateInputValue(new Date());
+    if (logWeekDate !== todayValue) {
+      setLogWeekDate(todayValue);
+    }
+  }, [isLogWeekCustomized, logMatch, logWeekDate, setLogWeekDate]);
 
   const cookbookEntries = useMemo(
     () => normalizeCookbookEntries(catalog.cookbooks),
@@ -274,6 +286,7 @@ export default function App() {
     const recipeName = recipeById[recipeId]?.name || "";
     const today = new Date();
     const todayValue = toDateInputValue(today);
+    setIsLogWeekCustomized(false);
     openForStart({
       recipeId,
       recipeQuery: recipeName,
@@ -415,6 +428,11 @@ export default function App() {
     setIsLogModalOpen(false);
   };
 
+  const handleLogWeekDateChange = (value) => {
+    setIsLogWeekCustomized(true);
+    setLogWeekDate(value);
+  };
+
   const handleToggleLogDay = (value) => {
     toggleLogDay(value);
   };
@@ -523,7 +541,7 @@ export default function App() {
               element={
                 <LogRoute
                   logWeekDate={logWeekDate}
-                  onLogWeekDate={setLogWeekDate}
+                  onLogWeekDate={handleLogWeekDateChange}
                   weekDays={weekDays}
                   weeklySchedule={weeklySchedule}
                   mealOptions={MEAL_OPTIONS}
