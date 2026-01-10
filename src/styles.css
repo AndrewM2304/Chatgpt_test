@@ -1683,6 +1683,11 @@ textarea.input-error {
   overflow-y: auto;
 }
 
+.modal-card a {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
