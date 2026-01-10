@@ -20,7 +20,7 @@ export const LogView = ({
         </div>
         <div className="log-week-controls">
           <label className="log-week-picker" htmlFor="week-of">
-            Week of
+            Start date
             <input
               id="week-of"
               type="date"

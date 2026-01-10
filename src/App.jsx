@@ -15,7 +15,7 @@ import { RandomRoute } from "./routes/RandomRoute";
 import { LogRoute } from "./routes/LogRoute";
 import { SettingsRoute } from "./routes/SettingsRoute";
 import { areCookbookEntriesEqual, mergeCookbookEntries, normalizeCookbookEntries } from "./utils/cookbookUtils.js";
-import { getWeekStart, toDateInputValue } from "./utils/dateUtils.js";
+import { toDateInputValue } from "./utils/dateUtils.js";
 import { createId } from "./utils/idUtils.js";
 
 const MEAL_OPTIONS = [
@@ -194,7 +194,7 @@ export default function App() {
   }, [cuisineOptions, setCuisines]);
 
   const weekDays = useMemo(() => {
-    const start = getWeekStart(logWeekDate);
+    const start = new Date(`${logWeekDate}T00:00:00`);
     return Array.from({ length: 7 }, (_, index) => {
       const day = new Date(start);
       day.setDate(start.getDate() + index);
