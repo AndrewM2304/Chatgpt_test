@@ -133,6 +133,17 @@ export const fetchCatalogDataByGroupId = async (groupId) => {
   };
 };
 
+export const deleteFreezerMeal = async ({ groupId, mealId }) => {
+  if (!groupId || !mealId) {
+    return { data: null, error: null };
+  }
+  return supabase
+    .from("freezer_meals")
+    .delete()
+    .eq("group_id", groupId)
+    .eq("id", mealId);
+};
+
 const buildRecipePayload = (recipe, groupId) => ({
   group_id: groupId,
   id: recipe.id,
