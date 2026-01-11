@@ -567,10 +567,16 @@ export default function App() {
 
   const handleDeleteRecipe = useCallback((recipeId) => {
     if (!recipeId) {
+      console.log("[debug] delete recipe aborted: missing recipeId");
       return false;
     }
     const recipeName = recipeById[recipeId]?.name || "Recipe";
+    console.log("[debug] delete recipe requested", { recipeId, recipeName });
     const confirmed = window.confirm(`Delete ${recipeName}?`);
+    console.log("[debug] delete recipe confirmation", {
+      recipeId,
+      confirmed,
+    });
     if (!confirmed) {
       return false;
     }
@@ -584,6 +590,7 @@ export default function App() {
       setPreviewRecipeId(null);
     }
     addToast(`${recipeName} deleted.`, "success");
+    console.log("[debug] delete recipe completed", { recipeId });
     return true;
   }, [addToast, navigate, previewRecipeId, recipeById, recipeMatch, setLogs, setRecipes]);
 
