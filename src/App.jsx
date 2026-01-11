@@ -10,6 +10,7 @@ import { SettingsModal } from "./components/SettingsModal";
 import { ToastStack } from "./components/ToastStack";
 import { useUI } from "./context/UIContext.jsx";
 import { buildCookbookCoverMap, buildCookbookCoverTargets, buildRecipeById } from "./lib/catalogDomain.js";
+import { deleteFreezerMeal } from "./lib/catalogService.js";
 import { useLogModalState } from "./hooks/useLogModalState.js";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { CatalogRoute } from "./routes/CatalogRoute";
@@ -478,12 +479,18 @@ export default function App() {
     setIsFreezerModalOpen(false);
   };
 
-  const handleUpdateFreezerPortionsLeft = (mealId, nextValue) => {
+  const handleUpdateFreezerPortionsLeft = useCallback(async (mealId, nextValue) => {
     if (!mealId) {
       return;
     }
     if (nextValue === 0) {
       setFreezerMeals((prev) => prev.filter((item) => item.id !== mealId));
+      if (groupId) {
+        const { error } = await deleteFreezerMeal({ groupId, mealId });
+        if (error) {
+          addToast("Unable to delete the storage item. Try again.", "error");
+        }
+      }
       return;
     }
     setFreezerMeals((prev) =>
@@ -491,7 +498,7 @@ export default function App() {
         item.id === mealId ? { ...item, portionsLeft: nextValue } : item
       )
     );
-  };
+  }, [addToast, groupId, setFreezerMeals]);
 
   const handleLogRecipeQuery = (value) => {
     setLogRecipeQuery(value);
