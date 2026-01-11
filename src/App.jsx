@@ -42,9 +42,6 @@ export default function App() {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
-    debugLogs,
-    addDebugLog,
-    clearDebugLogs,
     diagnostics,
     isDiagnosticsRunning,
     inviteUrl,
@@ -488,21 +485,8 @@ export default function App() {
     }
     if (nextValue === 0) {
       setFreezerMeals((prev) => prev.filter((item) => item.id !== mealId));
-      addDebugLog("Storage item removed locally. Pending sync will delete it.", {
-        mealId,
-        hasGroup: Boolean(groupId),
-      });
       if (groupId) {
-        const { error } = await deleteFreezerMeal({ groupId, mealId });
-        if (error) {
-          addDebugLog("Storage item delete failed on sync.", {
-            mealId,
-            groupId,
-            error,
-          });
-        } else {
-          addDebugLog("Storage item deleted from sync.", { mealId, groupId });
-        }
+        await deleteFreezerMeal({ groupId, mealId });
       }
       return;
     }
@@ -511,7 +495,7 @@ export default function App() {
         item.id === mealId ? { ...item, portionsLeft: nextValue } : item
       )
     );
-  }, [addDebugLog, groupId, setFreezerMeals]);
+  }, [groupId, setFreezerMeals]);
 
   const handleLogRecipeQuery = (value) => {
     setLogRecipeQuery(value);
@@ -708,8 +692,6 @@ export default function App() {
                   pendingChanges={pendingChanges}
                   lastSyncAt={lastSyncAt}
                   lastSaveAt={lastSaveAt}
-                  debugLogs={debugLogs}
-                  clearDebugLogs={clearDebugLogs}
                   diagnostics={diagnostics}
                   isDiagnosticsRunning={isDiagnosticsRunning}
                   runDiagnostics={runDiagnostics}
@@ -739,8 +721,6 @@ export default function App() {
           pendingChanges={pendingChanges}
           lastSyncAt={lastSyncAt}
           lastSaveAt={lastSaveAt}
-          debugLogs={debugLogs}
-          clearDebugLogs={clearDebugLogs}
           diagnostics={diagnostics}
           isDiagnosticsRunning={isDiagnosticsRunning}
           runDiagnostics={runDiagnostics}
