@@ -374,7 +374,9 @@ export const CatalogRoute = ({
     if (!recipeId) {
       return;
     }
+    console.log("[debug] delete from view requested", { recipeId });
     const deleted = onDeleteRecipe(recipeId);
+    console.log("[debug] delete from view result", { recipeId, deleted });
     if (deleted && editingId === recipeId) {
       resetForm();
     }
@@ -394,7 +396,9 @@ export const CatalogRoute = ({
     if (!recipeId) {
       return;
     }
+    console.log("[debug] delete from modal requested", { recipeId });
     const deleted = onDeleteRecipe(recipeId);
+    console.log("[debug] delete from modal result", { recipeId, deleted });
     if (deleted) {
       setIsModalOpen(false);
     }
