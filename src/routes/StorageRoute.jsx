@@ -1,12 +1,12 @@
-import { FreezerView } from "../components/FreezerView";
+import { StorageView } from "../components/StorageView";
 
-export const FreezerRoute = ({
+export const StorageRoute = ({
   storageByLocation,
   onOpenModal,
   onUpdatePortionsLeft,
 }) => {
   return (
-    <FreezerView
+    <StorageView
       storageByLocation={storageByLocation}
       onOpenModal={onOpenModal}
       onUpdatePortionsLeft={onUpdatePortionsLeft}

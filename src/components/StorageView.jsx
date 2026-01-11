@@ -1,4 +1,4 @@
-export const FreezerView = ({
+export const StorageView = ({
   storageByLocation,
   onOpenModal,
   onUpdatePortionsLeft,
