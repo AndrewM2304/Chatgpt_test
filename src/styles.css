@@ -892,6 +892,77 @@ button.secondary.icon-button {
   padding-bottom: 96px;
 }
 
+.freezer {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 96px;
+}
+
+.freezer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.freezer-caption {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+}
+
+.freezer-list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.freezer-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: var(--color-surface-muted);
+  border-radius: 12px;
+  align-items: center;
+}
+
+.freezer-item-details {
+  display: grid;
+  gap: 4px;
+}
+
+.freezer-item-details span {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.freezer-item-details em {
+  font-style: italic;
+  color: var(--color-text-subtle);
+  font-size: 0.85rem;
+}
+
+.freezer-portion-control {
+  display: grid;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+  text-align: right;
+}
+
+.freezer-portion-control select {
+  width: 88px;
+}
+
+.freezer-empty {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+}
+
 .log-form form {
   display: grid;
   gap: 12px;
@@ -1837,7 +1908,8 @@ textarea.input-error {
 
   .log,
   .catalog,
-  .random {
+  .random,
+  .freezer {
     padding-bottom: calc(var(--tabbar-height) + 120px);
   }
 

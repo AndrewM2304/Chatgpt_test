@@ -59,7 +59,7 @@ export const useCatalogSync = ({
 
   const hasCatalogContent = useCallback(
     (data) =>
-      ["recipes", "cookbooks", "cuisines", "logs"].some(
+      ["recipes", "cookbooks", "cuisines", "logs", "freezerMeals"].some(
         (key) => Array.isArray(data?.[key]) && data[key].length > 0
       ),
     []

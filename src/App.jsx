@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Route, Routes, useMatch, useNavigate } from "react-router-dom";
 import { Hero } from "./components/Hero";
+import { FreezerModal } from "./components/FreezerModal";
 import { RecipePreviewModal } from "./components/RecipePreviewModal";
 import { ScheduleModal } from "./components/ScheduleModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
@@ -11,6 +12,7 @@ import { buildCookbookCoverMap, buildCookbookCoverTargets, buildRecipeById } fro
 import { useLogModalState } from "./hooks/useLogModalState.js";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { CatalogRoute } from "./routes/CatalogRoute";
+import { FreezerRoute } from "./routes/FreezerRoute";
 import { RandomRoute } from "./routes/RandomRoute";
 import { LogRoute } from "./routes/LogRoute";
 import { SettingsRoute } from "./routes/SettingsRoute";
@@ -23,6 +25,7 @@ const MEAL_OPTIONS = [
   { value: "lunch", label: "Lunch" },
   { value: "dinner", label: "Dinner" },
 ];
+const FREEZER_PORTION_OPTIONS = Array.from({ length: 12 }, (_, index) => index + 1);
 
 export default function App() {
   const {
@@ -31,6 +34,7 @@ export default function App() {
     setCookbooks,
     setCuisines,
     setLogs,
+    setFreezerMeals,
     status,
     isSaving,
     pendingChanges,
@@ -48,7 +52,7 @@ export default function App() {
     runDiagnostics,
   } = useSupabaseCatalog();
   const navigate = useNavigate();
-  const { recipes, logs } = catalog;
+  const { recipes, logs, freezerMeals } = catalog;
   const {
     isLogModalOpen,
     setIsLogModalOpen,
@@ -78,6 +82,12 @@ export default function App() {
   const [openAddRecipeSignal, setOpenAddRecipeSignal] = useState(0);
   const [pendingEditRecipeId, setPendingEditRecipeId] = useState(null);
   const [isLogWeekCustomized, setIsLogWeekCustomized] = useState(false);
+  const [isFreezerModalOpen, setIsFreezerModalOpen] = useState(false);
+  const [freezerMealName, setFreezerMealName] = useState("");
+  const [freezerPortions, setFreezerPortions] = useState(
+    String(FREEZER_PORTION_OPTIONS[0])
+  );
+  const [freezerNotes, setFreezerNotes] = useState("");
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -110,12 +120,16 @@ export default function App() {
   );
 
   useEffect(() => {
-    const shouldLock = isRecipeModalOpen || isLogModalOpen || isPreviewOpen;
+    const shouldLock =
+      isRecipeModalOpen ||
+      isLogModalOpen ||
+      isPreviewOpen ||
+      isFreezerModalOpen;
     document.body.classList.toggle("modal-open", shouldLock);
     return () => {
       document.body.classList.remove("modal-open");
     };
-  }, [isRecipeModalOpen, isLogModalOpen, isPreviewOpen]);
+  }, [isRecipeModalOpen, isLogModalOpen, isPreviewOpen, isFreezerModalOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -381,6 +395,56 @@ export default function App() {
     setIsLogModalOpen(false);
   };
 
+  const resetFreezerModal = () => {
+    setFreezerMealName("");
+    setFreezerPortions(String(FREEZER_PORTION_OPTIONS[0]));
+    setFreezerNotes("");
+  };
+
+  const handleOpenFreezerModal = () => {
+    resetFreezerModal();
+    setIsFreezerModalOpen(true);
+  };
+
+  const handleCloseFreezerModal = () => {
+    setIsFreezerModalOpen(false);
+  };
+
+  const handleAddFreezerMeal = (event) => {
+    event.preventDefault();
+    const trimmedName = freezerMealName.trim();
+    const portionCount = Number.parseInt(freezerPortions, 10);
+    if (!trimmedName || Number.isNaN(portionCount) || portionCount <= 0) {
+      return;
+    }
+    setFreezerMeals((prev) => [
+      {
+        id: createId(),
+        name: trimmedName,
+        portions: portionCount,
+        portionsLeft: portionCount,
+        notes: freezerNotes.trim(),
+      },
+      ...prev,
+    ]);
+    setIsFreezerModalOpen(false);
+  };
+
+  const handleUpdateFreezerPortionsLeft = (mealId, nextValue) => {
+    if (!mealId) {
+      return;
+    }
+    if (nextValue === 0) {
+      setFreezerMeals((prev) => prev.filter((item) => item.id !== mealId));
+      return;
+    }
+    setFreezerMeals((prev) =>
+      prev.map((item) =>
+        item.id === mealId ? { ...item, portionsLeft: nextValue } : item
+      )
+    );
+  };
+
   const handleLogRecipeQuery = (value) => {
     setLogRecipeQuery(value);
     const match = recipes.find(
@@ -550,6 +614,16 @@ export default function App() {
               }
             />
             <Route
+              path="/freezer"
+              element={
+                <FreezerRoute
+                  items={freezerMeals}
+                  onOpenModal={handleOpenFreezerModal}
+                  onUpdatePortionsLeft={handleUpdateFreezerPortionsLeft}
+                />
+              }
+            />
+            <Route
               path="/settings"
               element={
                 <SettingsRoute
@@ -618,6 +692,18 @@ export default function App() {
         onPickRandom={handlePickRandomMeal}
         mealOptions={MEAL_OPTIONS}
         hasRecipes={recipes.length > 0}
+      />
+      <FreezerModal
+        isOpen={isFreezerModalOpen}
+        name={freezerMealName}
+        portions={freezerPortions}
+        notes={freezerNotes}
+        portionOptions={FREEZER_PORTION_OPTIONS}
+        onNameChange={setFreezerMealName}
+        onPortionsChange={setFreezerPortions}
+        onNotesChange={setFreezerNotes}
+        onSubmit={handleAddFreezerMeal}
+        onClose={handleCloseFreezerModal}
       />
     </div>
   );

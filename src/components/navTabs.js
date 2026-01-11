@@ -1,5 +1,6 @@
 import {
   ArrowPathIcon,
+  ArchiveBoxIcon,
   BookOpenIcon,
   CalendarDaysIcon,
   Cog6ToothIcon,
@@ -23,6 +24,12 @@ export const NAV_TABS = [
     label: "Schedule",
     path: "/log",
     Icon: CalendarDaysIcon,
+  },
+  {
+    id: "freezer",
+    label: "Freezer",
+    path: "/freezer",
+    Icon: ArchiveBoxIcon,
   },
   {
     id: "settings",
