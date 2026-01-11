@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "./useLocalStorage.js";
 import { useCatalogSync } from "./useCatalogSync.js";
 import { useGroupManagement } from "./useGroupManagement.js";
@@ -17,6 +17,20 @@ export const useSupabaseCatalog = () => {
     "recipe-catalog-cache",
     DEFAULT_CATALOG
   );
+  useEffect(() => {
+    setCatalog((prev) => {
+      if (!prev || typeof prev !== "object") {
+        return DEFAULT_CATALOG;
+      }
+      const hasAllKeys = Object.keys(DEFAULT_CATALOG).every(
+        (key) => key in prev
+      );
+      if (hasAllKeys) {
+        return prev;
+      }
+      return { ...DEFAULT_CATALOG, ...prev };
+    });
+  }, [setCatalog]);
   const [groupId, setGroupId] = useState(null);
   const { groupCode, setGroupCode, inviteUrl } = useGroupManagement();
   const {

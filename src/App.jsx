@@ -87,6 +87,7 @@ export default function App() {
   const [freezerPortions, setFreezerPortions] = useState(
     String(FREEZER_PORTION_OPTIONS[0])
   );
+  const [freezerCategory, setFreezerCategory] = useState("");
   const [freezerNotes, setFreezerNotes] = useState("");
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") {
@@ -201,6 +202,12 @@ export default function App() {
       new Set(recipes.map((recipe) => recipe.cuisine).filter(Boolean))
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
+
+  const freezerCategoryOptions = useMemo(() => {
+    return Array.from(
+      new Set(freezerMeals.map((item) => item.category).filter(Boolean))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [freezerMeals]);
 
   useEffect(() => {
     setCookbooks((prev) => {
@@ -398,6 +405,7 @@ export default function App() {
   const resetFreezerModal = () => {
     setFreezerMealName("");
     setFreezerPortions(String(FREEZER_PORTION_OPTIONS[0]));
+    setFreezerCategory("");
     setFreezerNotes("");
   };
 
@@ -413,6 +421,7 @@ export default function App() {
   const handleAddFreezerMeal = (event) => {
     event.preventDefault();
     const trimmedName = freezerMealName.trim();
+    const trimmedCategory = freezerCategory.trim();
     const portionCount = Number.parseInt(freezerPortions, 10);
     if (!trimmedName || Number.isNaN(portionCount) || portionCount <= 0) {
       return;
@@ -423,6 +432,7 @@ export default function App() {
         name: trimmedName,
         portions: portionCount,
         portionsLeft: portionCount,
+        category: trimmedCategory ? trimmedCategory : null,
         notes: freezerNotes.trim(),
       },
       ...prev,
@@ -697,10 +707,13 @@ export default function App() {
         isOpen={isFreezerModalOpen}
         name={freezerMealName}
         portions={freezerPortions}
+        category={freezerCategory}
         notes={freezerNotes}
+        categoryOptions={freezerCategoryOptions}
         portionOptions={FREEZER_PORTION_OPTIONS}
         onNameChange={setFreezerMealName}
         onPortionsChange={setFreezerPortions}
+        onCategoryChange={setFreezerCategory}
         onNotesChange={setFreezerNotes}
         onSubmit={handleAddFreezerMeal}
         onClose={handleCloseFreezerModal}

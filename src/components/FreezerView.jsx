@@ -11,9 +11,9 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
     <section className="freezer">
       <div className="freezer-header">
         <div>
-          <h2>Freezer meals</h2>
+          <h2>Storage</h2>
           <p className="freezer-caption">
-            Track what is in the freezer and update portions as meals are used.
+            Track items in storage and update portions as they are used.
           </p>
         </div>
         <button
@@ -21,7 +21,7 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
           className="primary log-inline-action"
           onClick={onOpenModal}
         >
-          Add freezer meal
+          Add item
         </button>
       </div>
 
@@ -31,6 +31,9 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
             <li key={item.id}>
               <div className="freezer-item-details">
                 <strong>{item.name}</strong>
+                {item.category ? (
+                  <span>Location: {item.category}</span>
+                ) : null}
                 <span>
                   {item.portionsLeft} of {item.portions} portions left
                 </span>
@@ -56,7 +59,7 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
         </ul>
       ) : (
         <div className="freezer-empty">
-          <p>No freezer meals yet. Add one to get started.</p>
+          <p>No storage items yet. Add one to get started.</p>
         </div>
       )}
 
@@ -66,7 +69,7 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
           className="primary log-sticky-button"
           onClick={onOpenModal}
         >
-          Add freezer meal
+          Add item
         </button>
       </div>
     </section>
