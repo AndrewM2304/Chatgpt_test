@@ -52,7 +52,7 @@ export default function App() {
     runDiagnostics,
   } = useSupabaseCatalog();
   const navigate = useNavigate();
-  const { recipes, logs, freezerMeals } = catalog;
+  const { recipes = [], logs = [], freezerMeals = [] } = catalog ?? {};
   const {
     isLogModalOpen,
     setIsLogModalOpen,
