@@ -9,6 +9,7 @@ const DEFAULT_CATALOG = {
   cookbooks: [],
   cuisines: [],
   logs: [],
+  freezerMeals: [],
 };
 
 export const useSupabaseCatalog = () => {
@@ -72,6 +73,10 @@ export const useSupabaseCatalog = () => {
     (updater) => updateCatalog("logs", updater),
     [updateCatalog]
   );
+  const setFreezerMeals = useCallback(
+    (updater) => updateCatalog("freezerMeals", updater),
+    [updateCatalog]
+  );
 
   const statusMessages = useMemo(
     () => ({
@@ -104,6 +109,7 @@ export const useSupabaseCatalog = () => {
     setCookbooks,
     setCuisines,
     setLogs,
+    setFreezerMeals,
     status,
     isSaving,
     pendingChanges,
