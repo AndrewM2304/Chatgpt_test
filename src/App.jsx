@@ -42,6 +42,8 @@ export default function App() {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
+    debugLogs,
+    clearDebugLogs,
     diagnostics,
     isDiagnosticsRunning,
     inviteUrl,
@@ -692,15 +694,17 @@ export default function App() {
                 <SettingsRoute
                   status={status}
                   isSaving={isSaving}
-        pendingChanges={pendingChanges}
-        lastSyncAt={lastSyncAt}
-        lastSaveAt={lastSaveAt}
-        diagnostics={diagnostics}
-        isDiagnosticsRunning={isDiagnosticsRunning}
-        runDiagnostics={runDiagnostics}
-        inviteUrl={inviteUrl}
-        groupCode={groupCode}
-        groupId={groupId}
+                  pendingChanges={pendingChanges}
+                  lastSyncAt={lastSyncAt}
+                  lastSaveAt={lastSaveAt}
+                  debugLogs={debugLogs}
+                  clearDebugLogs={clearDebugLogs}
+                  diagnostics={diagnostics}
+                  isDiagnosticsRunning={isDiagnosticsRunning}
+                  runDiagnostics={runDiagnostics}
+                  inviteUrl={inviteUrl}
+                  groupCode={groupCode}
+                  groupId={groupId}
                   createNewGroup={createNewGroup}
                   joinGroup={joinGroup}
                   addToast={addToast}
@@ -724,6 +728,8 @@ export default function App() {
           pendingChanges={pendingChanges}
           lastSyncAt={lastSyncAt}
           lastSaveAt={lastSaveAt}
+          debugLogs={debugLogs}
+          clearDebugLogs={clearDebugLogs}
           diagnostics={diagnostics}
           isDiagnosticsRunning={isDiagnosticsRunning}
           runDiagnostics={runDiagnostics}

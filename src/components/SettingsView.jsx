@@ -16,6 +16,9 @@ export const SettingsView = ({
   pendingChanges,
   lastSyncAt,
   lastSaveAt,
+  debugLogs = [],
+  onCopyDebugLogs = () => {},
+  onClearDebugLogs = () => {},
   diagnostics,
   isDiagnosticsRunning,
   onRunDiagnostics,
@@ -327,6 +330,56 @@ export const SettingsView = ({
             </dd>
           </div>
         </dl>
+      </div>
+
+      <div className="settings-card">
+        <h2>Debug logs</h2>
+        <p>
+          Capture recent sync activity to share with support when something
+          looks off.
+        </p>
+        <div className="debug-log-actions">
+          <button
+            type="button"
+            className="secondary"
+            onClick={onCopyDebugLogs}
+            disabled={!debugLogs.length}
+          >
+            Copy logs
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={onClearDebugLogs}
+            disabled={!debugLogs.length}
+          >
+            Clear logs
+          </button>
+        </div>
+        {debugLogs.length ? (
+          <ul className="debug-log-list">
+            {debugLogs
+              .slice()
+              .reverse()
+              .map((entry) => (
+                <li key={entry.id} className="debug-log-entry">
+                  <div className="debug-log-heading">
+                    <span className="debug-log-time">
+                      {formatTimestamp(entry.timestamp)}
+                    </span>
+                    <span className="debug-log-message">{entry.message}</span>
+                  </div>
+                  {entry.details && (
+                    <pre className="debug-log-details">
+                      {JSON.stringify(entry.details, null, 2)}
+                    </pre>
+                  )}
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <p className="status-banner">No debug logs yet.</p>
+        )}
       </div>
 
       <div className="settings-card danger-card">
