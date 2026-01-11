@@ -87,6 +87,21 @@ create table if not exists public.logs (
 
 alter table public.logs enable row level security;
 
+create table if not exists public.freezer_meals (
+  group_id uuid not null references public.catalog_groups(id) on delete cascade,
+  id text not null,
+  name text not null,
+  portions integer not null,
+  portions_left integer not null,
+  category text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (group_id, id)
+);
+
+alter table public.freezer_meals enable row level security;
+
 do $$
 begin
   if not exists (
@@ -116,6 +131,71 @@ begin
       on public.site_settings
       for insert
       with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'freezer_meals'
+      and policyname = 'Public freezer meals read'
+  ) then
+    create policy "Public freezer meals read"
+      on public.freezer_meals
+      for select
+      using (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'freezer_meals'
+      and policyname = 'Public freezer meals insert'
+  ) then
+    create policy "Public freezer meals insert"
+      on public.freezer_meals
+      for insert
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'freezer_meals'
+      and policyname = 'Public freezer meals update'
+  ) then
+    create policy "Public freezer meals update"
+      on public.freezer_meals
+      for update
+      using (true)
+      with check (true);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'freezer_meals'
+      and policyname = 'Public freezer meals delete'
+  ) then
+    create policy "Public freezer meals delete"
+      on public.freezer_meals
+      for delete
+      using (true);
   end if;
 end $$;
 
