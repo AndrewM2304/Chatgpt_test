@@ -60,7 +60,7 @@ export const StorageView = ({
         <div>
           <h2>Storage</h2>
           <p className="freezer-caption">
-            Track items in storage and update portions as they are used.
+            Track items in storage and remove them when they’re used up.
           </p>
         </div>
         <button
@@ -131,9 +131,6 @@ export const StorageView = ({
                   <li key={item.id}>
                     <div className="freezer-item-details">
                       <strong>{item.name}</strong>
-                      <span>
-                        {item.portionsLeft} of {item.portions} portions left
-                      </span>
                       {item.notes ? <em>“{item.notes}”</em> : null}
                     </div>
                     <label className="freezer-portion-control">

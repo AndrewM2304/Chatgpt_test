@@ -10,6 +10,7 @@ export const TypeaheadInput = ({
   options = [],
   placeholder,
   hasError = false,
+  required = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -54,6 +55,7 @@ export const TypeaheadInput = ({
           aria-autocomplete="list"
           aria-expanded={shouldShowList}
           aria-controls={listId}
+          required={required}
           className={`${value ? "has-clear" : ""}${hasError ? " input-error" : ""}`}
         />
         {value && (

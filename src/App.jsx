@@ -212,19 +212,14 @@ export default function App() {
     ).sort((a, b) => a.localeCompare(b));
   }, [recipes]);
 
-  const activeFreezerMeals = useMemo(
-    () => freezerMeals.filter((item) => item.portionsLeft > 0),
-    [freezerMeals]
-  );
-
   const freezerCategoryOptions = useMemo(() => {
     return Array.from(
-      new Set(activeFreezerMeals.map((item) => item.category).filter(Boolean))
+      new Set(freezerMeals.map((item) => item.category).filter(Boolean))
     ).sort((a, b) => a.localeCompare(b));
-  }, [activeFreezerMeals]);
+  }, [freezerMeals]);
 
   const storageByLocation = useMemo(() => {
-    return activeFreezerMeals.reduce((accumulator, item) => {
+    return freezerMeals.reduce((accumulator, item) => {
       const location = item.category?.trim() || "Unassigned";
       if (!accumulator[location]) {
         accumulator[location] = {
@@ -237,7 +232,7 @@ export default function App() {
       accumulator[location].itemCount += 1;
       return accumulator;
     }, {});
-  }, [activeFreezerMeals]);
+  }, [freezerMeals]);
 
   useEffect(() => {
     setCookbooks((prev) => {
@@ -461,7 +456,12 @@ export default function App() {
     const trimmedName = freezerMealName.trim();
     const trimmedCategory = freezerCategory.trim();
     const portionCount = Number.parseInt(freezerPortions, 10);
-    if (!trimmedName || Number.isNaN(portionCount) || portionCount <= 0) {
+    if (
+      !trimmedName ||
+      !trimmedCategory ||
+      Number.isNaN(portionCount) ||
+      portionCount <= 0
+    ) {
       return;
     }
     setFreezerMeals((prev) => [
@@ -483,11 +483,7 @@ export default function App() {
       return;
     }
     if (nextValue === 0) {
-      setFreezerMeals((prev) =>
-        prev.map((item) =>
-          item.id === mealId ? { ...item, portionsLeft: 0 } : item
-        )
-      );
+      setFreezerMeals((prev) => prev.filter((item) => item.id !== mealId));
       return;
     }
     setFreezerMeals((prev) =>
