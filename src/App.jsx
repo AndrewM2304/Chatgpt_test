@@ -43,6 +43,7 @@ export default function App() {
     lastSyncAt,
     lastSaveAt,
     debugLogs,
+    addDebugLog,
     clearDebugLogs,
     diagnostics,
     isDiagnosticsRunning,
@@ -488,9 +489,19 @@ export default function App() {
     if (nextValue === 0) {
       setFreezerMeals((prev) => prev.filter((item) => item.id !== mealId));
       if (groupId) {
+        addDebugLog("Deleting storage item from Supabase.", { mealId });
         const { error } = await deleteFreezerMeal({ groupId, mealId });
         if (error) {
           addToast("Unable to delete the storage item. Try again.", "error");
+          addDebugLog("Unable to delete storage item from Supabase.", {
+            mealId,
+            message: error.message || "Unknown error",
+            code: error.code || error.status || error.statusCode || null,
+            details: error.details || null,
+            hint: error.hint || null,
+          });
+        } else {
+          addDebugLog("Storage item deleted from Supabase.", { mealId });
         }
       }
       return;
@@ -500,7 +511,7 @@ export default function App() {
         item.id === mealId ? { ...item, portionsLeft: nextValue } : item
       )
     );
-  }, [addToast, groupId, setFreezerMeals]);
+  }, [addDebugLog, addToast, groupId, setFreezerMeals]);
 
   const handleLogRecipeQuery = (value) => {
     setLogRecipeQuery(value);
