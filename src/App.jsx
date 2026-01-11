@@ -10,6 +10,7 @@ import { SettingsModal } from "./components/SettingsModal";
 import { ToastStack } from "./components/ToastStack";
 import { useUI } from "./context/UIContext.jsx";
 import { buildCookbookCoverMap, buildCookbookCoverTargets, buildRecipeById } from "./lib/catalogDomain.js";
+import { deleteFreezerMeal } from "./lib/catalogService.js";
 import { useLogModalState } from "./hooks/useLogModalState.js";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { CatalogRoute } from "./routes/CatalogRoute";
@@ -491,6 +492,18 @@ export default function App() {
         mealId,
         hasGroup: Boolean(groupId),
       });
+      if (groupId) {
+        const { error } = await deleteFreezerMeal({ groupId, mealId });
+        if (error) {
+          addDebugLog("Storage item delete failed on sync.", {
+            mealId,
+            groupId,
+            error,
+          });
+        } else {
+          addDebugLog("Storage item deleted from sync.", { mealId, groupId });
+        }
+      }
       return;
     }
     setFreezerMeals((prev) =>
