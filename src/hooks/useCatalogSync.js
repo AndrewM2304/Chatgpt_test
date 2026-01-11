@@ -217,35 +217,26 @@ export const useCatalogSync = ({
         });
         return null;
       }
-      if (!hasCatalogContent(catalogData)) {
-        const legacyGroupId = await loadLegacyCatalog({
-          groupCode,
+      if (!hasCatalogContent(catalogData) && hasCatalogContent(currentCatalog)) {
+        const { error: seedError } = await upsertCatalogData({
           groupId: data.id,
+          data: currentCatalog,
         });
-        if (legacyGroupId) {
-          return legacyGroupId;
-        }
-        if (hasCatalogContent(currentCatalog)) {
-          const { error: seedError } = await upsertCatalogData({
-            groupId: data.id,
-            data: currentCatalog,
+        if (seedError) {
+          setStatus({
+            state: "error",
+            message: resolveStatusMessage(seedError),
+            details: buildErrorDetails(seedError),
           });
-          if (seedError) {
-            setStatus({
-              state: "error",
-              message: resolveStatusMessage(seedError),
-              details: buildErrorDetails(seedError),
-            });
-            return null;
-          }
-          setGroupId(data.id);
-          setCatalog(currentCatalog);
-          pendingChangesRef.current = false;
-          changeIdRef.current = 0;
-          setPendingChanges(false);
-          setLastSyncAt(new Date().toISOString());
-          return data.id;
+          return null;
         }
+        setGroupId(data.id);
+        setCatalog(currentCatalog);
+        pendingChangesRef.current = false;
+        changeIdRef.current = 0;
+        setPendingChanges(false);
+        setLastSyncAt(new Date().toISOString());
+        return data.id;
       }
       setGroupId(data.id);
       setCatalog(catalogData || defaultCatalog);
@@ -335,39 +326,27 @@ export const useCatalogSync = ({
       });
       return null;
     }
-    if (!hasCatalogContent(catalogData)) {
-      const legacyGroupId = await loadLegacyCatalog({
-        groupCode,
+    if (!hasCatalogContent(catalogData) && hasCatalogContent(currentCatalog)) {
+      const { error: seedError } = await upsertCatalogData({
         groupId: data.id,
+        data: currentCatalog,
       });
-      if (legacyGroupId) {
-        setGroupId(data.id);
-        setHasLoadedCatalog(true);
-        setLastSyncAt(new Date().toISOString());
-        return legacyGroupId;
-      }
-      if (hasCatalogContent(currentCatalog)) {
-        const { error: seedError } = await upsertCatalogData({
-          groupId: data.id,
-          data: currentCatalog,
+      if (seedError) {
+        setStatus({
+          state: "error",
+          message: resolveStatusMessage(seedError),
+          details: buildErrorDetails(seedError),
         });
-        if (seedError) {
-          setStatus({
-            state: "error",
-            message: resolveStatusMessage(seedError),
-            details: buildErrorDetails(seedError),
-          });
-          return null;
-        }
-        setGroupId(data.id);
-        setCatalog(currentCatalog);
-        setHasLoadedCatalog(true);
-        pendingChangesRef.current = false;
-        changeIdRef.current = 0;
-        setPendingChanges(false);
-        setLastSyncAt(new Date().toISOString());
-        return catalog;
+        return null;
       }
+      setGroupId(data.id);
+      setCatalog(currentCatalog);
+      setHasLoadedCatalog(true);
+      pendingChangesRef.current = false;
+      changeIdRef.current = 0;
+      setPendingChanges(false);
+      setLastSyncAt(new Date().toISOString());
+      return catalog;
     }
     setGroupId(data.id);
     setCatalog(catalogData || defaultCatalog);
