@@ -10,7 +10,6 @@ import { SettingsModal } from "./components/SettingsModal";
 import { ToastStack } from "./components/ToastStack";
 import { useUI } from "./context/UIContext.jsx";
 import { buildCookbookCoverMap, buildCookbookCoverTargets, buildRecipeById } from "./lib/catalogDomain.js";
-import { deleteFreezerMeal } from "./lib/catalogService.js";
 import { useLogModalState } from "./hooks/useLogModalState.js";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { CatalogRoute } from "./routes/CatalogRoute";
@@ -488,22 +487,10 @@ export default function App() {
     }
     if (nextValue === 0) {
       setFreezerMeals((prev) => prev.filter((item) => item.id !== mealId));
-      if (groupId) {
-        addDebugLog("Deleting storage item from Supabase.", { mealId });
-        const { error } = await deleteFreezerMeal({ groupId, mealId });
-        if (error) {
-          addToast("Unable to delete the storage item. Try again.", "error");
-          addDebugLog("Unable to delete storage item from Supabase.", {
-            mealId,
-            message: error.message || "Unknown error",
-            code: error.code || error.status || error.statusCode || null,
-            details: error.details || null,
-            hint: error.hint || null,
-          });
-        } else {
-          addDebugLog("Storage item deleted from Supabase.", { mealId });
-        }
-      }
+      addDebugLog("Storage item removed locally. Pending sync will delete it.", {
+        mealId,
+        hasGroup: Boolean(groupId),
+      });
       return;
     }
     setFreezerMeals((prev) =>
@@ -511,7 +498,7 @@ export default function App() {
         item.id === mealId ? { ...item, portionsLeft: nextValue } : item
       )
     );
-  }, [addDebugLog, addToast, groupId, setFreezerMeals]);
+  }, [addDebugLog, groupId, setFreezerMeals]);
 
   const handleLogRecipeQuery = (value) => {
     setLogRecipeQuery(value);
