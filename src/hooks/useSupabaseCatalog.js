@@ -40,8 +40,6 @@ export const useSupabaseCatalog = () => {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
-    debugLogs,
-    clearDebugLogs,
     diagnostics,
     isDiagnosticsRunning,
     passwordHash,
