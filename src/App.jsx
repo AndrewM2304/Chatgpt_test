@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Route, Routes, useMatch, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useMatch, useNavigate } from "react-router-dom";
 import { Hero } from "./components/Hero";
 import { FreezerModal } from "./components/FreezerModal";
 import { RecipePreviewModal } from "./components/RecipePreviewModal";
@@ -207,6 +207,22 @@ export default function App() {
     return Array.from(
       new Set(freezerMeals.map((item) => item.category).filter(Boolean))
     ).sort((a, b) => a.localeCompare(b));
+  }, [freezerMeals]);
+
+  const storageByLocation = useMemo(() => {
+    return freezerMeals.reduce((accumulator, item) => {
+      const location = item.category?.trim() || "Unassigned";
+      if (!accumulator[location]) {
+        accumulator[location] = {
+          location,
+          items: [],
+          itemCount: 0,
+        };
+      }
+      accumulator[location].items.push(item);
+      accumulator[location].itemCount += 1;
+      return accumulator;
+    }, {});
   }, [freezerMeals]);
 
   useEffect(() => {
@@ -624,15 +640,16 @@ export default function App() {
               }
             />
             <Route
-              path="/freezer"
+              path="/storage"
               element={
                 <FreezerRoute
-                  items={freezerMeals}
+                  storageByLocation={storageByLocation}
                   onOpenModal={handleOpenFreezerModal}
                   onUpdatePortionsLeft={handleUpdateFreezerPortionsLeft}
                 />
               }
             />
+            <Route path="/freezer" element={<Navigate to="/storage" replace />} />
             <Route
               path="/settings"
               element={

@@ -26,9 +26,9 @@ export const NAV_TABS = [
     Icon: CalendarDaysIcon,
   },
   {
-    id: "freezer",
+    id: "storage",
     label: "Storage",
-    path: "/freezer",
+    path: "/storage",
     Icon: ArchiveBoxIcon,
   },
   {

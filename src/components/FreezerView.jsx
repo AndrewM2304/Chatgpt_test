@@ -1,4 +1,8 @@
-export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
+export const FreezerView = ({
+  storageByLocation,
+  onOpenModal,
+  onUpdatePortionsLeft,
+}) => {
   const buildPortionOptions = (item) => {
     const values = new Set([item.portionsLeft]);
     for (let value = item.portions - 1; value >= 0; value -= 1) {
@@ -6,6 +10,11 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
     }
     return Array.from(values).sort((a, b) => b - a);
   };
+
+  const locations = Object.values(storageByLocation).sort((a, b) =>
+    a.location.localeCompare(b.location)
+  );
+  const hasItems = locations.some((location) => location.items.length);
 
   return (
     <section className="freezer">
@@ -25,38 +34,51 @@ export const FreezerView = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
         </button>
       </div>
 
-      {items.length ? (
-        <ul className="freezer-list">
-          {items.map((item) => (
-            <li key={item.id}>
-              <div className="freezer-item-details">
-                <strong>{item.name}</strong>
-                {item.category ? (
-                  <span>Location: {item.category}</span>
-                ) : null}
+      {hasItems ? (
+        <div className="freezer-groups">
+          {locations.map((location) => (
+            <section key={location.location} className="freezer-group">
+              <div className="freezer-group-header">
+                <h3>{location.location}</h3>
                 <span>
-                  {item.portionsLeft} of {item.portions} portions left
+                  {location.itemCount}{" "}
+                  {location.itemCount === 1 ? "item" : "items"}
                 </span>
-                {item.notes ? <em>“{item.notes}”</em> : null}
               </div>
-              <label className="freezer-portion-control">
-                Portions left
-                <select
-                  value={item.portionsLeft}
-                  onChange={(event) =>
-                    onUpdatePortionsLeft(item.id, Number(event.target.value))
-                  }
-                >
-                  {buildPortionOptions(item).map((value) => (
-                    <option key={value} value={value}>
-                      {value === 0 ? "Remove" : value}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </li>
+              <ul className="freezer-list">
+                {location.items.map((item) => (
+                  <li key={item.id}>
+                    <div className="freezer-item-details">
+                      <strong>{item.name}</strong>
+                      <span>
+                        {item.portionsLeft} of {item.portions} portions left
+                      </span>
+                      {item.notes ? <em>“{item.notes}”</em> : null}
+                    </div>
+                    <label className="freezer-portion-control">
+                      Portions left
+                      <select
+                        value={item.portionsLeft}
+                        onChange={(event) =>
+                          onUpdatePortionsLeft(
+                            item.id,
+                            Number(event.target.value)
+                          )
+                        }
+                      >
+                        {buildPortionOptions(item).map((value) => (
+                          <option key={value} value={value}>
+                            {value === 0 ? "Remove" : value}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       ) : (
         <div className="freezer-empty">
           <p>No storage items yet. Add one to get started.</p>

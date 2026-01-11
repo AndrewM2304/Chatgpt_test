@@ -169,6 +169,35 @@ body.modal-open .panel-content {
   gap: 20px;
 }
 
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hero-settings-button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-strong);
+  border-radius: 999px;
+  padding: 6px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.hero-settings-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hero-settings-button:hover,
+.hero-settings-button:focus-visible {
+  background: color-mix(in srgb, var(--color-surface-strong) 80%, transparent);
+}
+
 .eyebrow {
   font-size: 0.85rem;
   letter-spacing: 0.2em;
@@ -916,6 +945,29 @@ button.secondary.icon-button {
   list-style: none;
   display: grid;
   gap: 12px;
+}
+
+.freezer-groups {
+  display: grid;
+  gap: 20px;
+}
+
+.freezer-group {
+  display: grid;
+  gap: 12px;
+}
+
+.freezer-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.freezer-group-header span {
+  color: var(--color-text-subtle);
+  font-size: 0.95rem;
 }
 
 .freezer-list li {
@@ -1867,6 +1919,10 @@ textarea.input-error {
   .hero .eyebrow,
   .hero .subtitle {
     display: none;
+  }
+
+  .hero-settings-button {
+    display: inline-flex;
   }
 
   .app-header {
