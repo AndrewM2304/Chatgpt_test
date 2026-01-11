@@ -10,8 +10,11 @@ export const StorageView = ({
   const [locationFilter, setLocationFilter] = useState("all");
 
   const buildPortionOptions = (item) => {
-    const values = new Set([item.portionsLeft]);
-    for (let value = item.portions - 1; value >= 0; value -= 1) {
+    const values = new Set();
+    if (item.portionsLeft > 0) {
+      values.add(item.portionsLeft);
+    }
+    for (let value = item.portions; value > 0; value -= 1) {
       values.add(value);
     }
     return Array.from(values).sort((a, b) => b - a);
@@ -133,24 +136,30 @@ export const StorageView = ({
                       <strong>{item.name}</strong>
                       {item.notes ? <em>“{item.notes}”</em> : null}
                     </div>
-                    <label className="freezer-portion-control">
-                      Portions left
+                    <div className="freezer-portion-control">
                       <select
+                        aria-label="Portions left"
                         value={item.portionsLeft}
-                        onChange={(event) =>
-                          onUpdatePortionsLeft(
-                            item.id,
-                            Number(event.target.value)
-                          )
-                        }
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          if (value === "remove") {
+                            onUpdatePortionsLeft(item.id, 0);
+                            return;
+                          }
+                          const parsedValue = Number(value);
+                          if (!Number.isNaN(parsedValue)) {
+                            onUpdatePortionsLeft(item.id, parsedValue);
+                          }
+                        }}
                       >
                         {buildPortionOptions(item).map((value) => (
                           <option key={value} value={value}>
-                            {value === 0 ? "Remove" : value}
+                            {value}
                           </option>
                         ))}
+                        <option value="remove">Remove</option>
                       </select>
-                    </label>
+                    </div>
                   </li>
                 ))}
               </ul>
