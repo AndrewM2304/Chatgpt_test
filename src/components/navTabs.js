@@ -27,7 +27,7 @@ export const NAV_TABS = [
   },
   {
     id: "freezer",
-    label: "Freezer",
+    label: "Storage",
     path: "/freezer",
     Icon: ArchiveBoxIcon,
   },

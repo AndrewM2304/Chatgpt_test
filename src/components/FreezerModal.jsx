@@ -1,13 +1,17 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { TypeaheadInput } from "./TypeaheadInput";
 
 export const FreezerModal = ({
   isOpen,
   name,
   portions,
+  category,
   notes,
+  categoryOptions,
   portionOptions,
   onNameChange,
   onPortionsChange,
+  onCategoryChange,
   onNotesChange,
   onSubmit,
   onClose,
@@ -21,7 +25,7 @@ export const FreezerModal = ({
       <div className="modal-card">
         <header className="modal-header">
           <div>
-            <h2 id="freezer-modal-title">Add a freezer meal</h2>
+            <h2 id="freezer-modal-title">Add a storage item</h2>
           </div>
           <button
             type="button"
@@ -33,14 +37,24 @@ export const FreezerModal = ({
           </button>
         </header>
         <form onSubmit={onSubmit} className="modal-form">
-          <label htmlFor="freezer-name">Meal</label>
+          <label htmlFor="freezer-name">Item</label>
           <input
             id="freezer-name"
             type="text"
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
-            placeholder="Freezer lasagna"
+            placeholder="Pantry pasta"
             required
+          />
+
+          <TypeaheadInput
+            id="freezer-category"
+            label="Location"
+            name="freezer-category"
+            value={category}
+            onChange={onCategoryChange}
+            options={categoryOptions}
+            placeholder="Freezer, pantry, cupboard"
           />
 
           <label htmlFor="freezer-portions">Portions</label>
