@@ -93,15 +93,30 @@ const normalizeLogRow = (row) => ({
   note: row.note || "",
 });
 
+const normalizeFreezerMealRow = (row) => ({
+  id: row.id,
+  name: row.name,
+  portions: row.portions ?? 0,
+  portionsLeft: row.portions_left ?? row.portions ?? 0,
+  category: row.category || null,
+  notes: row.notes || "",
+});
+
 export const fetchCatalogDataByGroupId = async (groupId) => {
-  const [recipes, cookbooks, cuisines, logs] = await Promise.all([
+  const [recipes, cookbooks, cuisines, logs, freezerMeals] = await Promise.all([
     supabase.from("recipes").select("*").eq("group_id", groupId),
     supabase.from("cookbooks").select("*").eq("group_id", groupId),
     supabase.from("cuisines").select("*").eq("group_id", groupId),
     supabase.from("logs").select("*").eq("group_id", groupId),
+    supabase.from("freezer_meals").select("*").eq("group_id", groupId),
   ]);
 
-  const error = recipes.error || cookbooks.error || cuisines.error || logs.error;
+  const error =
+    recipes.error ||
+    cookbooks.error ||
+    cuisines.error ||
+    logs.error ||
+    freezerMeals.error;
   if (error) {
     return { data: null, error };
   }
@@ -112,6 +127,7 @@ export const fetchCatalogDataByGroupId = async (groupId) => {
       cookbooks: (cookbooks.data || []).map(normalizeCookbookRow),
       cuisines: (cuisines.data || []).map((row) => row.name),
       logs: (logs.data || []).map(normalizeLogRow),
+      freezerMeals: (freezerMeals.data || []).map(normalizeFreezerMealRow),
     },
     error: null,
   };
@@ -160,6 +176,17 @@ const buildLogPayload = (entry, groupId) => ({
   note: entry.note || null,
 });
 
+const buildFreezerMealPayload = (entry, groupId) => ({
+  group_id: groupId,
+  id: entry.id,
+  name: entry.name,
+  portions: entry.portions ?? 0,
+  portions_left: entry.portionsLeft ?? entry.portions ?? 0,
+  category: entry.category || null,
+  notes: entry.notes || null,
+  updated_at: new Date().toISOString(),
+});
+
 const escapeFilterValue = (value) => String(value).replaceAll('"', '\\"');
 
 const deleteMissingRows = async ({ table, groupId, column, values }) => {
@@ -179,12 +206,14 @@ export const upsertCatalogData = async ({ groupId, data }) => {
   const cookbooks = Array.isArray(data.cookbooks) ? data.cookbooks : [];
   const cuisines = Array.isArray(data.cuisines) ? data.cuisines : [];
   const logs = Array.isArray(data.logs) ? data.logs : [];
+  const freezerMeals = Array.isArray(data.freezerMeals) ? data.freezerMeals : [];
   const recipeIds = recipes.map((recipe) => recipe.id).filter(Boolean);
   const cookbookTitles = cookbooks
     .map((cookbook) => cookbook.title)
     .filter(Boolean);
   const cuisineNames = cuisines.filter(Boolean);
   const logIds = logs.map((entry) => entry.id).filter(Boolean);
+  const freezerMealIds = freezerMeals.map((entry) => entry.id).filter(Boolean);
 
   const recipePayload = recipes
     .filter((recipe) => recipe.id)
@@ -198,73 +227,99 @@ export const upsertCatalogData = async ({ groupId, data }) => {
   const logPayload = logs
     .filter((entry) => entry.id)
     .map((entry) => buildLogPayload(entry, groupId));
+  const freezerMealPayload = freezerMeals
+    .filter((entry) => entry.id)
+    .map((entry) => buildFreezerMealPayload(entry, groupId));
 
-  const [recipeUpsert, cookbookUpsert, cuisineUpsert, logUpsert] =
-    await Promise.all([
-      recipePayload.length
-        ? supabase
-            .from("recipes")
-            .upsert(recipePayload, { onConflict: "group_id,id" })
-        : Promise.resolve({ error: null }),
-      cookbookPayload.length
-        ? supabase
-            .from("cookbooks")
-            .upsert(cookbookPayload, { onConflict: "group_id,title" })
-        : Promise.resolve({ error: null }),
-      cuisinePayload.length
-        ? supabase
-            .from("cuisines")
-            .upsert(cuisinePayload, { onConflict: "group_id,name" })
-        : Promise.resolve({ error: null }),
-      logPayload.length
-        ? supabase
-            .from("logs")
-            .upsert(logPayload, { onConflict: "group_id,id" })
-        : Promise.resolve({ error: null }),
-    ]);
+  const [
+    recipeUpsert,
+    cookbookUpsert,
+    cuisineUpsert,
+    logUpsert,
+    freezerMealUpsert,
+  ] = await Promise.all([
+    recipePayload.length
+      ? supabase
+          .from("recipes")
+          .upsert(recipePayload, { onConflict: "group_id,id" })
+      : Promise.resolve({ error: null }),
+    cookbookPayload.length
+      ? supabase
+          .from("cookbooks")
+          .upsert(cookbookPayload, { onConflict: "group_id,title" })
+      : Promise.resolve({ error: null }),
+    cuisinePayload.length
+      ? supabase
+          .from("cuisines")
+          .upsert(cuisinePayload, { onConflict: "group_id,name" })
+      : Promise.resolve({ error: null }),
+    logPayload.length
+      ? supabase
+          .from("logs")
+          .upsert(logPayload, { onConflict: "group_id,id" })
+      : Promise.resolve({ error: null }),
+    freezerMealPayload.length
+      ? supabase
+          .from("freezer_meals")
+          .upsert(freezerMealPayload, { onConflict: "group_id,id" })
+      : Promise.resolve({ error: null }),
+  ]);
 
   const upsertError =
     recipeUpsert.error ||
     cookbookUpsert.error ||
     cuisineUpsert.error ||
-    logUpsert.error;
+    logUpsert.error ||
+    freezerMealUpsert.error;
   if (upsertError) {
     return { error: upsertError };
   }
 
-  const [recipeDelete, cookbookDelete, cuisineDelete, logDelete] =
-    await Promise.all([
-      deleteMissingRows({
-        table: "recipes",
-        groupId,
-        column: "id",
-        values: recipeIds,
-      }),
-      deleteMissingRows({
-        table: "cookbooks",
-        groupId,
-        column: "title",
-        values: cookbookTitles,
-      }),
-      deleteMissingRows({
-        table: "cuisines",
-        groupId,
-        column: "name",
-        values: cuisineNames,
-      }),
-      deleteMissingRows({
-        table: "logs",
-        groupId,
-        column: "id",
-        values: logIds,
-      }),
-    ]);
+  const [
+    recipeDelete,
+    cookbookDelete,
+    cuisineDelete,
+    logDelete,
+    freezerMealDelete,
+  ] = await Promise.all([
+    deleteMissingRows({
+      table: "recipes",
+      groupId,
+      column: "id",
+      values: recipeIds,
+    }),
+    deleteMissingRows({
+      table: "cookbooks",
+      groupId,
+      column: "title",
+      values: cookbookTitles,
+    }),
+    deleteMissingRows({
+      table: "cuisines",
+      groupId,
+      column: "name",
+      values: cuisineNames,
+    }),
+    deleteMissingRows({
+      table: "logs",
+      groupId,
+      column: "id",
+      values: logIds,
+    }),
+    deleteMissingRows({
+      table: "freezer_meals",
+      groupId,
+      column: "id",
+      values: freezerMealIds,
+    }),
+  ]);
 
   const deleteError =
     recipeDelete.error ||
     cookbookDelete.error ||
     cuisineDelete.error ||
-    logDelete.error;
+    logDelete.error ||
+    freezerMealDelete.error;
   if (deleteError) {
     return { error: deleteError };
   }
@@ -319,6 +374,10 @@ export const checkSupabaseAccess = async ({ groupCode, groupId } = {}) => {
       request: groupScopedQuery("cuisines", "name"),
     },
     { label: "logs (read)", request: groupScopedQuery("logs", "id") },
+    {
+      label: "freezer_meals (read)",
+      request: groupScopedQuery("freezer_meals", "id"),
+    },
   ];
 
   const results = await Promise.all(
