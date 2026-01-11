@@ -6,13 +6,14 @@ import { RecipePreviewModal } from "./components/RecipePreviewModal";
 import { ScheduleModal } from "./components/ScheduleModal";
 import { LandscapeHeaderNav } from "./components/LandscapeHeaderNav";
 import { MobileTabBar } from "./components/MobileTabBar";
+import { SettingsModal } from "./components/SettingsModal";
 import { ToastStack } from "./components/ToastStack";
 import { useUI } from "./context/UIContext.jsx";
 import { buildCookbookCoverMap, buildCookbookCoverTargets, buildRecipeById } from "./lib/catalogDomain.js";
 import { useLogModalState } from "./hooks/useLogModalState.js";
 import { useSupabaseCatalog } from "./hooks/useSupabaseCatalog";
 import { CatalogRoute } from "./routes/CatalogRoute";
-import { FreezerRoute } from "./routes/FreezerRoute";
+import { StorageRoute } from "./routes/StorageRoute";
 import { RandomRoute } from "./routes/RandomRoute";
 import { LogRoute } from "./routes/LogRoute";
 import { SettingsRoute } from "./routes/SettingsRoute";
@@ -83,6 +84,7 @@ export default function App() {
   const [pendingEditRecipeId, setPendingEditRecipeId] = useState(null);
   const [isLogWeekCustomized, setIsLogWeekCustomized] = useState(false);
   const [isFreezerModalOpen, setIsFreezerModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [freezerMealName, setFreezerMealName] = useState("");
   const [freezerPortions, setFreezerPortions] = useState(
     String(FREEZER_PORTION_OPTIONS[0])
@@ -125,12 +127,19 @@ export default function App() {
       isRecipeModalOpen ||
       isLogModalOpen ||
       isPreviewOpen ||
-      isFreezerModalOpen;
+      isFreezerModalOpen ||
+      isSettingsModalOpen;
     document.body.classList.toggle("modal-open", shouldLock);
     return () => {
       document.body.classList.remove("modal-open");
     };
-  }, [isRecipeModalOpen, isLogModalOpen, isPreviewOpen, isFreezerModalOpen]);
+  }, [
+    isRecipeModalOpen,
+    isLogModalOpen,
+    isPreviewOpen,
+    isFreezerModalOpen,
+    isSettingsModalOpen,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -434,6 +443,14 @@ export default function App() {
     setIsFreezerModalOpen(false);
   };
 
+  const handleOpenSettingsModal = () => {
+    setIsSettingsModalOpen(true);
+  };
+
+  const handleCloseSettingsModal = () => {
+    setIsSettingsModalOpen(false);
+  };
+
   const handleAddFreezerMeal = (event) => {
     event.preventDefault();
     const trimmedName = freezerMealName.trim();
@@ -600,7 +617,7 @@ export default function App() {
             isCatalogRoute ? " is-catalog" : ""
           }`}
         >
-          <Hero />
+          <Hero onOpenSettings={handleOpenSettingsModal} />
           <Routes>
             <Route path="/" element={catalogRouteElement} />
             <Route
@@ -642,7 +659,7 @@ export default function App() {
             <Route
               path="/storage"
               element={
-                <FreezerRoute
+                <StorageRoute
                   storageByLocation={storageByLocation}
                   onOpenModal={handleOpenFreezerModal}
                   onUpdatePortionsLeft={handleUpdateFreezerPortionsLeft}
@@ -681,6 +698,29 @@ export default function App() {
       </main>
       <MobileTabBar />
       <ToastStack />
+      <SettingsModal isOpen={isSettingsModalOpen} onClose={handleCloseSettingsModal}>
+        <SettingsRoute
+          status={status}
+          isSaving={isSaving}
+          pendingChanges={pendingChanges}
+          lastSyncAt={lastSyncAt}
+          lastSaveAt={lastSaveAt}
+          diagnostics={diagnostics}
+          isDiagnosticsRunning={isDiagnosticsRunning}
+          runDiagnostics={runDiagnostics}
+          inviteUrl={inviteUrl}
+          groupCode={groupCode}
+          groupId={groupId}
+          createNewGroup={createNewGroup}
+          joinGroup={joinGroup}
+          addToast={addToast}
+          onLogout={clearLocalData}
+          setCookbooks={setCookbooks}
+          cookbookOptions={settingsCookbookOptions}
+          cookbookCoverTargets={cookbookCoverTargets}
+          cookbookCoverMap={cookbookCoverMap}
+        />
+      </SettingsModal>
       <RecipePreviewModal
         isOpen={isPreviewOpen}
         recipe={previewRecipeId ? recipeById[previewRecipeId] : null}
