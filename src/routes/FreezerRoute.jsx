@@ -1,9 +1,13 @@
 import { FreezerView } from "../components/FreezerView";
 
-export const FreezerRoute = ({ items, onOpenModal, onUpdatePortionsLeft }) => {
+export const FreezerRoute = ({
+  storageByLocation,
+  onOpenModal,
+  onUpdatePortionsLeft,
+}) => {
   return (
     <FreezerView
-      items={items}
+      storageByLocation={storageByLocation}
       onOpenModal={onOpenModal}
       onUpdatePortionsLeft={onUpdatePortionsLeft}
     />

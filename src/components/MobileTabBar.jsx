@@ -4,11 +4,12 @@ import { NAV_TABS } from "./navTabs";
 
 export const MobileTabBar = () => {
   const location = useLocation();
+  const mobileTabs = NAV_TABS.filter(({ id }) => id !== "settings");
 
   return (
     <nav className="mobile-tab-bar" aria-label="Primary">
       <div className="mobile-tab-bar-inner">
-        {NAV_TABS.map(({ id, label, path, Icon }) => {
+        {mobileTabs.map(({ id, label, path, Icon }) => {
           const isCatalogRoute =
             id === "catalog" &&
             (location.pathname === "/" ||
