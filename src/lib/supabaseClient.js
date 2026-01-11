@@ -14,11 +14,23 @@ const buildHeaders = (extra = {}) => ({
   ...extra,
 });
 
+const encodeFilterValue = (operator, value) => {
+  const encodedValue = encodeURIComponent(value);
+  if (operator === "in" || operator === "not.in") {
+    return encodedValue
+      .replaceAll("%28", "(")
+      .replaceAll("%29", ")")
+      .replaceAll("%2C", ",");
+  }
+  return encodedValue;
+};
+
 const buildFilters = (filters) =>
   filters
     .map((filter) => {
       const operator = filter.operator || "eq";
-      return `${encodeURIComponent(filter.column)}=${operator}.${encodeURIComponent(
+      return `${encodeURIComponent(filter.column)}=${operator}.${encodeFilterValue(
+        operator,
         filter.value
       )}`;
     })
