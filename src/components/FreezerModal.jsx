@@ -20,6 +20,9 @@ export const FreezerModal = ({
     return null;
   }
 
+  const isNameValid = Boolean(name.trim());
+  const isCategoryValid = Boolean(category.trim());
+
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal-card">
@@ -55,6 +58,7 @@ export const FreezerModal = ({
             onChange={onCategoryChange}
             options={categoryOptions}
             placeholder="Freezer, pantry, cupboard"
+            required
           />
 
           <label htmlFor="freezer-portions">Portions</label>
@@ -79,7 +83,11 @@ export const FreezerModal = ({
           />
 
           <div className="form-actions">
-            <button className="primary" type="submit" disabled={!name.trim()}>
+            <button
+              className="primary"
+              type="submit"
+              disabled={!isNameValid || !isCategoryValid}
+            >
               Save
             </button>
             <button type="button" className="secondary" onClick={onClose}>
