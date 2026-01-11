@@ -81,6 +81,13 @@ export const useSupabaseCatalog = () => {
     setDebugLogs([]);
   }, []);
 
+  const addDebugLog = useCallback(
+    (message, details = null) => {
+      appendDebugLog(message, details);
+    },
+    [appendDebugLog]
+  );
+
   useEffect(() => {
     if (!status) {
       return;
@@ -189,6 +196,7 @@ export const useSupabaseCatalog = () => {
     lastSyncAt,
     lastSaveAt,
     debugLogs,
+    addDebugLog,
     clearDebugLogs,
     diagnostics,
     isDiagnosticsRunning,
