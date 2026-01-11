@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "./useLocalStorage.js";
 import { useCatalogSync } from "./useCatalogSync.js";
 import { useGroupManagement } from "./useGroupManagement.js";
 import { useCatalogGroups } from "./useCatalogGroups.js";
-import { createId } from "../utils/idUtils.js";
 
 const DEFAULT_CATALOG = {
   recipes: [],
@@ -56,72 +55,6 @@ export const useSupabaseCatalog = () => {
     setCatalog,
     setGroupId,
   });
-  const [debugLogs, setDebugLogs] = useState([]);
-  const lastStatusRef = useRef(null);
-  const lastSyncRef = useRef(null);
-  const lastSaveRef = useRef(null);
-
-  const appendDebugLog = useCallback((message, details = null) => {
-    const entry = {
-      id: createId(),
-      timestamp: new Date().toISOString(),
-      message,
-      details,
-    };
-    setDebugLogs((prev) => {
-      const next = [...prev, entry];
-      if (next.length > 200) {
-        return next.slice(next.length - 200);
-      }
-      return next;
-    });
-  }, []);
-
-  const clearDebugLogs = useCallback(() => {
-    setDebugLogs([]);
-  }, []);
-
-  const addDebugLog = useCallback(
-    (message, details = null) => {
-      appendDebugLog(message, details);
-    },
-    [appendDebugLog]
-  );
-
-  useEffect(() => {
-    if (!status) {
-      return;
-    }
-    const lastStatus = lastStatusRef.current;
-    if (
-      lastStatus?.state === status.state &&
-      lastStatus?.message === status.message
-    ) {
-      return;
-    }
-    appendDebugLog(`Sync status: ${status.message || status.state}`, {
-      state: status.state,
-      code: status?.details?.code || null,
-    });
-    lastStatusRef.current = status;
-  }, [appendDebugLog, status]);
-
-  useEffect(() => {
-    if (!lastSyncAt || lastSyncAt === lastSyncRef.current) {
-      return;
-    }
-    appendDebugLog("Sync completed.", { lastSyncAt });
-    lastSyncRef.current = lastSyncAt;
-  }, [appendDebugLog, lastSyncAt]);
-
-  useEffect(() => {
-    if (!lastSaveAt || lastSaveAt === lastSaveRef.current) {
-      return;
-    }
-    appendDebugLog("Save completed.", { lastSaveAt });
-    lastSaveRef.current = lastSaveAt;
-  }, [appendDebugLog, lastSaveAt]);
-
   const updateCatalog = useCallback(
     (key, updater) => {
       setCatalog((prev) => {
@@ -195,9 +128,6 @@ export const useSupabaseCatalog = () => {
     pendingChanges,
     lastSyncAt,
     lastSaveAt,
-    debugLogs,
-    addDebugLog,
-    clearDebugLogs,
     diagnostics,
     isDiagnosticsRunning,
     passwordHash,

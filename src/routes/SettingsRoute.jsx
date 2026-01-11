@@ -9,8 +9,6 @@ export const SettingsRoute = ({
   pendingChanges,
   lastSyncAt,
   lastSaveAt,
-  debugLogs,
-  clearDebugLogs,
   diagnostics,
   isDiagnosticsRunning,
   runDiagnostics,
@@ -135,34 +133,6 @@ export const SettingsRoute = ({
     addToast("Group code copied.", "success");
   };
 
-  const handleCopyDebugLogs = async () => {
-    if (!navigator.clipboard?.writeText) {
-      addToast("Clipboard access is unavailable.", "error");
-      return;
-    }
-    if (!debugLogs?.length) {
-      addToast("No debug logs to copy.", "info");
-      return;
-    }
-    await navigator.clipboard.writeText(
-      JSON.stringify(debugLogs, null, 2)
-    );
-    addToast("Debug logs copied.", "success");
-  };
-
-  const handleClearDebugLogs = () => {
-    if (!debugLogs?.length) {
-      addToast("No debug logs to clear.", "info");
-      return;
-    }
-    if (!clearDebugLogs) {
-      addToast("Debug log clearing is unavailable.", "error");
-      return;
-    }
-    clearDebugLogs();
-    addToast("Debug logs cleared.", "success");
-  };
-
   const handleJoinGroup = (value) => {
     const trimmed = value.trim();
     if (!trimmed) {
@@ -269,9 +239,6 @@ export const SettingsRoute = ({
       pendingChanges={pendingChanges}
       lastSyncAt={lastSyncAt}
       lastSaveAt={lastSaveAt}
-      debugLogs={debugLogs}
-      onCopyDebugLogs={handleCopyDebugLogs}
-      onClearDebugLogs={handleClearDebugLogs}
       diagnostics={diagnostics}
       isDiagnosticsRunning={isDiagnosticsRunning}
       onRunDiagnostics={runDiagnostics}
