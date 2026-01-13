@@ -944,7 +944,7 @@ button.secondary.icon-button {
 .freezer-list {
   list-style: none;
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .freezer-groups {
@@ -974,7 +974,7 @@ button.secondary.icon-button {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px;
+  padding: 8px 12px;
   background: var(--color-surface-muted);
   border-radius: 12px;
   align-items: center;
