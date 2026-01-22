@@ -19,6 +19,7 @@ export const RandomView = ({
   onStartLog,
   hasRecipes,
   cookbookCovers,
+  onRatingChange,
 }) => {
   const isWebsite =
     randomPick?.sourceType === "website" ||
@@ -118,6 +119,8 @@ export const RandomView = ({
               <RecipeRating
                 value={randomPick.rating || 0}
                 label="Recipe rating"
+                isEditable
+                onChange={(value) => onRatingChange?.(randomPick.id, value)}
               />
               {durationLabel ? (
                 <p className="recipe-meta">{durationLabel}</p>

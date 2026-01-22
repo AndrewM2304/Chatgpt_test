@@ -656,6 +656,7 @@ export default function App() {
                   cuisineOptions={cuisineOptions}
                   onStartLog={handleStartLog}
                   cookbookCovers={cookbookCoverMap}
+                  onRatingChange={handleUpdateRecipeRating}
                 />
               }
             />
