@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { RandomView } from "../components/RandomView";
 import { durationBuckets } from "../utils/recipeUtils";
 
-export const RandomRoute = ({ recipes, cuisineOptions, onStartLog, cookbookCovers }) => {
+export const RandomRoute = ({
+  recipes,
+  cuisineOptions,
+  onStartLog,
+  cookbookCovers,
+  onRatingChange,
+}) => {
   const [selectedCuisine, setSelectedCuisine] = useState("all");
   const [selectedDuration, setSelectedDuration] = useState("all");
   const [randomPick, setRandomPick] = useState(null);
@@ -39,11 +45,19 @@ export const RandomRoute = ({ recipes, cuisineOptions, onStartLog, cookbookCover
       setRandomPick(null);
       return;
     }
-    const isCurrentValid = randomCandidates.some(
-      (recipe) => recipe.id === randomPick?.id
-    );
-    if (!isCurrentValid) {
+    if (!randomPick) {
       handlePickRandom();
+      return;
+    }
+    const updatedPick = randomCandidates.find(
+      (recipe) => recipe.id === randomPick.id
+    );
+    if (!updatedPick) {
+      handlePickRandom();
+      return;
+    }
+    if (updatedPick !== randomPick) {
+      setRandomPick(updatedPick);
     }
   }, [handlePickRandom, randomCandidates, randomPick]);
 
@@ -61,6 +75,7 @@ export const RandomRoute = ({ recipes, cuisineOptions, onStartLog, cookbookCover
       onStartLog={onStartLog}
       hasRecipes={recipes.length > 0}
       cookbookCovers={cookbookCovers}
+      onRatingChange={onRatingChange}
     />
   );
 };
