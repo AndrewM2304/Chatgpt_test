@@ -518,6 +518,19 @@ export default function App() {
     setLogRecipeQuery(randomRecipe.name);
   };
 
+  const handleScheduleStorageItem = (item) => {
+    const itemName = item?.name?.trim() || "";
+    const todayValue = toDateInputValue(new Date());
+    setIsLogWeekCustomized(false);
+    openForStart({
+      recipeId: "",
+      recipeQuery: itemName,
+      weekDate: todayValue,
+      shouldNavigateAfterLog: false,
+    });
+    setIsLogModalOpen(true);
+  };
+
   const handleOpenLogModal = ({ date, meal, entry } = {}) => {
     if (entry) {
       if (entry.recipeId) {
@@ -680,6 +693,7 @@ export default function App() {
                   storageByLocation={storageByLocation}
                   onOpenModal={handleOpenFreezerModal}
                   onUpdatePortionsLeft={handleUpdateFreezerPortionsLeft}
+                  onScheduleItem={handleScheduleStorageItem}
                 />
               }
             />

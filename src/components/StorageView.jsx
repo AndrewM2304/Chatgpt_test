@@ -5,6 +5,7 @@ export const StorageView = ({
   storageByLocation,
   onOpenModal,
   onUpdatePortionsLeft,
+  onScheduleItem,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("all");
@@ -132,10 +133,14 @@ export const StorageView = ({
               <ul className="freezer-list">
                 {location.items.map((item) => (
                   <li key={item.id}>
-                    <div className="freezer-item-details">
+                    <button
+                      type="button"
+                      className="freezer-item-details"
+                      onClick={() => onScheduleItem?.(item)}
+                    >
                       <strong>{item.name}</strong>
                       {item.notes ? <em>“{item.notes}”</em> : null}
-                    </div>
+                    </button>
                     <div className="freezer-portion-control">
                       <select
                         aria-label="Portions left"
