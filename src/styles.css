@@ -983,6 +983,13 @@ button.secondary.icon-button {
 .freezer-item-details {
   display: grid;
   gap: 4px;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 .freezer-item-details span {
